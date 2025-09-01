@@ -1,0 +1,3 @@
+<h2>Prometej - a web platform that helps students learn Croatian literature</h2>
+
+<p>This project was developed for my final work. The idea was to colaborate with my high school professors who would use the platform to write quality learning material for students. Prometej is an interactive learning application designed to help students explore and master Croatian literature. It provides written learning materials curated by administrators and allows students to practice their knowledge through quizzes created by teachers. Quizzes can be public or private, enabling tailored assessment for specific classes or groups. The system aims to support teachers in sharing knowledge efficiently while motivating students through a dynamic digital learning environment. </p>
