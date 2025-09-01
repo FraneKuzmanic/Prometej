@@ -2,6 +2,8 @@
 
 <p>This project was developed for my college final work. The idea was to colaborate with my high school professors who would use the platform to write quality learning material for students. Prometej is an interactive learning application designed to help students with learning Croatian literature. It provides written learning materials curated by administrators and allows students to practice their knowledge through quizzes created by teachers. Quizzes can be public or private, enabling tailored assessment for specific classes or groups. The system aims to support teachers in sharing knowledge efficiently while motivating students through a dynamic digital learning environment. </p>
 
+<p>If you want to check out full paper written in Croatian with application screenshots you can see it here <a href="https://drive.google.com/file/d/1dKCoy6_ElFA_kVEj95mHxvKKT-1d5zTl/view?usp=drive_link" target="_blank">Prometej</a></p>
+
 <p>Technologies used:</p>
 <ul>
   <li><b>React</b> – front-end library for building user interfaces</li>
