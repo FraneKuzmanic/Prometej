@@ -1,0 +1,96 @@
+.quiz-screen-wrapper{
+    background-image: url("../../../public/quizbackg.png");
+    background-size: cover; /* or contain */
+    background-repeat: no-repeat;
+    background-position: center;
+    height: 100vh;
+    position: relative;
+}
+
+.questions-nav{
+    position: fixed;
+    bottom: 0;
+    height: 18vh;
+    width: 100%;
+    background-color: white;
+    border-top-right-radius: 5px;
+    border-top-left-radius: 5px;
+    display: flex;
+    align-items: center;
+    padding: 2rem 1rem 2rem 1rem;
+    overflow-x: auto;
+}
+
+.MuiPaper-root.question-container-add{
+    min-width: 200px;
+    max-width: 200px;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: rgb(227, 225, 225);
+    cursor: pointer;
+    margin-left: 1rem;
+}
+
+.question-nav-container{
+    min-width: 200px;
+    max-width: 200px;
+    height: 100%;
+    cursor: pointer;
+    margin-left: 1rem;
+    position: relative;
+}
+
+.question-nav-container.selected {
+    border: 3px solid #815b0d; /* Example border color */
+  }
+
+.question-container-no{
+    position: absolute;
+    bottom: 0;
+    left: 0;
+}
+
+.question-container-title{
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+    width: 75%;
+    color: rgba(0, 0, 0, 0.6);
+}
+
+.question-container-opt{
+    position: absolute;
+    top: 0;
+    right: 0;
+}
+
+.MuiPaper-root.question-container-add:hover{
+    background-color: rgb(200, 200, 200);
+}
+
+.title-input{
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: white;
+    padding: 10px;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 1000; /* Ensure it is on top of other elements */
+    width: 300px;
+    height: 300px;
+}
+
+.buttons-wrapper{
+    display: flex;
+    justify-content: space-between;
+    width: 80%;
+    margin-top: 6rem;
+}
+

@@ -1,0 +1,45 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.9.34728.123
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Prometej_api", "Prometej_api\Prometej_api.csproj", "{26A1A0D9-AFBE-4BD5-B641-743364C22EB7}"
+	ProjectSection(ProjectDependencies) = postProject
+		{C21C2BE8-CA7F-4E0F-9DFF-29DA5A6AD9D4} = {C21C2BE8-CA7F-4E0F-9DFF-29DA5A6AD9D4}
+	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Prometej_core", "Prometej_core\Prometej_core.csproj", "{C21C2BE8-CA7F-4E0F-9DFF-29DA5A6AD9D4}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Prometej_persistance", "Prometej_persistance\Prometej_persistance.csproj", "{9B988A80-16EE-48F9-8B3B-2DF74659C857}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{81F7F470-EDA6-4945-96C6-C033531011EE}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{26A1A0D9-AFBE-4BD5-B641-743364C22EB7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{26A1A0D9-AFBE-4BD5-B641-743364C22EB7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{26A1A0D9-AFBE-4BD5-B641-743364C22EB7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{26A1A0D9-AFBE-4BD5-B641-743364C22EB7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C21C2BE8-CA7F-4E0F-9DFF-29DA5A6AD9D4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C21C2BE8-CA7F-4E0F-9DFF-29DA5A6AD9D4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C21C2BE8-CA7F-4E0F-9DFF-29DA5A6AD9D4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C21C2BE8-CA7F-4E0F-9DFF-29DA5A6AD9D4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9B988A80-16EE-48F9-8B3B-2DF74659C857}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9B988A80-16EE-48F9-8B3B-2DF74659C857}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9B988A80-16EE-48F9-8B3B-2DF74659C857}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9B988A80-16EE-48F9-8B3B-2DF74659C857}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {DBA2E1A5-B362-45D8-AF18-8EE073D0AD29}
+	EndGlobalSection
+EndGlobal

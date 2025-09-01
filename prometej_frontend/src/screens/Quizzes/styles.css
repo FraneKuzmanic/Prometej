@@ -1,0 +1,8 @@
+.pagination .MuiPaginationItem-page.Mui-selected{
+    background-color: #553b08;
+    color: white;
+}
+
+.pagination .MuiPaginationItem-page.Mui-selected:hover{
+    background-color: #65470b;
+}

@@ -1,0 +1,19 @@
+.quiz-details-column{
+    font-weight: bold !important;
+    color: #553b08 !important;
+}
+
+.quiz-game-details-title{
+    margin: 20px 0px 20px 0px;
+    color: #553b08;
+    padding-left: 2.5rem;
+    padding-top: 1rem;
+}
+
+.pie-chart-container{
+    margin: 3rem 0 3rem 0;
+}
+
+.quiz-game-details-wrapper{
+    height: 90%;
+}

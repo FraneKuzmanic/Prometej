@@ -1,0 +1,36 @@
+.content-wrapper{
+    height: auto;
+}
+
+.content{
+    font-family: "Montserrat", sans-serif;
+}
+
+.content h1{
+    margin-bottom: 2rem;
+}
+
+.content p{
+    margin: 0;
+}
+
+.content h2{
+    margin-bottom: 0.5rem;
+    margin-top: 3rem;
+}
+
+.content img{
+    margin-right: 20px;
+}
+.speed-dial > button{
+    background-color: #553b08;
+}
+
+.speed-dial > button:hover{
+    background-color: #553b08;
+}
+
+.ql-align-center{
+    text-align: center;
+}
+

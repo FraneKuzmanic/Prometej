@@ -1,0 +1,9 @@
+.sidebar{
+    background-color: #553b08;
+    color: white;
+}
+
+.sidebar-item-selected{
+    color: black;
+    background-color: #e9e5cd;
+}

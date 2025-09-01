@@ -1,0 +1,6 @@
+@Prometej_api_HostAddress = http://localhost:5017
+
+GET {{Prometej_api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

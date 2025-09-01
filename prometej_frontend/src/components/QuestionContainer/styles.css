@@ -1,0 +1,107 @@
+.question-title{
+    display: flex;
+    justify-content: center;
+    padding: 2rem;
+}
+
+.question-wrapper{
+    width: 100%;
+}
+
+.input{
+    text-align: center;
+    background-color: white;
+    color: rgba(0, 0, 0, 0.6);
+    width: 70%;
+    height: 70%;
+    border: none;
+    padding: 0;
+    border-top-right-radius: 5px;
+    border-bottom-right-radius: 5px;
+
+}
+
+.input .MuiInputBase-root{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    padding: 0 0 0 1rem;
+    color:rgba(0, 0, 0, 0.6);
+}
+
+.input-title{
+    text-align: center;
+    background-color: white;
+    color: rgba(0, 0, 0, 0.6);
+    width: 70%;
+}
+
+.input-title .MuiInputBase-input {
+    text-align: center;
+    font-size: 25px;
+    color:rgba(0, 0, 0, 0.6);
+}
+
+.input-title .MuiFormLabel-root {
+    left: 42%;
+    top: -10%;
+    font-size: 25px;
+}
+
+.answers-grid{
+    margin-top: 15vh !important;
+}
+
+.answer{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 15vh;
+}
+
+.letter{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 70%;
+    width: 40px;
+    background-color: #553b08;
+    color: white;
+    border-top-left-radius: 5px;
+    border-bottom-left-radius: 5px;
+}
+
+.question-wrapper .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline {
+    border: none;
+  }
+  
+  /* Remove border on hover */
+  .question-wrapper .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
+    border: none;
+  }
+  
+  /* Remove border when focused */
+  .question-wrapper .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+    border: none;
+  }
+
+.input .MuiInputLabel-root.MuiFormLabel-filled {
+    display: none;
+}
+
+.input-title .MuiInputLabel-root.MuiFormLabel-filled {
+    display: none;
+}
+
+.MuiButtonBase-root.question-checkbox .MuiSvgIcon-root {
+    font-size: 60px;
+    color: white;
+}
+
+.MuiButtonBase-root.question-checkbox.Mui-checked .MuiSvgIcon-root{
+    font-size: 60px;
+    color: #2e7d32;
+}
+  
+  

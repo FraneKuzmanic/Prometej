@@ -1,0 +1,48 @@
+.forum-wrapper{
+    position: relative;
+    width: 600px;
+}
+
+.forum-input-area{
+    position: fixed;
+    bottom: 0;
+    padding: 1rem;
+    width: 600px;
+}
+
+.comment-button.MuiButton-root{
+    background-color: #553b08;
+    color: white;
+    position: absolute;
+    bottom: 25px;
+    right: 25px;
+    border-radius: 10px;
+}
+
+.comment-button.MuiButton-root:hover{
+    background-color: #7a5a0c;
+}
+
+.forum-comments{
+    padding: 1rem;
+}
+
+.forum-comment{
+    margin: 0 0 2.5rem 0;
+    font-size: 14px;
+    color: rgba(0, 0, 0, 0.8);
+}
+
+.forum-comment-header{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 5px;
+
+}
+
+.forum-comment-name{
+    display: flex;
+    align-items: center;
+    color: black;
+}
