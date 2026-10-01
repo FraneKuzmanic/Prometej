@@ -2,12 +2,15 @@ import { useEffect, useState } from "react";
 import {
   AnswerCreateRequest,
   QuestionViewModel,
-  QuizGameCreateRequest,
 } from "../../types/models/Quiz";
 import { useSelector } from "react-redux";
 import { RootState, useAppDispatch } from "../../store/store";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
-import { fetchQuiz, submitQuiz } from "../../store/slices/quizSlice";
+import {
+  fetchQuiz,
+  resetSubmit,
+  submitQuiz,
+} from "../../store/slices/quizSlice";
 import {
   Box,
   Button,
@@ -22,8 +25,10 @@ import "./styles.css";
 export default function PlayQuiz() {
   const [quizQuestions, setQuizQuestions] = useState<QuestionViewModel[]>([]);
   const [quizAnswers, setQuizAnswers] = useState<AnswerCreateRequest[]>([]);
-  const { quiz } = useSelector((state: RootState) => state.quiz);
-  const { user } = useSelector((state: RootState) => state.user);
+  const { quiz, lastGame, submitStatus } = useSelector(
+    (state: RootState) => state.quiz
+  );
+  const { user, authenticated } = useSelector((state: RootState) => state.user);
   const [currentQuestion, setCurrentQuestion] = useState<QuestionViewModel>();
   const [currentQuestionNo, setCurrentQuestionNo] = useState(0);
   const [currentQuestionAnswered, setQuestionAnswered] = useState(false);
@@ -37,7 +42,12 @@ export default function PlayQuiz() {
   const [searchParams] = useSearchParams();
   const code = searchParams.get("code") ?? undefined;
 
+  // The server does not record a Creator's play of their own Quiz.
+  const isCreator = !!user && !!quiz && user.id === quiz.creatorId;
+
   useEffect(() => {
+    // A new play must not start with the result of the one before it.
+    dispatch(resetSubmit());
     dispatch(fetchQuiz({ quizId: Number(id), code }));
   }, [dispatch, id, code]);
 
@@ -68,23 +78,43 @@ export default function PlayQuiz() {
         {
           questionId: currentQuestion.id,
           answerText: answer,
-          correctAnswer: currentQuestion.correctAnswer,
         },
       ]);
     }
   };
 
+  const submit = () => {
+    if (quiz) {
+      dispatch(submitQuiz({ quizId: quiz.id, answers: quizAnswers }));
+    }
+  };
+
   const handleShowScore = () => {
-    const quizGame: QuizGameCreateRequest = {
-      quizId: quiz ? quiz.id : 0,
-      userId: user ? user.id : undefined,
-      userName: user ? user.firstName + " " + user.lastName : "",
-      score,
-      datePlayed: new Date(),
-    };
-    dispatch(submitQuiz({ quizGame: quizGame, answers: quizAnswers }));
+    if (authenticated && !isCreator) {
+      submit();
+    }
     setCurrentQuestion(undefined);
     setShowScore(true);
+  };
+
+  // Signed-out comes first: a session that expired during the play ends up there too.
+  const resultNote = () => {
+    if (authenticated === false) {
+      return "Prijavite se kako bi vaš rezultat bio spremljen.";
+    }
+    if (isCreator) {
+      return "Ovo je vaš kviz, pa se rezultat ne sprema.";
+    }
+    switch (submitStatus) {
+      case "saved":
+        return "Rezultat je spremljen.";
+      case "rejected":
+        return "Rezultat nije spremljen jer je kviz u međuvremenu izmijenjen ili obrisan.";
+      case "failed":
+        return "Rezultat nije spremljen. Pokušajte ponovno.";
+      default:
+        return "";
+    }
   };
 
   return (
@@ -223,6 +253,25 @@ export default function PlayQuiz() {
           </Box>
         </Paper>
       )}
+      {quiz && quiz.questions.length === 0 && (
+        <Paper elevation={3} className="quiz-play-container">
+          <Box className="quiz-play-header">
+            <Typography className="quiz-play-title" variant="h5">
+              {quiz.title}
+            </Typography>
+          </Box>
+          <Box className="quiz-play-score">
+            <Typography component="div" variant="h4">
+              Ovaj kviz još nema pitanja.
+            </Typography>
+          </Box>
+          <Box className="quiz-play-footer" sx={{ justifyContent: "flex-end" }}>
+            <Button onClick={() => navigate("/")} variant="contained">
+              Vrati na početnu
+            </Button>
+          </Box>
+        </Paper>
+      )}
       {showScore && (
         <Paper elevation={3} className="quiz-play-container">
           <Box className="quiz-play-header">
@@ -239,8 +288,17 @@ export default function PlayQuiz() {
               Vaš ukupni rezultat :
             </Typography>
             <Typography component="div" sx={{ marginTop: 5 }} variant="h2">
-              {score} / {totalQuestionNo}
+              {submitStatus === "saved" && lastGame ? lastGame.score : score} /{" "}
+              {totalQuestionNo}
             </Typography>
+            <Typography component="div" sx={{ marginTop: 3 }}>
+              {resultNote()}
+            </Typography>
+            {submitStatus === "failed" && (
+              <Button sx={{ marginTop: 1 }} onClick={() => submit()}>
+                Pokušaj ponovno
+              </Button>
+            )}
           </Box>
           <Box className="quiz-play-footer">
             <Typography>

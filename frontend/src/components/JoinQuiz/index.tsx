@@ -40,18 +40,6 @@ export default function JoinQuiz({ setOpenJoinQuizDialog }: JoinQuizProps) {
         value={quizCode}
         onChange={(e) => setQuizCode(e.target.value)}
       />
-      <Typography sx={{ marginTop: "1rem" }} variant="h5">
-        Ime i prezime
-      </Typography>
-      <TextField
-        sx={{ marginTop: "0.5rem" }}
-        type="text"
-        placeholder="Ime i prezime..."
-        fullWidth
-        required
-        value={quizCode}
-        onChange={(e) => setQuizCode(e.target.value)}
-      />
       <Button
         variant="contained"
         onClick={() => joinQuiz()}

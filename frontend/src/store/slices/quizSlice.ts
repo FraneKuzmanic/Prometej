@@ -1,12 +1,19 @@
 import { PayloadAction, createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import axios from "axios";
 
 import QuizService from "../../services/routes/quiz";
-import { AnswerCreateRequest, QuestionCreateRequest, QuestionEditRequest, QuizBaseModel, QuizCreateRequest, QuizEditRequest, QuizGameCreateRequest, QuizGameViewModel, QuizViewModel } from "../../types/models/Quiz";
+import { AnswerCreateRequest, QuestionCreateRequest, QuestionEditRequest, QuizBaseModel, QuizCreateRequest, QuizEditRequest, QuizGameViewModel, QuizViewModel } from "../../types/models/Quiz";
 
 interface QuizState {
     quizzes: QuizBaseModel[] | undefined;
     quiz: QuizViewModel | undefined;
     quizGames: QuizGameViewModel[] | undefined;
+    analyticsFailed: boolean;
+    // the Quiz Game the server stored for the play just finished
+    lastGame: QuizGameViewModel | undefined;
+    // "rejected": the server refused the submission, so sending it again cannot help.
+    // "failed": the request did not get an answer, or got a server error.
+    submitStatus: "idle" | "pending" | "saved" | "rejected" | "failed";
 }
 
 export interface CreateQuizPayload {
@@ -21,7 +28,7 @@ export interface UpdateQuizPayload {
 }
 
 export interface SubmitQuizPayload {
-    quizGame: QuizGameCreateRequest;
+    quizId: number;
     answers: AnswerCreateRequest[];
 }
 
@@ -29,6 +36,9 @@ const initialState: QuizState = {
     quizzes: undefined,
     quiz: undefined,
     quizGames: undefined,
+    analyticsFailed: false,
+    lastGame: undefined,
+    submitStatus: "idle",
 };
 
 const fetchAllPublicQuizzes = createAsyncThunk(
@@ -95,11 +105,15 @@ const deleteQuiz = createAsyncThunk(
     }
 );
 
-const submitQuiz = createAsyncThunk(
+const submitQuiz = createAsyncThunk<QuizGameViewModel, SubmitQuizPayload, { rejectValue: number | undefined }>(
     'quiz/submit',
-    async (data: SubmitQuizPayload) => {
-        const response = await QuizService.submit(data);
-        return response.data;
+    async (data, { rejectWithValue }) => {
+        try {
+            const response = await QuizService.submit(data);
+            return response.data;
+        } catch (error) {
+            return rejectWithValue(axios.isAxiosError(error) ? error.response?.status : undefined);
+        }
     }
 );
 
@@ -115,6 +129,10 @@ const quizSlice = createSlice({
   name: "quiz",
   initialState,
   reducers: {
+    resetSubmit: (state) => {
+      state.lastGame = undefined;
+      state.submitStatus = "idle";
+    },
   },
   extraReducers: (builder) => {
     builder.addCase(fetchAllPublicQuizzes.fulfilled, (state, action: PayloadAction<QuizBaseModel[]>) => {
@@ -133,14 +151,38 @@ const quizSlice = createSlice({
     builder.addCase(fetchQuiz.fulfilled, (state, action: PayloadAction<QuizViewModel>) => {
         state.quiz = action.payload; 
     });
+    // Cleared first, so one quiz's plays never show under another.
+    builder.addCase(getQuizAnalytics.pending, (state) => {
+        state.quizGames = undefined;
+        state.analyticsFailed = false;
+    });
     builder.addCase(getQuizAnalytics.fulfilled, (state, action: PayloadAction<QuizGameViewModel[]>) => {
         state.quizGames = action.payload;
+    });
+    // An aborted request is one the screen has already replaced with another.
+    builder.addCase(getQuizAnalytics.rejected, (state, action) => {
+        if (!action.meta.aborted) {
+            state.analyticsFailed = true;
+        }
+    });
+    builder.addCase(submitQuiz.pending, (state) => {
+        state.submitStatus = "pending";
+    });
+    builder.addCase(submitQuiz.fulfilled, (state, action) => {
+        state.lastGame = action.payload;
+        state.submitStatus = "saved";
+    });
+    builder.addCase(submitQuiz.rejected, (state, action) => {
+        const status = action.payload;
+        state.submitStatus = status !== undefined && status >= 400 && status < 500 ? "rejected" : "failed";
     });
     builder.addCase(fetchQuizByCode.fulfilled, (state, action: PayloadAction<QuizViewModel>) => {
         state.quiz = action.payload;
     });
   }
 });
+
+export const { resetSubmit } = quizSlice.actions;
 
 export {
     fetchAllPublicQuizzes,

@@ -1,5 +1,5 @@
 import { useParams } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { RootState, useAppDispatch } from "../../store/store";
 import { useSelector } from "react-redux";
 import { getQuizAnalytics } from "../../store/slices/quizSlice";
@@ -28,39 +28,39 @@ interface SeriesData {
 
 export function QuizDetails() {
   const { id } = useParams();
-  const { quizGames } = useSelector((state: RootState) => state.quiz);
+  const { quizGames, analyticsFailed } = useSelector(
+    (state: RootState) => state.quiz
+  );
   const dispatch = useAppDispatch();
-  const [seriesData, setSeriesData] = useState<SeriesData[]>([]);
 
-  useEffect(() => {
-    if (quizGames) {
-      const intervals = Array.from({ length: 10 }, (_, i) => i * 10);
-      const intervalCounts = intervals.map((_, i) => {
-        const lowerBound = i * 10;
-        const upperBound = (i + 1) * 10;
-        return quizGames.filter(
-          (game) =>
-            (game.score / game.answers.length) * 100 >= lowerBound &&
-            (game.score / game.answers.length) * 100 < upperBound
-        ).length;
-      });
-      const seriesData: SeriesData[] = intervals.map((interval, i) => ({
+  // How many plays fall in each tenth of the percentage scale; empty tenths are left out.
+  const seriesData = useMemo<SeriesData[]>(() => {
+    const intervals = Array.from({ length: 10 }, (_, i) => i * 10);
+    const intervalCounts = intervals.map(() => 0);
+    (quizGames ?? []).forEach((game) => {
+      // A play without answers has no percentage.
+      if (game.answers.length === 0) return;
+      const percentage = (game.score / game.answers.length) * 100;
+      // The last interval includes 100%.
+      intervalCounts[Math.min(9, Math.floor(percentage / 10))]++;
+    });
+    return intervals
+      .map((interval, i) => ({
         id: i,
         value: intervalCounts[i],
         label: `${interval}% - ${interval + 10}%`,
-      }));
-
-      setSeriesData(seriesData);
-    }
+      }))
+      .filter((interval) => interval.value > 0);
   }, [quizGames]);
 
   useEffect(() => {
-    if (id) {
-      dispatch(getQuizAnalytics(parseInt(id)));
-    }
+    if (!id) return;
+    const request = dispatch(getQuizAnalytics(parseInt(id)));
+    // Leaving for another quiz drops this request, so its late answer cannot replace that quiz's plays.
+    return () => request.abort();
   }, [dispatch, id]);
 
-  const formatDate = (date: Date) => {
+  const formatDate = (date: string) => {
     const options: Intl.DateTimeFormatOptions = {
       year: "numeric",
       month: "long",
@@ -74,18 +74,30 @@ export function QuizDetails() {
       <Typography variant="h3" className="quiz-game-details-title">
         Analitika kviza
       </Typography>
-      <Box className="pie-chart-container">
-        <PieChart
-          series={[
-            {
-              data: seriesData,
-            },
-          ]}
-          width={400}
-          height={200}
-        />
-      </Box>
-      {quizGames && (
+      {analyticsFailed && (
+        <Typography className="quiz-game-details-message">
+          Analitika nije dostupna.
+        </Typography>
+      )}
+      {quizGames && quizGames.length === 0 && (
+        <Typography className="quiz-game-details-message">
+          Još nitko nije riješio ovaj kviz.
+        </Typography>
+      )}
+      {quizGames && quizGames.length > 0 && (
+        <Box className="pie-chart-container">
+          <PieChart
+            series={[
+              {
+                data: seriesData,
+              },
+            ]}
+            width={400}
+            height={200}
+          />
+        </Box>
+      )}
+      {quizGames && quizGames.length > 0 && (
         <TableContainer component={Paper}>
           <Table aria-label="simple table">
             <TableHead>
@@ -113,7 +125,7 @@ export function QuizDetails() {
                     scope="row"
                   >
                     <Avatar sx={{ bgcolor: stringToColor(quizGame.userName) }}>
-                      {quizGame.userName[0].toUpperCase()}
+                      {(quizGame.userName[0] ?? "?").toUpperCase()}
                     </Avatar>
                     <Typography
                       sx={{ marginLeft: 1.5, fontSize: 14 }}

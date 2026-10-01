@@ -10,6 +10,10 @@
     padding-top: 1rem;
 }
 
+.quiz-game-details-message{
+    padding-left: 2.5rem;
+}
+
 .pie-chart-container{
     margin: 3rem 0 3rem 0;
 }

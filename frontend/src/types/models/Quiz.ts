@@ -67,7 +67,6 @@ export interface QuestionViewModel {
 export interface AnswerCreateRequest{
     questionId:number;
     answerText:string;
-    correctAnswer:string;
 }
 
 export interface AnswerViewModel {
@@ -78,20 +77,12 @@ export interface AnswerViewModel {
     correctAnswer:string;
 }
 
-export interface QuizGameCreateRequest {
-    quizId: number;
-    userId?: number;
-    userName?: string;
-    score: number;
-    datePlayed: Date;
-}
-
 export interface QuizGameViewModel {
     id: number;
     quizId: number;
-    userId?: number;
+    userId: number;
     userName: string;
     score: number;
-    datePlayed: Date;
+    datePlayed: string;
     answers: AnswerViewModel[];
 }
