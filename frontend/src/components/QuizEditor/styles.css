@@ -89,7 +89,8 @@
 
 .quiz-editor-message{
     position: fixed;
-    bottom: calc(18vh + 1rem);
+    /* above the question strip: its height, its padding, and a gap */
+    bottom: calc(18vh + 5rem);
     left: 50%;
     transform: translateX(-50%);
     z-index: 1;
