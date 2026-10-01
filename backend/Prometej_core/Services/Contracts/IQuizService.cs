@@ -15,10 +15,10 @@ namespace Prometej_core.Services.Contracts
 
         List<QuizBaseModel> searchQuizzes(string search);
         List<QuizBaseModel> getAllUserQuizzes(int id);
-        QuizViewModel GetQuiz(int id);
+        QuizViewModel GetQuiz(int id, int? code, int? callerId, bool isAdmin);
         QuizViewModel GetQuizByCode(int quizCode);
-        int Create(QuizCreateRequest quiz, List<QuestionCreateRequest> questions);
-        void Update(QuizEditRequest quiz, List<QuestionEditRequest>? questions);
-        void Delete(int id);
+        int Create(QuizCreateRequest quiz, List<QuestionCreateRequest> questions, int creatorId);
+        void Update(QuizEditRequest quiz, List<QuestionEditRequest>? questions, int callerId, bool isAdmin);
+        void Delete(int id, int callerId, bool isAdmin);
     }
 }

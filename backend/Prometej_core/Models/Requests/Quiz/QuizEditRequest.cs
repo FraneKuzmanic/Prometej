@@ -11,7 +11,6 @@ namespace Prometej_core.Models.Requests.Quiz
         public int Id { get; set; }
         public string Title { get; set; }
         public bool IsPrivate { get; set; }
-        public int CreatorId { get; set; }
         public int? EntryCode { get; set; }
 
     }

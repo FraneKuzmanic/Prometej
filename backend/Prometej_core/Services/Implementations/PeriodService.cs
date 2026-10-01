@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Prometej_core.DataAccessLayer;
+using Prometej_core.Exceptions;
 using Prometej_core.Models.efModels;
 using Prometej_core.Models.Requests.Period;
 using Prometej_core.Models.ViewModels;
@@ -28,7 +29,7 @@ namespace Prometej_core.Services.Implementations
             var periodEntity = _periodRepository.ReadAll().FirstOrDefault(p => p.PeriodId == id);
             if (periodEntity == null)
             {
-                throw new Exception("Period not found");
+                throw new NotFoundException("Period not found");
             }
 
             PeriodContentViewModel periodViewModel = _mapper.Map<PeriodContentViewModel>(periodEntity);
@@ -70,7 +71,8 @@ namespace Prometej_core.Services.Implementations
             htmlDoc.LoadHtml(content);
 
             // Find the paragraph (<p>) tag containing the query
-            HtmlNode paragraphNode = htmlDoc.DocumentNode.SelectSingleNode($"//p[contains(text(), '{query}')]");
+            // Filtered here rather than inside the XPath: a query containing a quote would break the expression.
+            HtmlNode? paragraphNode = htmlDoc.DocumentNode.SelectNodes("//p")?.FirstOrDefault(p => p.InnerText.Contains(query));
 
             if (paragraphNode != null)
             {
@@ -95,10 +97,12 @@ namespace Prometej_core.Services.Implementations
 
         public int UpdatePeriodContent(PeriodContentEditRequest period)
         {
-            var periodEntity = _periodRepository.ReadAll().FirstOrDefault(p => p.Id == period.Id);
+            // A Period has one content. Looking it up by PeriodId, not by the row id the client
+            // sends, means a stale id can never overwrite another Period's content.
+            var periodEntity = _periodRepository.ReadAll().FirstOrDefault(p => p.PeriodId == period.PeriodId);
             if (periodEntity == null)
             {
-                var periodCreationEntity = _mapper.Map<PeriodContent>(period);
+                var periodCreationEntity = new PeriodContent { PeriodId = period.PeriodId, Content = period.Content };
                 _periodRepository.Create(periodCreationEntity);
                 _periodRepository.Save();
 

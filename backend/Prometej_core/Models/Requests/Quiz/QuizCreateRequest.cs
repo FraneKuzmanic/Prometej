@@ -10,7 +10,6 @@ namespace Prometej_core.Models.Requests.Quiz
     {
         public string Title { get; set; }
         public bool IsPrivate { get; set; }
-        public int CreatorId { get; set; }
         public int entryCode { get; set; }
     }
 }

@@ -16,7 +16,6 @@ namespace Prometej_core.AutoMapper.Profiles
         {
             CreateMap<PeriodContentCreateRequest, PeriodContent>();
             CreateMap<PeriodContent, PeriodContentCreateRequest>();
-            CreateMap<PeriodContentEditRequest, PeriodContent>();
             CreateMap<PeriodContent, PeriodContentEditRequest>();
             CreateMap<PeriodContent, PeriodContentViewModel>();
         }

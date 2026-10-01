@@ -69,5 +69,14 @@ namespace Prometej_tests
             response.EnsureSuccessStatusCode();
             return client;
         }
+
+        public async Task<HttpClient> LoginAsNewStudent()
+        {
+            var email = $"student-{Guid.NewGuid():N}@test.local";
+            var registration = new { firstName = "Sara", lastName = "Student", email, password = Password };
+            var response = await CreateHttpsClient().PostAsJsonAsync("/api/user/register", registration);
+            response.EnsureSuccessStatusCode();
+            return await LoginAs(email);
+        }
     }
 }

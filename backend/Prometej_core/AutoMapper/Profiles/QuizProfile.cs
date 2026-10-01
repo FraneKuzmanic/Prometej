@@ -17,7 +17,6 @@ namespace Prometej_core.AutoMapper.Profiles
         {
             CreateMap<QuizCreateRequest, Quiz>();
             CreateMap<Quiz, QuizCreateRequest>();
-            CreateMap<QuizEditRequest, Quiz>();
             CreateMap<Quiz, QuizEditRequest>();
             CreateMap<Quiz, QuizViewModel>().ForMember(dest => dest.CreatorName, opt => opt.MapFrom(src => src.Creator.FirstName + " " + src.Creator.LastName))
                                             .ForMember(dest => dest.Questions, opt => opt.MapFrom(src => src.Questions));
