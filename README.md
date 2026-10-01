@@ -18,7 +18,7 @@
 <p>1. Check if you have <a href="https://nodejs.org/" target="_blank">Node.js</a>, if not download it</p>
 <p>2. Clone the repository</p>
 <pre lang="markdown"> git clone https://github.com/FraneKuzmanic/Prometej.git
- cd prometej_frontend  </pre>
+ cd Prometej/frontend  </pre>
  <p>3. Install  dependencies</p>
  <pre lang="markdown"> npm install
  # or
@@ -31,7 +31,7 @@ yarn dev </pre>
 <h4>Server-side:</h4> 
 <p>1. Check if you have <a href="https://dotnet.microsoft.com/en-us/download/dotnet/8.0" target=_blank">.NET 8</a>, if not download it</p>
 <p>2. Navigate to a repository</p>
-<pre lang="markdown">cd Prometej_backend</pre>
+<pre lang="markdown">cd backend</pre>
 <p>3. Restore dependencies</p>
 <pre lang="markdown">dotnet restore</pre>
 <p>4. In <b>appsetings.json</b> file configure the connection string for postgreSQL database</p>
