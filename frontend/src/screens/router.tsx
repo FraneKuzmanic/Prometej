@@ -1,4 +1,4 @@
-import ProtectedRoute from "../components/ProtectedRoute";
+import RequireRole from "../components/RequireRole";
 import HomePage from "./HomePage";
 import Learning from "./Learning";
 import Login from "./Login";
@@ -12,6 +12,9 @@ import { Navigate, createBrowserRouter } from "react-router-dom";
 import EditQuiz from "./MakeQuiz/EditQuiz";
 import PlayQuiz from "./PlayQuiz";
 import { QuizDetails } from "./QuizDetails";
+import ROLE from "../types/enums/Role";
+
+const quizAuthors = [ROLE.Teacher, ROLE.Admin];
 
 export const appRouter = createBrowserRouter([
   {
@@ -20,18 +23,28 @@ export const appRouter = createBrowserRouter([
   },
   {
     path: "/",
-    element: (
-      <ProtectedRoute>
-        <HomePage />
-      </ProtectedRoute>
-    ),
+    element: <HomePage />,
     children: [
       { path: "learning", element: <Learning /> },
       { path: "search", element: <Search /> },
       { path: "learning/:id", element: <Period /> },
       { path: "quizzes", element: <Quizzes /> },
-      { path: "my-quizzes", element: <MyQuizzes /> },
-      { path: "quiz-details/:id", element: <QuizDetails /> },
+      {
+        path: "my-quizzes",
+        element: (
+          <RequireRole roles={quizAuthors}>
+            <MyQuizzes />
+          </RequireRole>
+        ),
+      },
+      {
+        path: "quiz-details/:id",
+        element: (
+          <RequireRole roles={quizAuthors}>
+            <QuizDetails />
+          </RequireRole>
+        ),
+      },
       // other routes...
     ],
   },
@@ -49,11 +62,19 @@ export const appRouter = createBrowserRouter([
   },
   {
     path: "/make-quiz",
-    element: <MakeQuiz />,
+    element: (
+      <RequireRole roles={quizAuthors}>
+        <MakeQuiz />
+      </RequireRole>
+    ),
   },
   {
     path: "/edit-quiz/:id",
-    element: <EditQuiz />,
+    element: (
+      <RequireRole roles={quizAuthors}>
+        <EditQuiz />
+      </RequireRole>
+    ),
   },
 ]);
 

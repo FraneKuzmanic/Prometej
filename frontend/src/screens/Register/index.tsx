@@ -16,7 +16,6 @@ import { RegisterInput, UserCreateRequest } from "../../types/models/User";
 import { RootState, useAppDispatch } from "../../store/store";
 import { clearRegistered, registerStudent } from "../../store/slices/userSlice";
 import { FormTitleWrapper, FormWrapper, ScreenWrapper } from "./index.styled";
-import ROLE from "../../types/enums/Role";
 
 const Register = () => {
   const dispatch = useAppDispatch();
@@ -27,7 +26,9 @@ const Register = () => {
     handleSubmit,
     formState: { errors },
   } = useForm<RegisterInput>();
-  const { registered } = useSelector((state: RootState) => state.user);
+  const { registered, registerError } = useSelector(
+    (state: RootState) => state.user
+  );
 
   useEffect(() => {
     if (registered) {
@@ -42,7 +43,6 @@ const Register = () => {
       lastName: data.lastName,
       email: data.email,
       password: data.password,
-      role: ROLE.Student,
     };
     dispatch(registerStudent(user));
   };
@@ -57,12 +57,13 @@ const Register = () => {
             </Typography>
           </FormTitleWrapper>
           <Box component="form" width="100%" onSubmit={handleSubmit(onSubmit)}>
-            {registered === false ? (
+            {registerError ? (
               <Box marginBottom="20px">
                 <Stack spacing={1}>
                   <Alert severity="error">
-                    Registracija nije uspjela. Provjerite podatke i pokušajte
-                    ponovo.
+                    {registerError === "conflict"
+                      ? "Email adresa se već koristi."
+                      : "Registracija nije uspjela. Provjerite podatke i pokušajte ponovo."}
                   </Alert>
                 </Stack>
               </Box>
@@ -114,6 +115,14 @@ const Register = () => {
               <TextField
                 {...register("password", {
                   required: "Lozinka je obavezna",
+                  minLength: {
+                    value: 8,
+                    message: "Lozinka mora imati najmanje 8 znakova",
+                  },
+                  maxLength: {
+                    value: 72,
+                    message: "Lozinka može imati najviše 72 znaka",
+                  },
                 })}
                 label="Lozinka"
                 name="password"

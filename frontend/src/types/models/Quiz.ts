@@ -32,14 +32,12 @@ export interface QuestionEditRequest {
 export interface QuizCreateRequest {
     title: string;
     isPrivate: boolean;
-    creatorId: number;
     entryCode: number;
 }
 
 export interface QuizEditRequest {
     id: number;
     title: string;
-    creatorId: number;
     isPrivate: boolean;
     entryCode?: number;
 }

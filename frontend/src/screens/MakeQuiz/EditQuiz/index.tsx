@@ -69,7 +69,6 @@ export default function EditQuiz() {
       id: quiz?.id || 0,
       title: quizTitle,
       isPrivate: quiz?.isPrivate || false,
-      creatorId: quiz?.creatorId || 0,
       entryCode: quiz?.entryCode || undefined,
     };
     const questions: QuestionEditRequest[] = [...quizQuestions];
@@ -114,7 +113,7 @@ export default function EditQuiz() {
   };
 
   useEffect(() => {
-    dispatch(fetchQuiz(Number(id)));
+    dispatch(fetchQuiz({ quizId: Number(id) }));
   }, [dispatch, id]);
 
   useEffect(() => {

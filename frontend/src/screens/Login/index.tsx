@@ -19,7 +19,7 @@ import { FormTitleWrapper, FormWrapper, ScreenWrapper } from "./index.styled";
 const Login = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const { user, authenticated } = useSelector((state: RootState) => state.user);
+  const { user, loginFailed } = useSelector((state: RootState) => state.user);
   const { register, handleSubmit } = useForm<LoginInput>();
 
   const onSubmit = (data: LoginInput) => {
@@ -28,7 +28,6 @@ const Login = () => {
 
   useEffect(() => {
     if (user !== undefined) {
-      localStorage.setItem("userId", user.id.toString());
       navigate("/learning");
     }
   }, [user, navigate]);
@@ -43,7 +42,7 @@ const Login = () => {
             </Typography>
           </FormTitleWrapper>
           <Box component="form" width="100%" onSubmit={handleSubmit(onSubmit)}>
-            {authenticated === false ? (
+            {loginFailed ? (
               <Box marginBottom="20px">
                 <Alert severity="error">
                   Neuspješna prijava. Provjerite podatke i pokušajte ponovo.

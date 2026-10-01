@@ -1,18 +1,24 @@
 import { PayloadAction, createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import axios from "axios";
 
 import usersService from "../../services/routes/user";
 import {LoginInput, UserCreateRequest, UserViewModel} from "../../types/models/User";
 
 interface UserState {
   user: UserViewModel | undefined;
+  // undefined until the server has answered whether there is a session
   authenticated: boolean | undefined;
+  loginFailed: boolean;
   registered: boolean | undefined;
+  registerError: "conflict" | "other" | undefined;
 }
 
 const initialState: UserState = {
   user: undefined,
   authenticated: undefined,
+  loginFailed: false,
   registered: undefined,
+  registerError: undefined,
 };
 
 const attemptLogin = createAsyncThunk(
@@ -33,24 +39,28 @@ const attemptLogout = createAsyncThunk(
 
 const fetchCurrentUser = createAsyncThunk(
   'user/checkCurrentUserStatus',
-  async (id: string) => {
-    const response = await usersService.getUser(id);
+  async () => {
+    const response = await usersService.getUser();
     return response.data;
   }
 );
 
-const registerStudent = createAsyncThunk(
+const registerStudent = createAsyncThunk<number, UserCreateRequest, { rejectValue: number | undefined }>(
   'user/registerStudentStatus',
-  async (data: UserCreateRequest) => {
-    const response = await usersService.register(data);
-    return response.data;
+  async (data, { rejectWithValue }) => {
+    try {
+      const response = await usersService.register(data);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(axios.isAxiosError(error) ? error.response?.status : undefined);
+    }
   }
 );
 
 const deleteCurrentUser = createAsyncThunk(
     'user/deleteCurrentUser',
-    async (userid: number) => {
-        await usersService.deleteUser(userid);
+    async () => {
+        await usersService.deleteUser();
     }
 );
 
@@ -60,32 +70,47 @@ const userSlice = createSlice({
   reducers: {
     clearUser: (state) => {
       state.user = undefined;
-      state.authenticated = undefined;
+      state.authenticated = false;
     },
     clearRegistered: (state) => {
       state.registered = undefined;
     },
   },
   extraReducers: (builder) => {
-    builder.addCase(attemptLogin.fulfilled, (state, action: PayloadAction<UserViewModel>) => {
+    builder.addCase(attemptLogin.pending, (state) => {
+      state.loginFailed = false;
+    }).addCase(attemptLogin.fulfilled, (state, action: PayloadAction<UserViewModel>) => {
       state.user = action.payload;
       state.authenticated = true;
     }).addCase(attemptLogin.rejected, (state) => {
-      state.authenticated = false;
+      state.loginFailed = true;
     });
+    // Signed out locally even if the request failed: the user asked to leave.
     builder.addCase(attemptLogout.fulfilled, (state) => {
       state.user = undefined;
-      state.authenticated = undefined;
+      state.authenticated = false;
+    }).addCase(attemptLogout.rejected, (state) => {
+      state.user = undefined;
+      state.authenticated = false;
     });
     builder.addCase(fetchCurrentUser.fulfilled, (state, action: PayloadAction<UserViewModel>) => {
       state.user = action.payload;
       state.authenticated = true;
+    }).addCase(fetchCurrentUser.rejected, (state) => {
+      state.user = undefined;
+      state.authenticated = false;
     });
-    builder.addCase(registerStudent.fulfilled, (state) => {
+    builder.addCase(registerStudent.pending, (state) => {
+      state.registerError = undefined;
+    }).addCase(registerStudent.fulfilled, (state) => {
       state.registered = true;
-    }).addCase(registerStudent.rejected, (state) => {
-      state.registered = false;
-    })
+    }).addCase(registerStudent.rejected, (state, action) => {
+      state.registerError = action.payload === 409 ? "conflict" : "other";
+    });
+    builder.addCase(deleteCurrentUser.fulfilled, (state) => {
+      state.user = undefined;
+      state.authenticated = false;
+    });
   }
 });
 

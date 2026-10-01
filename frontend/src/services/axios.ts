@@ -9,7 +9,12 @@ const configureAxios = () => {
   axios.interceptors.response.use(
     (response) => response,
     async (error) => {
-      if (error.response.status === 401) {
+      // The session check and the login form report their own 401 through their thunks.
+      const url: string = error.config?.url ?? "";
+      const handledByThunk = url.endsWith("/user/me") || url.endsWith("/user/login");
+
+      // error.response is undefined when the request never reached the server.
+      if (error.response?.status === 401 && !handledByThunk) {
         store.dispatch(clearUser());
       }
       return Promise.reject(error);

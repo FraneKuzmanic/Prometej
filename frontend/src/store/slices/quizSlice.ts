@@ -56,8 +56,9 @@ const searchQuizzes = createAsyncThunk(
 
 const fetchQuiz = createAsyncThunk(
     'quiz/get',
-    async (quizId: number) => {
-        const response = await QuizService.get(quizId);
+    // code is the Entry Code, needed to open a Private Quiz the caller did not create
+    async ({ quizId, code }: { quizId: number; code?: string }) => {
+        const response = await QuizService.get(quizId, code);
         return response.data;
     }
 );

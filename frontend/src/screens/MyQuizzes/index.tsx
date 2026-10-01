@@ -60,7 +60,6 @@ export default function MyQuizzes() {
       const updatedQuiz = {
         id: quiz.id,
         title: quiz.title,
-        creatorId: user.id,
         isPrivate: true,
         entryCode: entryCode,
       };
@@ -71,7 +70,6 @@ export default function MyQuizzes() {
       const updatedQuiz = {
         id: quiz.id,
         title: quiz.title,
-        creatorId: user.id,
         isPrivate: false,
         entryCode: undefined,
       };
@@ -87,7 +85,6 @@ export default function MyQuizzes() {
       const updatedQuiz = {
         id: currentQuiz.id,
         title: quizTitle,
-        creatorId: user.id,
         isPrivate: currentQuiz.isPrivate,
         entryCode: currentQuiz.entryCode,
       };

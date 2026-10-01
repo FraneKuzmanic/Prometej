@@ -6,7 +6,7 @@ import {
 } from "../../types/models/Quiz";
 import { useSelector } from "react-redux";
 import { RootState, useAppDispatch } from "../../store/store";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { fetchQuiz, submitQuiz } from "../../store/slices/quizSlice";
 import {
   Box,
@@ -34,10 +34,12 @@ export default function PlayQuiz() {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const { id } = useParams();
+  const [searchParams] = useSearchParams();
+  const code = searchParams.get("code") ?? undefined;
 
   useEffect(() => {
-    dispatch(fetchQuiz(Number(id)));
-  }, [dispatch, id]);
+    dispatch(fetchQuiz({ quizId: Number(id), code }));
+  }, [dispatch, id, code]);
 
   useEffect(() => {
     if (quiz) {

@@ -26,8 +26,7 @@ import SaveIcon from "@mui/icons-material/Save";
 import CancelIcon from "@mui/icons-material/Cancel";
 import React from "react";
 import { createQuiz } from "../../store/slices/quizSlice";
-import { useSelector } from "react-redux";
-import { RootState, useAppDispatch } from "../../store/store";
+import { useAppDispatch } from "../../store/store";
 import { useNavigate } from "react-router-dom";
 
 const emptyQuestion: QuestionCreateRequest = {
@@ -51,7 +50,6 @@ export default function MakeQuiz() {
   const [quizTitle, setQuizTitle] = useState<string>("");
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [inputDrawer, setInputDrawer] = useState<boolean>(false);
-  const { user } = useSelector((state: RootState) => state.user);
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -76,7 +74,6 @@ export default function MakeQuiz() {
     const quiz: QuizCreateRequest = {
       title: quizTitle,
       isPrivate: true,
-      creatorId: user ? user.id : 0,
       entryCode: entryCode,
     };
     const questions: QuestionCreateRequest[] = [...quizQuestions];

@@ -45,6 +45,10 @@ const periodSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
+    // Cleared first, so a Period with no content never shows (or saves over) the previous one's.
+    builder.addCase(fetchPeriodContent.pending, (state) => {
+      state.periodContent = undefined;
+    });
     builder.addCase(fetchPeriodContent.fulfilled, (state, action: PayloadAction<PeriodContentViewModel>) => {
       state.periodContent = action.payload;
       state.searchContent = undefined;

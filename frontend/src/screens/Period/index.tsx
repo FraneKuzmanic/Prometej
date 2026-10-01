@@ -24,6 +24,7 @@ import "react-quill/dist/quill.snow.css";
 import { PeriodContentEditRequest } from "../../types/models/Period";
 import ForumIcon from "@mui/icons-material/Forum";
 import DiscussionGroup from "../DiscussionGroup";
+import ROLE from "../../types/enums/Role";
 
 const toolbarOptions = [
   ["bold", "italic", "underline", "strike"], // toggled buttons
@@ -71,6 +72,7 @@ const formats = [
 export default function Period() {
   const { id } = useParams<{ id: string }>();
   const { periodContent } = useSelector((state: RootState) => state.period);
+  const { user } = useSelector((state: RootState) => state.user);
   const dispatch = useAppDispatch();
   const [value, setValue] = useState("");
   const [text, setText] = useState("");
@@ -165,12 +167,14 @@ export default function Period() {
             className="speed-dial"
             icon={<SpeedDialIcon />}
           >
-            <SpeedDialAction
-              key={"Uredi"}
-              icon={<BorderColorIcon />}
-              tooltipTitle={"Uredi"}
-              onClick={() => setIsEdit(true)}
-            />
+            {user?.role === ROLE.Admin && (
+              <SpeedDialAction
+                key={"Uredi"}
+                icon={<BorderColorIcon />}
+                tooltipTitle={"Uredi"}
+                onClick={() => setIsEdit(true)}
+              />
+            )}
             <SpeedDialAction
               key={"Komentiraj"}
               icon={<ForumIcon />}

@@ -18,7 +18,6 @@ export interface UserCreateRequest{
     lastName: string;
     email: string;
     password: string;
-    role: ROLE;
 }
 
 export interface UserViewModel{
@@ -26,15 +25,5 @@ export interface UserViewModel{
     firstName: string;
     lastName: string;
     email: string;
-    role: ROLE;
-    token?: string;
-}
-
-export interface User {
-    id: number;
-    firstName: string;
-    lastName: string;
-    email: string;
-    password: string;
     role: ROLE;
 }

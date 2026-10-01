@@ -1,4 +1,16 @@
-import { Box, IconButton, Menu, MenuItem, Toolbar } from "@mui/material";
+import {
+  Box,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  IconButton,
+  Menu,
+  MenuItem,
+  Toolbar,
+} from "@mui/material";
 import {
   AppBar,
   Search,
@@ -11,8 +23,11 @@ import { AccountCircle } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import React from "react";
-import { RootState, store, useAppDispatch } from "../../../store/store";
-import { clearUser } from "../../../store/slices/userSlice";
+import { RootState, useAppDispatch } from "../../../store/store";
+import {
+  attemptLogout,
+  deleteCurrentUser,
+} from "../../../store/slices/userSlice";
 import { useLocation } from "react-router-dom";
 import { searchQuizzes } from "../../../store/slices/quizSlice";
 import { searchPeriodContent } from "../../../store/slices/periodSlice";
@@ -26,6 +41,7 @@ export default function Header({ toggle, toggleSidebar }: HeaderProps) {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const { authenticated } = useSelector((state: RootState) => state.user);
   const [search, setSearch] = React.useState<string>("");
+  const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const pathname = location.pathname;
@@ -82,14 +98,29 @@ export default function Header({ toggle, toggleSidebar }: HeaderProps) {
       ) : (
         ""
       )}
+      {authenticated ? (
+        <MenuItem
+          onClick={() => {
+            handleCloseUserMenu();
+            setDeleteDialogOpen(true);
+          }}
+        >
+          Obriši račun
+        </MenuItem>
+      ) : (
+        ""
+      )}
     </Menu>
   );
 
   const handleLogout = (): void => {
-    localStorage.removeItem("userId");
     handleCloseUserMenu();
-    store.dispatch(clearUser());
-    navigate("/learning");
+    dispatch(attemptLogout()).then(() => navigate("/learning"));
+  };
+
+  const handleDeleteAccount = (): void => {
+    setDeleteDialogOpen(false);
+    dispatch(deleteCurrentUser()).then(() => navigate("/learning"));
   };
 
   return (
@@ -132,6 +163,26 @@ export default function Header({ toggle, toggleSidebar }: HeaderProps) {
             <AccountCircle />
           </IconButton>
           {anchorEl && userMenu()}
+          <Dialog
+            open={deleteDialogOpen}
+            onClose={() => setDeleteDialogOpen(false)}
+          >
+            <DialogTitle>Obriši račun</DialogTitle>
+            <DialogContent>
+              <DialogContentText>
+                Jeste li sigurni? Vaši kvizovi i rezultati bit će trajno
+                obrisani.
+              </DialogContentText>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setDeleteDialogOpen(false)}>
+                Odustani
+              </Button>
+              <Button color="error" onClick={handleDeleteAccount}>
+                Obriši
+              </Button>
+            </DialogActions>
+          </Dialog>
         </Box>
       </Toolbar>
     </AppBar>

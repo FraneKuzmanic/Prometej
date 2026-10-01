@@ -9,6 +9,6 @@ export default {
   register: (data: UserCreateRequest) => axios.post(`${user.base}/register`, data),
   login: (data: LoginInput) => axios.post(`${user.base}/login`, data),
   logout: () => axios.post(`${user.base}/logout`, null),
-  getUser: (userId: string) => axios.get(`${user.base}/current-user/${userId}`,),
-  deleteUser: (userid: number) => axios.delete(`${user.base}/${userid}`),
+  getUser: () => axios.get(`${user.base}/me`),
+  deleteUser: () => axios.delete(`${user.base}/me`),
 };

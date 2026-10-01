@@ -18,7 +18,7 @@ export default function JoinQuiz({ setOpenJoinQuizDialog }: JoinQuizProps) {
     dispatch(fetchQuizByCode(quizCode)).then((resultAction) => {
       if (fetchQuizByCode.fulfilled.match(resultAction)) {
         setOpenJoinQuizDialog(false);
-        navigate(`/play-quiz/${resultAction.payload.id}`);
+        navigate(`/play-quiz/${resultAction.payload.id}?code=${quizCode}`);
       }
     });
   };
