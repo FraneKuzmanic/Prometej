@@ -122,7 +122,7 @@ namespace Prometej_core.Services.Implementations
                 }
                 else
                 {
-                    // An id from another quiz would otherwise let a caller rewrite questions they do not own.
+                    // An id from another quiz would otherwise let a caller rewrite another Creator's questions.
                     var questionEntity = quizEntity.Questions.FirstOrDefault(q => q.Id == questionRequest.Id);
                     if (questionEntity == null)
                     {

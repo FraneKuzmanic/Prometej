@@ -14,7 +14,7 @@ import PlayQuiz from "./PlayQuiz";
 import { QuizDetails } from "./QuizDetails";
 import ROLE from "../types/enums/Role";
 
-const quizAuthors = [ROLE.Teacher, ROLE.Admin];
+const quizCreatorRoles = [ROLE.Teacher, ROLE.Admin];
 
 export const appRouter = createBrowserRouter([
   {
@@ -32,7 +32,7 @@ export const appRouter = createBrowserRouter([
       {
         path: "my-quizzes",
         element: (
-          <RequireRole roles={quizAuthors}>
+          <RequireRole roles={quizCreatorRoles}>
             <MyQuizzes />
           </RequireRole>
         ),
@@ -40,7 +40,7 @@ export const appRouter = createBrowserRouter([
       {
         path: "quiz-details/:id",
         element: (
-          <RequireRole roles={quizAuthors}>
+          <RequireRole roles={quizCreatorRoles}>
             <QuizDetails />
           </RequireRole>
         ),
@@ -63,7 +63,7 @@ export const appRouter = createBrowserRouter([
   {
     path: "/make-quiz",
     element: (
-      <RequireRole roles={quizAuthors}>
+      <RequireRole roles={quizCreatorRoles}>
         <MakeQuiz />
       </RequireRole>
     ),
@@ -71,7 +71,7 @@ export const appRouter = createBrowserRouter([
   {
     path: "/edit-quiz/:id",
     element: (
-      <RequireRole roles={quizAuthors}>
+      <RequireRole roles={quizCreatorRoles}>
         <EditQuiz />
       </RequireRole>
     ),

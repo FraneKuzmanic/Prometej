@@ -34,7 +34,7 @@ namespace Prometej_api.Controllers
         [HttpGet("getAllUserQuizzes/{id}")]
         public IActionResult GetAllUserQuizzes(int id)
         {
-            // The list includes private quizzes with their entry codes, so it is the owner's only.
+            // The list includes private quizzes with their entry codes, so it is for their Creator only.
             if (id != User.GetUserId() && !User.IsAdmin())
             {
                 return Forbid();
