@@ -57,10 +57,14 @@ const registerStudent = createAsyncThunk<number, UserCreateRequest, { rejectValu
   }
 );
 
-const deleteCurrentUser = createAsyncThunk(
+const deleteCurrentUser = createAsyncThunk<void, void, { rejectValue: number | undefined }>(
     'user/deleteCurrentUser',
-    async () => {
-        await usersService.deleteUser();
+    async (_, { rejectWithValue }) => {
+        try {
+            await usersService.deleteUser();
+        } catch (error) {
+            return rejectWithValue(axios.isAxiosError(error) ? error.response?.status : undefined);
+        }
     }
 );
 

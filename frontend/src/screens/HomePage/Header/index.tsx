@@ -42,6 +42,10 @@ export default function Header({ toggle, toggleSidebar }: HeaderProps) {
   const { authenticated } = useSelector((state: RootState) => state.user);
   const [search, setSearch] = React.useState<string>("");
   const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
+  // "conflict": the server refuses to delete an account that still has Quizzes.
+  const [deleteError, setDeleteError] = React.useState<
+    "conflict" | "other" | undefined
+  >();
   const navigate = useNavigate();
   const location = useLocation();
   const pathname = location.pathname;
@@ -102,6 +106,7 @@ export default function Header({ toggle, toggleSidebar }: HeaderProps) {
         <MenuItem
           onClick={() => {
             handleCloseUserMenu();
+            setDeleteError(undefined);
             setDeleteDialogOpen(true);
           }}
         >
@@ -119,8 +124,14 @@ export default function Header({ toggle, toggleSidebar }: HeaderProps) {
   };
 
   const handleDeleteAccount = (): void => {
-    setDeleteDialogOpen(false);
-    dispatch(deleteCurrentUser()).then(() => navigate("/learning"));
+    dispatch(deleteCurrentUser()).then((result) => {
+      if (deleteCurrentUser.fulfilled.match(result)) {
+        setDeleteDialogOpen(false);
+        navigate("/learning");
+      } else {
+        setDeleteError(result.payload === 409 ? "conflict" : "other");
+      }
+    });
   };
 
   return (
@@ -170,9 +181,16 @@ export default function Header({ toggle, toggleSidebar }: HeaderProps) {
             <DialogTitle>Obriši račun</DialogTitle>
             <DialogContent>
               <DialogContentText>
-                Jeste li sigurni? Vaši kvizovi i rezultati bit će trajno
+                Jeste li sigurni? Vaš račun i vaši rezultati bit će trajno
                 obrisani.
               </DialogContentText>
+              {deleteError && (
+                <DialogContentText color="error" sx={{ marginTop: 2 }}>
+                  {deleteError === "conflict"
+                    ? "Račun se ne može obrisati dok imate kvizove. Prvo obrišite svoje kvizove u „Moji kvizovi”."
+                    : "Račun nije obrisan. Pokušajte ponovno."}
+                </DialogContentText>
+              )}
             </DialogContent>
             <DialogActions>
               <Button onClick={() => setDeleteDialogOpen(false)}>

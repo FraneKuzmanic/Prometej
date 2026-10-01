@@ -11,6 +11,7 @@ interface JoinQuizProps {
 
 export default function JoinQuiz({ setOpenJoinQuizDialog }: JoinQuizProps) {
   const [quizCode, setQuizCode] = useState<string>("");
+  const [notFound, setNotFound] = useState<boolean>(false);
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
 
@@ -19,6 +20,8 @@ export default function JoinQuiz({ setOpenJoinQuizDialog }: JoinQuizProps) {
       if (fetchQuizByCode.fulfilled.match(resultAction)) {
         setOpenJoinQuizDialog(false);
         navigate(`/play-quiz/${resultAction.payload.id}?code=${quizCode}`);
+      } else {
+        setNotFound(true);
       }
     });
   };
@@ -26,7 +29,7 @@ export default function JoinQuiz({ setOpenJoinQuizDialog }: JoinQuizProps) {
   return (
     <Paper elevation={10} className="join-quiz-form">
       <Typography sx={{ fontWeight: "bold", marginTop: "1rem" }} variant="h5">
-        Pridruži se provjeri
+        Pridruži se kvizu
       </Typography>
       <Typography sx={{ marginTop: "3.5rem" }} variant="h5">
         Unesite kod
@@ -38,7 +41,12 @@ export default function JoinQuiz({ setOpenJoinQuizDialog }: JoinQuizProps) {
         fullWidth
         required
         value={quizCode}
-        onChange={(e) => setQuizCode(e.target.value)}
+        onChange={(e) => {
+          setQuizCode(e.target.value);
+          setNotFound(false);
+        }}
+        error={notFound}
+        helperText={notFound ? "Kviz s tim kodom ne postoji." : ""}
       />
       <Button
         variant="contained"

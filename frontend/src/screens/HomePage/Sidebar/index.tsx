@@ -190,7 +190,7 @@ export default function Sidebar({
             <AssignmentIcon />
           </ListItemIcon>
           <ListItemText
-            primary={"Pristupi provjeri"}
+            primary={"Pridruži se kvizu"}
             sx={{ opacity: toggle ? 1 : 0 }}
           />
         </ListItemButton>
