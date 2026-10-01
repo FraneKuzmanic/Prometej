@@ -2,6 +2,9 @@ using System.Net.Http.Json;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Prometej_core.Models.efModels;
+using Prometej_persistance;
 using Testcontainers.PostgreSql;
 
 namespace Prometej_tests
@@ -77,6 +80,26 @@ namespace Prometej_tests
             var response = await CreateHttpsClient().PostAsJsonAsync("/api/user/register", registration);
             response.EnsureSuccessStatusCode();
             return await LoginAs(email);
+        }
+
+        // A quiz from before the server validated them: no questions, and whatever entry code
+        // it is given. The API can no longer create one, but older databases still hold some.
+        public int AddLegacyQuiz(int creatorId, bool isPrivate = false, int? entryCode = null)
+        {
+            using var scope = Services.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<DataContext>();
+            var quiz = new Quiz
+            {
+                Title = $"Stari kviz {Guid.NewGuid():N}",
+                CreatorId = creatorId,
+                Creator = null!,
+                IsPrivate = isPrivate,
+                EntryCode = entryCode,
+                Questions = [],
+            };
+            context.Quizzes.Add(quiz);
+            context.SaveChanges();
+            return quiz.Id;
         }
     }
 }

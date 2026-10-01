@@ -14,6 +14,8 @@ namespace Prometej_core.Models.Requests.Quiz
     public class AnswerSubmitRequest
     {
         public int QuestionId { get; set; }
-        public required string AnswerText { get; set; }
+        // Which of the question's four answers was chosen.
+        [Range(1, 4)]
+        public int ChosenOption { get; set; }
     }
 }

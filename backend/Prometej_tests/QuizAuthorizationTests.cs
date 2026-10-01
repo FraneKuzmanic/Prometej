@@ -6,8 +6,6 @@ namespace Prometej_tests
 {
     public class QuizAuthorizationTests(ApiFactory factory) : IClassFixture<ApiFactory>
     {
-        private static int _nextEntryCode = 10000;
-
         private static object Question(string title, int id = 0) => new
         {
             id,
@@ -16,7 +14,7 @@ namespace Prometej_tests
             secondAnswer = "B",
             thirdAnswer = "C",
             fourthAnswer = "D",
-            correctAnswer = "A",
+            correctOption = 1,
             hintText = "",
             exploreMore = "",
         };
@@ -26,23 +24,26 @@ namespace Prometej_tests
         private static async Task<CreatedQuiz> CreateQuiz(HttpClient client, bool isPrivate = false)
         {
             var title = $"Kviz {Guid.NewGuid():N}";
-            int? entryCode = isPrivate ? Interlocked.Increment(ref _nextEntryCode) : null;
             var body = new
             {
-                quiz = new { title, isPrivate, entryCode = entryCode ?? 0 },
+                quiz = new { title, isPrivate },
                 questions = new[] { Question("Prvo pitanje") },
             };
 
             var response = await client.PostAsJsonAsync("/api/quiz/create", body);
 
             Assert.Equal(HttpStatusCode.Created, response.StatusCode);
-            return new CreatedQuiz(await response.Content.ReadFromJsonAsync<int>(), title, entryCode);
+            var id = await response.Content.ReadFromJsonAsync<int>();
+            // The server makes the entry code; its creator reads it back.
+            int? entryCode = isPrivate ? (await GetQuiz(client, id)).GetProperty("entryCode").GetInt32() : null;
+            return new CreatedQuiz(id, title, entryCode);
         }
 
         private static object UpdateOf(CreatedQuiz quiz, string title, params object[] questions) => new
         {
-            quiz = new { id = quiz.Id, title, isPrivate = quiz.EntryCode != null, entryCode = quiz.EntryCode },
-            questions,
+            quiz = new { id = quiz.Id, title, isPrivate = quiz.EntryCode != null },
+            // No list leaves the questions as they are; an empty one would be refused.
+            questions = questions.Length > 0 ? questions : null,
         };
 
         private static async Task<JsonElement> GetQuiz(HttpClient client, int id) =>
@@ -66,7 +67,7 @@ namespace Prometej_tests
         [Fact]
         public async Task Creating_a_quiz_requires_a_teacher_or_admin()
         {
-            var body = new { quiz = new { title = "Kviz", isPrivate = false, entryCode = 0 }, questions = new[] { Question("Pitanje") } };
+            var body = new { quiz = new { title = "Kviz", isPrivate = false }, questions = new[] { Question("Pitanje") } };
 
             var anonymous = await factory.CreateHttpsClient().PostAsJsonAsync("/api/quiz/create", body);
             var student = await (await factory.LoginAsNewStudent()).PostAsJsonAsync("/api/quiz/create", body);
@@ -82,7 +83,7 @@ namespace Prometej_tests
             var otherTeacherId = await GetOwnId(await factory.LoginAs(ApiFactory.OtherTeacherEmail));
             var body = new
             {
-                quiz = new { title = "Tuđi kviz", isPrivate = false, entryCode = 0, creatorId = otherTeacherId },
+                quiz = new { title = "Tuđi kviz", isPrivate = false, creatorId = otherTeacherId },
                 questions = new[] { Question("Pitanje") },
             };
 
@@ -225,7 +226,8 @@ namespace Prometej_tests
             var anonymous = factory.CreateHttpsClient();
 
             var found = await anonymous.GetFromJsonAsync<JsonElement>($"/api/quiz/getByCode/{quiz.EntryCode}");
-            var unknown = await anonymous.GetAsync("/api/quiz/getByCode/99999");
+            // Below the five digits the server hands out, so no quiz can have it.
+            var unknown = await anonymous.GetAsync("/api/quiz/getByCode/9999");
 
             Assert.Equal(quiz.Id, found.GetProperty("id").GetInt32());
             Assert.Equal(HttpStatusCode.NotFound, unknown.StatusCode);

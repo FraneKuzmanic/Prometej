@@ -12,6 +12,6 @@ namespace Prometej_core.Models.Base
         public required string Title { get; set; }
         public required string CreatorName { get; set; }
         public bool IsPrivate { get; set; }
-        public int? entryCode { get; set; }
+        public int? EntryCode { get; set; }
     }
 }

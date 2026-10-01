@@ -16,7 +16,8 @@ namespace Prometej_core.Models.efModels
         public string SecondAnswer { get; set; }
         public string ThirdAnswer { get; set; }
         public string FourthAnswer { get; set; }
-        public string CorrectAnswer { get; set; }
+        // Which of the four answers is the correct one, 1 to 4.
+        public int CorrectOption { get; set; }
         public string? HintText { get; set; }
         public string? ExploreMore { get; set; }
 

@@ -6,28 +6,20 @@ namespace Prometej_tests
 {
     public class QuizGameTests(ApiFactory factory) : IClassFixture<ApiFactory>
     {
-        private const string Correct = "A";
-        private const string Wrong = "B";
+        private const int Correct = 1;
+        private const int Wrong = 2;
+        private const string CorrectText = "A";
+        private const string WrongText = "B";
 
         private record CreatedQuiz(int Id, int[] QuestionIds);
 
-        // Every question has the options A to D and the correct answer A.
+        // Every question has the options A to D and the first one is correct.
         private static async Task<CreatedQuiz> CreateQuiz(HttpClient client, int questionCount = 3)
         {
             var body = new
             {
-                quiz = new { title = $"Kviz {Guid.NewGuid():N}", isPrivate = false, entryCode = 0 },
-                questions = Enumerable.Range(1, questionCount).Select(i => new
-                {
-                    questionTitle = $"Pitanje {i}",
-                    firstAnswer = "A",
-                    secondAnswer = "B",
-                    thirdAnswer = "C",
-                    fourthAnswer = "D",
-                    correctAnswer = Correct,
-                    hintText = "",
-                    exploreMore = "",
-                }),
+                quiz = new { title = $"Kviz {Guid.NewGuid():N}", isPrivate = false },
+                questions = Enumerable.Range(1, questionCount).Select(i => Question($"Pitanje {i}")),
             };
 
             var response = await client.PostAsJsonAsync("/api/quiz/create", body);
@@ -38,12 +30,25 @@ namespace Prometej_tests
             return new CreatedQuiz(id, stored.GetProperty("questions").EnumerateArray().Select(q => q.GetProperty("id").GetInt32()).ToArray());
         }
 
-        private static object Answer(int questionId, string answerText = Correct) => new { questionId, answerText };
+        private static object Question(string title, int correctOption = Correct, int id = 0) => new
+        {
+            id,
+            questionTitle = title,
+            firstAnswer = "A",
+            secondAnswer = "B",
+            thirdAnswer = "C",
+            fourthAnswer = "D",
+            correctOption,
+            hintText = "",
+            exploreMore = "",
+        };
 
-        private static object Submission(CreatedQuiz quiz, params string[] answerTexts) => new
+        private static object Answer(int questionId, int chosenOption = Correct) => new { questionId, chosenOption };
+
+        private static object Submission(CreatedQuiz quiz, params int[] chosenOptions) => new
         {
             quizId = quiz.Id,
-            answers = quiz.QuestionIds.Select((id, i) => Answer(id, i < answerTexts.Length ? answerTexts[i] : Correct)),
+            answers = quiz.QuestionIds.Select((id, i) => Answer(id, i < chosenOptions.Length ? chosenOptions[i] : Correct)),
         };
 
         private static Task<HttpResponseMessage> Submit(HttpClient client, object body) =>
@@ -97,7 +102,7 @@ namespace Prometej_tests
                 userId = await GetOwnId(teacher),
                 userName = "Netko Drugi",
                 datePlayed = "2000-01-01T00:00:00Z",
-                answers = quiz.QuestionIds.Select(id => new { questionId = id, answerText = Wrong, correctAnswer = Wrong }),
+                answers = quiz.QuestionIds.Select(id => new { questionId = id, chosenOption = Wrong, correctOption = Wrong, correctAnswer = WrongText }),
             };
             var before = DateTime.UtcNow;
 
@@ -111,7 +116,7 @@ namespace Prometej_tests
             // The container and the test share one clock; a minute allows for rounding.
             Assert.InRange(stored.GetProperty("datePlayed").GetDateTime().ToUniversalTime(), before.AddMinutes(-1), DateTime.UtcNow.AddMinutes(1));
             Assert.All(stored.GetProperty("answers").EnumerateArray(),
-                answer => Assert.Equal(Correct, answer.GetProperty("correctAnswer").GetString()));
+                answer => Assert.Equal(CorrectText, answer.GetProperty("correctAnswer").GetString()));
         }
 
         [Fact]
@@ -127,8 +132,8 @@ namespace Prometej_tests
             var game = Assert.Single(await Analytics(teacher, quiz.Id));
             Assert.Equal(2, game.GetProperty("score").GetInt32());
             var wrong = game.GetProperty("answers").EnumerateArray().Single(a => a.GetProperty("questionId").GetInt32() == quiz.QuestionIds[0]);
-            Assert.Equal(Wrong, wrong.GetProperty("answerText").GetString());
-            Assert.Equal(Correct, wrong.GetProperty("correctAnswer").GetString());
+            Assert.Equal(WrongText, wrong.GetProperty("answerText").GetString());
+            Assert.Equal(CorrectText, wrong.GetProperty("correctAnswer").GetString());
         }
 
         [Fact]
@@ -145,7 +150,8 @@ namespace Prometej_tests
             var duplicated = Body(Answer(ids[0]), Answer(ids[1]), Answer(ids[1]));
             var extra = Body(Answer(ids[0]), Answer(ids[1]), Answer(ids[2]), Answer(otherQuiz.QuestionIds[0]));
             var fromAnotherQuiz = Body(Answer(ids[0]), Answer(ids[1]), Answer(otherQuiz.QuestionIds[0]));
-            var notAnOption = Body(Answer(ids[0]), Answer(ids[1]), Answer(ids[2], "E"));
+            var notAnOption = Body(Answer(ids[0]), Answer(ids[1]), Answer(ids[2], 5));
+            var noOption = Body(Answer(ids[0]), Answer(ids[1]), new { questionId = ids[2] });
             var empty = Body();
 
             // Each body is paired with the reason the server gives, so a rejection for the wrong rule fails.
@@ -156,7 +162,8 @@ namespace Prometej_tests
                 (duplicated, everyQuestionOnce),
                 (extra, everyQuestionOnce),
                 (fromAnotherQuiz, everyQuestionOnce),
-                (notAnOption, "one of its question's options"),
+                (notAnOption, "ChosenOption"),
+                (noOption, "ChosenOption"),
                 (empty, "Answers"),
             };
             foreach (var (body, reason) in cases)
@@ -174,12 +181,35 @@ namespace Prometej_tests
         {
             var teacher = await factory.LoginAs(ApiFactory.TeacherEmail);
             var student = await factory.LoginAsNewStudent();
-            var quiz = await CreateQuiz(teacher, questionCount: 0);
+            var quizId = factory.AddLegacyQuiz(await GetOwnId(teacher));
 
-            var response = await Submit(student, Submission(quiz));
+            var response = await Submit(student, new { quizId, answers = Array.Empty<object>() });
 
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-            Assert.Empty(await Analytics(teacher, quiz.Id));
+            Assert.Empty(await Analytics(teacher, quizId));
+        }
+
+        [Fact]
+        public async Task Changing_a_played_questions_correct_option_does_not_rescore_the_old_quiz_game()
+        {
+            var teacher = await factory.LoginAs(ApiFactory.TeacherEmail);
+            var student = await factory.LoginAsNewStudent();
+            var quiz = await CreateQuiz(teacher, questionCount: 1);
+            await Submit(student, Submission(quiz, Correct));
+
+            var update = await teacher.PutAsJsonAsync("/api/quiz/update", new
+            {
+                quiz = new { id = quiz.Id, title = "Kviz", isPrivate = false },
+                questions = new[] { Question("Pitanje 1", correctOption: Wrong, id: quiz.QuestionIds[0]) },
+            });
+            await Submit(student, Submission(quiz, Correct));
+
+            Assert.Equal(HttpStatusCode.NoContent, update.StatusCode);
+            var games = await Analytics(teacher, quiz.Id);
+            Assert.Equal([0, 1], games.Select(g => g.GetProperty("score").GetInt32()));
+            // Each answer keeps the correct answer as it was when it was given.
+            Assert.Equal([WrongText, CorrectText],
+                games.Select(g => g.GetProperty("answers")[0].GetProperty("correctAnswer").GetString()));
         }
 
         [Fact]
