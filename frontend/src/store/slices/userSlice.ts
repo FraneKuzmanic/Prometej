@@ -64,14 +64,16 @@ const deleteCurrentUser = createAsyncThunk(
     }
 );
 
+const signOut = (state: UserState) => {
+  state.user = undefined;
+  state.authenticated = false;
+};
+
 const userSlice = createSlice({
   name: "user",
   initialState,
   reducers: {
-    clearUser: (state) => {
-      state.user = undefined;
-      state.authenticated = false;
-    },
+    clearUser: signOut,
     clearRegistered: (state) => {
       state.registered = undefined;
     },
@@ -86,20 +88,11 @@ const userSlice = createSlice({
       state.loginFailed = true;
     });
     // Signed out locally even if the request failed: the user asked to leave.
-    builder.addCase(attemptLogout.fulfilled, (state) => {
-      state.user = undefined;
-      state.authenticated = false;
-    }).addCase(attemptLogout.rejected, (state) => {
-      state.user = undefined;
-      state.authenticated = false;
-    });
+    builder.addCase(attemptLogout.fulfilled, signOut).addCase(attemptLogout.rejected, signOut);
     builder.addCase(fetchCurrentUser.fulfilled, (state, action: PayloadAction<UserViewModel>) => {
       state.user = action.payload;
       state.authenticated = true;
-    }).addCase(fetchCurrentUser.rejected, (state) => {
-      state.user = undefined;
-      state.authenticated = false;
-    });
+    }).addCase(fetchCurrentUser.rejected, signOut);
     builder.addCase(registerStudent.pending, (state) => {
       state.registerError = undefined;
     }).addCase(registerStudent.fulfilled, (state) => {
@@ -107,10 +100,7 @@ const userSlice = createSlice({
     }).addCase(registerStudent.rejected, (state, action) => {
       state.registerError = action.payload === 409 ? "conflict" : "other";
     });
-    builder.addCase(deleteCurrentUser.fulfilled, (state) => {
-      state.user = undefined;
-      state.authenticated = false;
-    });
+    builder.addCase(deleteCurrentUser.fulfilled, signOut);
   }
 });
 

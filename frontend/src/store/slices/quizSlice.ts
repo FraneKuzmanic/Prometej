@@ -126,6 +126,10 @@ const quizSlice = createSlice({
     builder.addCase(searchQuizzes.fulfilled, (state, action: PayloadAction<QuizBaseModel[]>) => {
         state.quizzes = action.payload;
     });
+    // Cleared first, so a quiz that fails to load never shows the one opened before it.
+    builder.addCase(fetchQuiz.pending, (state) => {
+        state.quiz = undefined;
+    });
     builder.addCase(fetchQuiz.fulfilled, (state, action: PayloadAction<QuizViewModel>) => {
         state.quiz = action.payload; 
     });
