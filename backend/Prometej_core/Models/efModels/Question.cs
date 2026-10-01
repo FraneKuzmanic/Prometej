@@ -20,6 +20,9 @@ namespace Prometej_core.Models.efModels
         public int CorrectOption { get; set; }
         public string? HintText { get; set; }
         public string? ExploreMore { get; set; }
+        // Removed from a quiz that had been played: out of the editor and of new plays,
+        // kept for the answers already given to it.
+        public bool IsRetired { get; set; }
 
     }
 }

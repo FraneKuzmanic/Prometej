@@ -25,8 +25,10 @@ namespace Prometej_core.Services.Implementations
         private readonly IRepository<Question> _questionRepository;
         private readonly IRepository<QuizGame> _quizGameRepository;
         private readonly IRepository<User> _userRepository;
-        public QuizService(IMapper mapper, IRepository<Quiz> quizRepository, IRepository<Question> questionRepository, IRepository<QuizGame> quizGameRepository, IRepository<User> userRepository)
+        private readonly IRepository<Answer> _answerRepository;
+        public QuizService(IMapper mapper, IRepository<Quiz> quizRepository, IRepository<Question> questionRepository, IRepository<QuizGame> quizGameRepository, IRepository<User> userRepository, IRepository<Answer> answerRepository)
         {
+            _answerRepository = answerRepository;
             _mapper = mapper;
             _quizRepository = quizRepository;
             _questionRepository = questionRepository;
@@ -60,7 +62,7 @@ namespace Prometej_core.Services.Implementations
 
         public QuizViewModel GetQuiz(int id, int? code, int? callerId, bool isAdmin)
         {
-            var quiz = _quizRepository.ReadAll().Include(q => q.Creator).Include(q => q.Questions.OrderBy(x => x.Id)).FirstOrDefault(q => q.Id == id);
+            var quiz = _quizRepository.ReadAll().Include(q => q.Creator).Include(q => q.Questions.Where(x => !x.IsRetired).OrderBy(x => x.Id)).FirstOrDefault(q => q.Id == id);
 
             // A private quiz opens for its creator, an admin, or whoever has its entry code.
             // Everyone else gets the same answer as for a quiz that does not exist.
@@ -78,7 +80,7 @@ namespace Prometej_core.Services.Implementations
 
         public QuizViewModel GetQuizByCode(int quizCode)
         {
-            var quiz = _quizRepository.ReadAll().Include(q => q.Creator).Include(q => q.Questions.OrderBy(x => x.Id)).FirstOrDefault(q => q.IsPrivate && q.EntryCode == quizCode);
+            var quiz = _quizRepository.ReadAll().Include(q => q.Creator).Include(q => q.Questions.Where(x => !x.IsRetired).OrderBy(x => x.Id)).FirstOrDefault(q => q.IsPrivate && q.EntryCode == quizCode);
             if (quiz == null)
             {
                 throw new NotFoundException("Quiz not found");
@@ -106,12 +108,19 @@ namespace Prometej_core.Services.Implementations
 
         public void Update(QuizEditRequest quiz, List<QuestionEditRequest>? questions, int callerId, bool isAdmin)
         {
-            var quizEntity = _quizRepository.GetAll().Include(q => q.Questions).FirstOrDefault(q => q.Id == quiz.Id);
+            // Retired questions are not loaded, so an update can neither change nor restore one:
+            // its id is refused below like the id of another quiz's question.
+            var quizEntity = _quizRepository.GetAll().Include(q => q.Questions.Where(x => !x.IsRetired)).FirstOrDefault(q => q.Id == quiz.Id);
             EnsureCreatorOrAdmin(quizEntity, callerId, isAdmin);
             TrimAndCheck(questions ?? []);
 
             quizEntity.Title = quiz.Title.Trim();
             quizEntity.IsPrivate = quiz.IsPrivate;
+
+            if (questions != null)
+            {
+                RemoveQuestionsNotIn(quizEntity, questions);
+            }
 
             foreach (var questionRequest in questions ?? [])
             {
@@ -149,7 +158,7 @@ namespace Prometej_core.Services.Implementations
 
         public QuizGameViewModel SubmitQuiz(QuizSubmitRequest request, int userId)
         {
-            var quiz = _quizRepository.ReadAll().Include(q => q.Questions).FirstOrDefault(q => q.Id == request.QuizId);
+            var quiz = _quizRepository.ReadAll().Include(q => q.Questions.Where(x => !x.IsRetired)).FirstOrDefault(q => q.Id == request.QuizId);
             if (quiz == null)
             {
                 throw new NotFoundException("Quiz not found");
@@ -219,6 +228,31 @@ namespace Prometej_core.Services.Implementations
             var quizGames = _quizGameRepository.ReadAll().Include(g => g.Answers).Where(g => g.QuizId == quizId).OrderByDescending(g => g.DatePlayed).ToList();
 
             return _mapper.Map<List<QuizGameViewModel>>(quizGames);
+        }
+
+        // A sent list is the whole set: a stored question missing from it is removed. One that
+        // was answered in a quiz game is retired instead, so that game keeps its answers and
+        // its score still counts the questions it was played with.
+        private void RemoveQuestionsNotIn(Quiz quiz, List<QuestionEditRequest> questions)
+        {
+            var keptIds = questions.Select(q => q.Id).ToHashSet();
+            var removed = quiz.Questions.Where(q => !keptIds.Contains(q.Id)).ToList();
+            var removedIds = removed.Select(q => q.Id).ToList();
+            var answeredIds = _answerRepository.ReadAll()
+                .Where(a => removedIds.Contains(a.QuestionId))
+                .Select(a => a.QuestionId).Distinct().ToHashSet();
+
+            foreach (var question in removed)
+            {
+                if (answeredIds.Contains(question.Id))
+                {
+                    question.IsRetired = true;
+                }
+                else
+                {
+                    _questionRepository.Delete(question.Id);
+                }
+            }
         }
 
         // The shape of a question (nothing empty, nothing too long, a correct option of 1 to 4) is
