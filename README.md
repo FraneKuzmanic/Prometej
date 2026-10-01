@@ -34,9 +34,21 @@ yarn dev </pre>
 <pre lang="markdown">cd backend</pre>
 <p>3. Restore dependencies</p>
 <pre lang="markdown">dotnet restore</pre>
-<p>4. In <b>appsetings.json</b> file configure the connection string for postgreSQL database</p>
-<p>5. Run code first migrations</p>
-<pre lang="markdown">dotnet ef database update</pre>
-<p>6. Start the server side</p>
-<pre lang="markdown">dotnet run</pre>
+<p>4. In <b>Prometej_api/appsettings.json</b> configure the connection string for the PostgreSQL database</p>
+<p>5. Set the secrets the server needs: a signing key for the session token (base64 of at least 32 random bytes, for example the output of <code>openssl rand -base64 48</code>) and the first admin account. Registration through the application only creates students, so teacher and admin accounts are created from this configuration when the server starts.</p>
+<pre lang="markdown">dotnet user-secrets set "Jwt:Key" "&lt;base64 key&gt;" --project Prometej_api
+dotnet user-secrets set "Seed:Users:0:Email" "admin@example.com" --project Prometej_api
+dotnet user-secrets set "Seed:Users:0:Password" "&lt;password&gt;" --project Prometej_api
+dotnet user-secrets set "Seed:Users:0:FirstName" "Admin" --project Prometej_api
+dotnet user-secrets set "Seed:Users:0:LastName" "Prometej" --project Prometej_api
+dotnet user-secrets set "Seed:Users:0:Role" "admin" --project Prometej_api</pre>
+<p>Repeat with index <code>1</code> and role <code>teacher</code> for a teacher account.</p>
+<p>6. Start the server. In development it applies the database migrations on start.</p>
+<pre lang="markdown">dotnet run --project Prometej_api --launch-profile https</pre>
+<p>The client development server forwards <code>/api</code> to <code>https://localhost:7041</code>, so start the server before opening the client.</p>
+
+<h4>Tests:</h4>
+<p>The server has integration tests that run the API against PostgreSQL in a container, so Docker has to be running.</p>
+<pre lang="markdown">cd backend
+dotnet test</pre>
 
