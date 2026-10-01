@@ -115,7 +115,7 @@ export default function EditQuiz() {
 
   useEffect(() => {
     dispatch(fetchQuiz(Number(id)));
-  }, []);
+  }, [dispatch, id]);
 
   useEffect(() => {
     if (quiz) {

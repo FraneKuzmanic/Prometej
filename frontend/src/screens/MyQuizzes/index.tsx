@@ -100,7 +100,7 @@ export default function MyQuizzes() {
 
   useEffect(() => {
     if (user) dispatch(fetchAllUserQuizzes(user.id));
-  }, []);
+  }, [dispatch, user]);
 
   const indexOfLastPost = currentPage * postsPerPage;
   const indexOfFirstPost = indexOfLastPost - postsPerPage;

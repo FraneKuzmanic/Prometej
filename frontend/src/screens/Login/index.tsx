@@ -31,7 +31,7 @@ const Login = () => {
       localStorage.setItem("userId", user.id.toString());
       navigate("/learning");
     }
-  }, [user]);
+  }, [user, navigate]);
 
   return (
     <ScreenWrapper>

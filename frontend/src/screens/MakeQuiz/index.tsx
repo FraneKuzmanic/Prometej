@@ -30,23 +30,24 @@ import { useSelector } from "react-redux";
 import { RootState, useAppDispatch } from "../../store/store";
 import { useNavigate } from "react-router-dom";
 
+const emptyQuestion: QuestionCreateRequest = {
+  questionTitle: "",
+  firstAnswer: "",
+  secondAnswer: "",
+  thirdAnswer: "",
+  fourthAnswer: "",
+  correctAnswer: "",
+  hintText: "",
+  exploreMore: "",
+};
+
 export default function MakeQuiz() {
-  const [quizQuestions, setQuizQuestions] = useState<QuestionCreateRequest[]>(
-    []
-  );
+  const [quizQuestions, setQuizQuestions] = useState<QuestionCreateRequest[]>([
+    emptyQuestion,
+  ]);
   const [selected, setSelected] = useState<number>(0);
-  const [currentQuestion, setCurrentQuestion] = useState<QuestionCreateRequest>(
-    {
-      questionTitle: "",
-      firstAnswer: "",
-      secondAnswer: "",
-      thirdAnswer: "",
-      fourthAnswer: "",
-      correctAnswer: "",
-      hintText: "",
-      exploreMore: "",
-    }
-  );
+  const [currentQuestion, setCurrentQuestion] =
+    useState<QuestionCreateRequest>(emptyQuestion);
   const [quizTitle, setQuizTitle] = useState<string>("");
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [inputDrawer, setInputDrawer] = useState<boolean>(false);
@@ -115,10 +116,6 @@ export default function MakeQuiz() {
     setQuizQuestions(newQuestions);
     handleClose();
   };
-
-  useEffect(() => {
-    setQuizQuestions([...quizQuestions, currentQuestion]);
-  }, []);
 
   useEffect(() => {
     const container = document.querySelector(".questions-nav");

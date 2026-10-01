@@ -79,7 +79,7 @@ export default function Period() {
 
   useEffect(() => {
     if (id) dispatch(fetchPeriodContent(id));
-  }, []);
+  }, [dispatch, id]);
 
   useEffect(() => {
     if (periodContent) {

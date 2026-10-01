@@ -17,7 +17,7 @@ import {
 } from "@mui/material";
 import { QuizGameViewModel } from "../../types/models/Quiz";
 import "./styles.css";
-import { stringToColor } from "../../components/QuizContainer";
+import { stringToColor } from "../../components/QuizContainer/stringToColor";
 import { PieChart } from "@mui/x-charts/PieChart";
 
 interface SeriesData {
@@ -33,25 +33,6 @@ export function QuizDetails() {
   const [seriesData, setSeriesData] = useState<SeriesData[]>([]);
 
   useEffect(() => {
-    setChart();
-  }, [quizGames]);
-
-  useEffect(() => {
-    if (id) {
-      dispatch(getQuizAnalytics(parseInt(id)));
-    }
-  }, []);
-
-  const formatDate = (date: Date) => {
-    const options: Intl.DateTimeFormatOptions = {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    };
-    return new Date(date).toLocaleDateString("hr-HR", options);
-  };
-
-  const setChart = () => {
     if (quizGames) {
       const intervals = Array.from({ length: 10 }, (_, i) => i * 10);
       const intervalCounts = intervals.map((_, i) => {
@@ -71,7 +52,23 @@ export function QuizDetails() {
 
       setSeriesData(seriesData);
     }
+  }, [quizGames]);
+
+  useEffect(() => {
+    if (id) {
+      dispatch(getQuizAnalytics(parseInt(id)));
+    }
+  }, [dispatch, id]);
+
+  const formatDate = (date: Date) => {
+    const options: Intl.DateTimeFormatOptions = {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    };
+    return new Date(date).toLocaleDateString("hr-HR", options);
   };
+
   return (
     <Box className="quiz-game-details-wrapper">
       <Typography variant="h3" className="quiz-game-details-title">
@@ -81,10 +78,7 @@ export function QuizDetails() {
         <PieChart
           series={[
             {
-              data: [
-                { id: 1, value: 2, label: "40%-50%" },
-                { id: 2, value: 1, label: "90%-100%" },
-              ],
+              data: seriesData,
             },
           ]}
           width={400}

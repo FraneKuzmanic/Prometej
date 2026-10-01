@@ -17,7 +17,7 @@ export default function Quizzes() {
 
   useEffect(() => {
     dispatch(fetchAllPublicQuizzes());
-  }, []);
+  }, [dispatch]);
 
   const indexOfLastPost = currentPage * postsPerPage;
   const indexOfFirstPost = indexOfLastPost - postsPerPage;

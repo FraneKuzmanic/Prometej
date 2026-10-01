@@ -1,6 +1,6 @@
 import { Avatar, Box, Button, TextField, Typography } from "@mui/material";
 import "./styles.css";
-import { stringToColor } from "../../components/QuizContainer";
+import { stringToColor } from "../../components/QuizContainer/stringToColor";
 
 // interface DiscussionGroupProps {
 //   title?: string;

@@ -37,7 +37,7 @@ export default function PlayQuiz() {
 
   useEffect(() => {
     dispatch(fetchQuiz(Number(id)));
-  }, []);
+  }, [dispatch, id]);
 
   useEffect(() => {
     if (quiz) {

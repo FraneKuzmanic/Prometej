@@ -1,6 +1,4 @@
-import config from '../config.json';
-
-const base = config.developmentBase;
+const base = "/api";
 export const baseUrl = base;
 
 const userBase = `${base}/user`;

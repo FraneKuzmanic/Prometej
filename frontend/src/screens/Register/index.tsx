@@ -34,7 +34,7 @@ const Register = () => {
       navigate(`/login`);
       dispatch(clearRegistered());
     }
-  }, [registered]);
+  }, [registered, dispatch, navigate]);
 
   const onSubmit = (data: RegisterInput) => {
     const user: UserCreateRequest = {
