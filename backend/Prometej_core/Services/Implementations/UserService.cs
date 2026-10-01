@@ -16,9 +16,11 @@ namespace Prometej_core.Services.Implementations
     {
         private readonly IMapper _mapper;
         private readonly IRepository<User> _userRepository;
-        public UserService(IMapper mapper, IRepository<User> userRepository) {
+        private readonly IRepository<Quiz> _quizRepository;
+        public UserService(IMapper mapper, IRepository<User> userRepository, IRepository<Quiz> quizRepository) {
             _mapper = mapper;
             _userRepository = userRepository;
+            _quizRepository = quizRepository;
         }
 
         public static string NormalizeEmail(string email) => email.Trim().ToLowerInvariant();
@@ -89,6 +91,13 @@ namespace Prometej_core.Services.Implementations
 
         public void Delete(int id)
         {
+            // Deleting the account would delete its quizzes, and with them every result
+            // students have stored for those quizzes. The quizzes go first, one by one.
+            if (_quizRepository.ReadAll().Any(q => q.CreatorId == id))
+            {
+                throw new ConflictException("Delete your quizzes before deleting your account");
+            }
+
             _userRepository.Delete(id);
             _userRepository.Save();
         }

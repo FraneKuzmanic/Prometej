@@ -52,12 +52,20 @@ namespace Prometej_core.Services.Implementations
             return quizBaseModels;
         }
 
-        public List<QuizBaseModel> getAllUserQuizzes(int id)
+        public List<CreatorQuizViewModel> getAllUserQuizzes(int id)
         {
             var quizes = _quizRepository.ReadAll().Include(q => q.Creator).Where(q => q.CreatorId == id).ToList();
-            List<QuizBaseModel> quizBaseModels = _mapper.Map<List<QuizBaseModel>>(quizes);
+            var quizGameCounts = _quizGameRepository.ReadAll().Where(g => g.Quiz.CreatorId == id)
+                .GroupBy(g => g.QuizId).Select(g => new { QuizId = g.Key, Count = g.Count() })
+                .ToDictionary(g => g.QuizId, g => g.Count);
 
-            return quizBaseModels;
+            var creatorQuizzes = _mapper.Map<List<CreatorQuizViewModel>>(quizes);
+            foreach (var quiz in creatorQuizzes)
+            {
+                quiz.QuizGameCount = quizGameCounts.GetValueOrDefault(quiz.Id);
+            }
+
+            return creatorQuizzes;
         }
 
         public QuizViewModel GetQuiz(int id, int? code, int? callerId, bool isAdmin)
