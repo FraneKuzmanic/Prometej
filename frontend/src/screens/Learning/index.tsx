@@ -1,8 +1,7 @@
 import { styled } from "@mui/material/styles";
-import Grid from "@mui/material/Unstable_Grid2";
 import Paper from "@mui/material/Paper";
 import Box from "@mui/material/Box";
-import { Button, Typography } from "@mui/material";
+import { Button, Typography, Unstable_Grid2 as Grid } from "@mui/material";
 import "./styles.css";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import { useNavigate } from "react-router-dom";
