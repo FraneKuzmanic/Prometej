@@ -13,6 +13,5 @@ namespace Prometej_core.Models.ViewModels
         public required string LastName { get; set; }
         public required string Email { get; set; }
         public required string Role { get; set; }
-        public string? Token { get; set; }
     }
 }

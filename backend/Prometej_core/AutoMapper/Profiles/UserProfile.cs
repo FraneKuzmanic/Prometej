@@ -14,8 +14,6 @@ namespace Prometej_core.AutoMapper.Profiles
     {
         public UserProfile()
         {
-            CreateMap<UserCreateRequest, User>();
-            CreateMap<User, UserCreateRequest>();
             CreateMap<User, UserViewModel>();
 
         }

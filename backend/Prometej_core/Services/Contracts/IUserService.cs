@@ -14,5 +14,6 @@ namespace Prometej_core.Services.Contracts
         int Register(UserCreateRequest user);
         UserViewModel Login(UserLoginRequest user);
         UserViewModel GetCurrentUser(int id);
+        void Delete(int id);
     }
 }

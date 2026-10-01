@@ -1,5 +1,10 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
+using Prometej_api.Auth;
 using Prometej_api.ErrorHandling;
+using Prometej_api.Seed;
 using Prometej_core.DataAccessLayer;
 using Prometej_core.Models.efModels;
 using Prometej_core.Services.Contracts;
@@ -49,8 +54,54 @@ builder.Services.AddTransient<IRepository<QuizGame>, Repository<QuizGame>>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IPeriodService, PeriodService>();
 builder.Services.AddScoped<IQuizService, QuizService>();
+builder.Services.AddSingleton<TokenService>();
 
 #endregion Service DI
+
+#region Authentication
+
+// A missing or short signing key stops the app at startup instead of issuing weak tokens.
+builder.Services.AddOptions<JwtOptions>()
+    .Bind(builder.Configuration.GetSection("Jwt"))
+    .Validate(jwt => jwt.HasUsableKey(), "Jwt:Key must be the base64 of at least 32 bytes.")
+    .ValidateOnStart();
+
+builder.Services
+    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer();
+
+// JwtOptions is resolved here rather than read from builder.Configuration above, so the
+// key that validates a token is always the one TokenService signed it with.
+builder.Services
+    .AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme)
+    .Configure<IOptions<JwtOptions>>((options, jwtOptions) =>
+    {
+        var jwt = jwtOptions.Value;
+        // Keep "sub" and "role" as written instead of mapping them to the long claim URIs.
+        options.MapInboundClaims = false;
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidIssuer = jwt.Issuer,
+            ValidAudience = jwt.Audience,
+            IssuerSigningKey = new SymmetricSecurityKey(Convert.FromBase64String(jwt.Key)),
+            NameClaimType = "sub",
+            RoleClaimType = "role",
+            ClockSkew = TimeSpan.FromSeconds(30),
+        };
+        options.Events = new JwtBearerEvents
+        {
+            // The token is in the session cookie, not in an Authorization header.
+            OnMessageReceived = context =>
+            {
+                context.Token = context.Request.Cookies[AuthCookie.Name];
+                return Task.CompletedTask;
+            },
+        };
+    });
+
+builder.Services.AddAuthorization();
+
+#endregion Authentication
 
 builder.Services.AddExceptionHandler<DomainExceptionHandler>();
 builder.Services.AddProblemDetails();
@@ -64,6 +115,7 @@ using (var scope = app.Services.CreateScope())
     {
         db.Database.Migrate();
     }
+    DbSeeder.Run(scope.ServiceProvider, app.Configuration);
 }
 
 // Configure the HTTP request pipeline.

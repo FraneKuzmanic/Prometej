@@ -14,5 +14,10 @@ namespace Prometej_persistance
         public DbSet<Answer> Answers { get; set; }
         public DbSet<QuizGame> QuizGames { get; set; }
 
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<User>().HasIndex(u => u.Email).IsUnique();
+        }
+
     }
 }
