@@ -36,6 +36,11 @@ namespace Prometej_core.Services.Implementations
             return userViewModel;
         }
 
+        public bool Exists(int id)
+        {
+            return _userRepository.ReadAll().Any(u => u.Id == id);
+        }
+
         public int Register(UserCreateRequest user)
         {
             var email = NormalizeEmail(user.Email);

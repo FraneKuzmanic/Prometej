@@ -96,6 +96,19 @@ builder.Services
                 context.Token = context.Request.Cookies[AuthCookie.Name];
                 return Task.CompletedTask;
             },
+            // A token stays validly signed after its account is deleted. Without this check
+            // it would keep working, with its old role, until it expires.
+            OnTokenValidated = context =>
+            {
+                var userId = context.Principal?.GetUserIdOrNull();
+                var userService = context.HttpContext.RequestServices.GetRequiredService<IUserService>();
+                if (userId is null || !userService.Exists(userId.Value))
+                {
+                    AuthCookie.Delete(context.Response);
+                    context.Fail("The account no longer exists.");
+                }
+                return Task.CompletedTask;
+            },
         };
     });
 

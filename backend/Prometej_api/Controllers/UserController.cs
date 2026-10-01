@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Prometej_api.Auth;
-using Prometej_core.Exceptions;
 using Prometej_core.Models.Requests.User;
 using Prometej_core.Services.Contracts;
 
@@ -52,16 +51,7 @@ namespace Prometej_api.Controllers
         [HttpGet("me")]
         public IActionResult GetCurrentUser()
         {
-            try
-            {
-                return Ok(_userService.GetCurrentUser(User.GetUserId()));
-            }
-            catch (NotFoundException)
-            {
-                // A valid token for an account that no longer exists is not a session.
-                AuthCookie.Delete(Response);
-                return Unauthorized();
-            }
+            return Ok(_userService.GetCurrentUser(User.GetUserId()));
         }
 
         [Authorize]

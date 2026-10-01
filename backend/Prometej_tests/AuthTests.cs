@@ -24,7 +24,8 @@ namespace Prometej_tests
             return email;
         }
 
-        private static string CreateToken(string key, DateTime expires) =>
+        // User 1 is the seeded admin: the seeder runs first on a fresh database.
+        private static string CreateToken(string key, DateTime expires, string userId = "1") =>
             new JsonWebTokenHandler().CreateToken(new SecurityTokenDescriptor
             {
                 Issuer = "prometej",
@@ -32,22 +33,24 @@ namespace Prometej_tests
                 NotBefore = expires.AddHours(-2),
                 IssuedAt = expires.AddHours(-2),
                 Expires = expires,
-                Claims = new Dictionary<string, object> { ["sub"] = "1", ["role"] = "admin" },
+                Claims = new Dictionary<string, object> { ["sub"] = userId, ["role"] = "admin" },
                 SigningCredentials = new SigningCredentials(
                     new SymmetricSecurityKey(Convert.FromBase64String(key)), SecurityAlgorithms.HmacSha256),
             });
 
-        private async Task<HttpStatusCode> GetMeWithToken(string token)
+        private async Task<HttpStatusCode> SendWithToken(HttpRequestMessage request, string token)
         {
             var client = factory.CreateClient(new WebApplicationFactoryClientOptions
             {
                 BaseAddress = new Uri("https://localhost"),
                 HandleCookies = false,
             });
-            var request = new HttpRequestMessage(HttpMethod.Get, "/api/user/me");
             request.Headers.Add("Cookie", $"prometej_auth={token}");
             return (await client.SendAsync(request)).StatusCode;
         }
+
+        private Task<HttpStatusCode> GetMeWithToken(string token) =>
+            SendWithToken(new HttpRequestMessage(HttpMethod.Get, "/api/user/me"), token);
 
         [Fact]
         public async Task Register_always_creates_a_student_whatever_role_the_body_asks_for()
@@ -203,10 +206,23 @@ namespace Prometej_tests
         }
 
         [Fact]
+        public async Task A_valid_admin_token_for_a_deleted_account_cannot_write()
+        {
+            var token = CreateToken(ApiFactory.JwtKey, DateTime.UtcNow.AddHours(1), userId: "999999");
+            var request = new HttpRequestMessage(HttpMethod.Post, "/api/period/content")
+            {
+                Content = JsonContent.Create(new { id = 0, periodId = 1, content = "<p>Ne bi smjelo proći</p>" }),
+            };
+
+            Assert.Equal(HttpStatusCode.Unauthorized, await SendWithToken(request, token));
+            Assert.Equal(HttpStatusCode.NotFound, (await factory.CreateHttpsClient().GetAsync("/api/period/content/1")).StatusCode);
+        }
+
+        [Fact]
         public async Task A_correctly_signed_token_is_accepted()
         {
-            // The control for the two tests above: the same forged token passes authentication
-            // once the key and the lifetime are right. User 1 is the seeded admin.
+            // The control for the tests above: the same forged token passes authentication
+            // once the key, the lifetime and the account are right.
             Assert.Equal(HttpStatusCode.OK, await GetMeWithToken(CreateToken(ApiFactory.JwtKey, DateTime.UtcNow.AddHours(1))));
         }
     }
