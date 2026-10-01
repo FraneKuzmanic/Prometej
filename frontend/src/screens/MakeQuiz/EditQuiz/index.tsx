@@ -1,6 +1,5 @@
 import { useEffect } from "react";
 import QuizEditor, { EditorQuestion } from "../../../components/QuizEditor";
-import { QuizEditRequest } from "../../../types/models/Quiz";
 import { fetchQuiz, updateQuiz } from "../../../store/slices/quizSlice";
 import { useSelector } from "react-redux";
 import { RootState, useAppDispatch } from "../../../store/store";
@@ -21,28 +20,31 @@ export default function EditQuiz() {
     return null;
   }
 
-  const saveQuiz = (title: string, questions: EditorQuestion[]) => {
-    const updatedQuiz: QuizEditRequest = {
-      id: quiz.id,
-      title: title,
-      isPrivate: quiz.isPrivate,
-      entryCode: quiz.entryCode || undefined,
-    };
-    return dispatch(
+  const saveQuiz = async (
+    title: string,
+    isPrivate: boolean,
+    questions: EditorQuestion[]
+  ) => {
+    const result = await dispatch(
       updateQuiz({
-        quiz: updatedQuiz,
+        quiz: { id: quiz.id, title, isPrivate },
+        // The list is the whole set: a stored Question left out of it is removed.
         questions: questions.map((question) => ({
           ...question,
           id: question.id ?? 0,
         })),
       })
-    ).then(() => navigate("/my-quizzes"));
+    );
+    const saved = updateQuiz.fulfilled.match(result);
+    if (saved) navigate("/my-quizzes");
+    return saved;
   };
 
   return (
     <QuizEditor
       key={quiz.id}
       initialTitle={quiz.title}
+      initialIsPrivate={quiz.isPrivate}
       initialQuestions={quiz.questions}
       onSave={saveQuiz}
       onCancel={() => navigate("/my-quizzes")}

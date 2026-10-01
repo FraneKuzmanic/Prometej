@@ -35,7 +35,8 @@ export default function PlayQuiz() {
   const [totalQuestionNo, setTotalQuestionNo] = useState(0);
   const [score, setScore] = useState(0);
   const [showScore, setShowScore] = useState(false);
-  const [currentAnswer, setCurrentAnswer] = useState<string>("");
+  // which of the four answers was clicked, 1 to 4; undefined until the Question is answered
+  const [chosenOption, setChosenOption] = useState<number>();
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const { id } = useParams();
@@ -64,20 +65,20 @@ export default function PlayQuiz() {
     setCurrentQuestion(quizQuestions[currentQuestionNo + 1]);
     setCurrentQuestionNo(currentQuestionNo + 1);
     setQuestionAnswered(false);
-    setCurrentAnswer("");
+    setChosenOption(undefined);
   };
 
-  const handleAnswer = (answer: string) => {
+  const handleAnswer = (option: number) => {
     if (currentQuestion) {
-      const isCorrect = answer === currentQuestion.correctAnswer;
+      const isCorrect = option === currentQuestion.correctOption;
       setScore(score + (isCorrect ? 1 : 0));
-      setCurrentAnswer(answer);
+      setChosenOption(option);
       setQuestionAnswered(true);
       setQuizAnswers([
         ...quizAnswers,
         {
           questionId: currentQuestion.id,
-          answerText: answer,
+          chosenOption: option,
         },
       ]);
     }
@@ -135,86 +136,34 @@ export default function PlayQuiz() {
               {currentQuestionNo + 1}. {currentQuestion.questionTitle}?
             </Typography>
             <List className="quiz-play-answers">
-              <ListItemText
-                onClick={() => {
-                  !currentAnswer
-                    ? handleAnswer(currentQuestion.firstAnswer)
-                    : "";
-                }}
-                className={`quiz-play-answer${
-                  currentAnswer === currentQuestion.firstAnswer
-                    ? currentAnswer === currentQuestion.correctAnswer
-                      ? "-correct"
-                      : "-uncorrect"
-                    : currentAnswer &&
-                      currentQuestion.firstAnswer ===
-                        currentQuestion.correctAnswer
+              {[
+                currentQuestion.firstAnswer,
+                currentQuestion.secondAnswer,
+                currentQuestion.thirdAnswer,
+                currentQuestion.fourthAnswer,
+              ].map((text, index) => {
+                const option = index + 1;
+                // Once answered, the correct option turns green and a wrong choice red.
+                const mark =
+                  chosenOption === undefined
+                    ? ""
+                    : option === currentQuestion.correctOption
                     ? "-correct"
-                    : ""
-                }`}
-              >
-                {currentQuestion.firstAnswer}
-              </ListItemText>
-              <ListItemText
-                onClick={() => {
-                  !currentAnswer
-                    ? handleAnswer(currentQuestion.secondAnswer)
+                    : option === chosenOption
+                    ? "-uncorrect"
                     : "";
-                }}
-                className={`quiz-play-answer${
-                  currentAnswer === currentQuestion.secondAnswer
-                    ? currentAnswer === currentQuestion.correctAnswer
-                      ? "-correct"
-                      : "-uncorrect"
-                    : currentAnswer &&
-                      currentQuestion.secondAnswer ===
-                        currentQuestion.correctAnswer
-                    ? "-correct"
-                    : ""
-                }`}
-              >
-                {currentQuestion.secondAnswer}
-              </ListItemText>
-              <ListItemText
-                onClick={() => {
-                  !currentAnswer
-                    ? handleAnswer(currentQuestion.thirdAnswer)
-                    : "";
-                }}
-                className={`quiz-play-answer${
-                  currentAnswer === currentQuestion.thirdAnswer
-                    ? currentAnswer === currentQuestion.correctAnswer
-                      ? "-correct"
-                      : "-uncorrect"
-                    : currentAnswer &&
-                      currentQuestion.thirdAnswer ===
-                        currentQuestion.correctAnswer
-                    ? "-correct"
-                    : ""
-                }`}
-              >
-                {currentQuestion.thirdAnswer}
-              </ListItemText>
-              <ListItemText
-                onClick={() => {
-                  !currentAnswer
-                    ? handleAnswer(currentQuestion.fourthAnswer)
-                    : "";
-                }}
-                className={`quiz-play-answer${
-                  currentAnswer === currentQuestion.fourthAnswer
-                    ? currentAnswer === currentQuestion.correctAnswer
-                      ? "-correct"
-                      : "-uncorrect"
-                    : currentAnswer &&
-                      currentQuestion.fourthAnswer ===
-                        currentQuestion.correctAnswer
-                    ? "-correct"
-                    : ""
-                }`}
-              >
-                {currentQuestion.fourthAnswer}
-              </ListItemText>
+                return (
+                  <ListItemText
+                    key={option}
+                    onClick={() => {
+                      if (chosenOption === undefined) handleAnswer(option);
+                    }}
+                    className={`quiz-play-answer${mark}`}
+                  >
+                    {text}
+                  </ListItemText>
+                );
+              })}
               <Box
                 sx={{
                   position: "absolute",

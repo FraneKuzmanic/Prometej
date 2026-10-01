@@ -44,34 +44,19 @@ export default function MyQuizzes() {
     setAnchorEl(null);
   };
 
-  const generateRandomNumber = () => {
-    return Math.floor(10000 + Math.random() * 90000);
-  };
-
   const handleDelete = (quizId: number) => {
     dispatch(deleteQuiz(quizId)).then(() => {
       if (user) dispatch(fetchAllUserQuizzes(user.id));
     });
   };
 
+  // The server gives a Quiz made private its Entry Code and takes it from one made public.
   const handleVisibilityChange = (quiz: QuizBaseModel, isPrivate: boolean) => {
-    if (!isPrivate && user) {
-      const entryCode = generateRandomNumber();
+    if (user) {
       const updatedQuiz = {
         id: quiz.id,
         title: quiz.title,
-        isPrivate: true,
-        entryCode: entryCode,
-      };
-      dispatch(updateQuiz({ quiz: updatedQuiz })).then(() => {
-        dispatch(fetchAllUserQuizzes(user.id));
-      });
-    } else if (isPrivate && user) {
-      const updatedQuiz = {
-        id: quiz.id,
-        title: quiz.title,
-        isPrivate: false,
-        entryCode: undefined,
+        isPrivate: !isPrivate,
       };
       dispatch(updateQuiz({ quiz: updatedQuiz })).then(() => {
         dispatch(fetchAllUserQuizzes(user.id));
@@ -86,7 +71,6 @@ export default function MyQuizzes() {
         id: currentQuiz.id,
         title: quizTitle,
         isPrivate: currentQuiz.isPrivate,
-        entryCode: currentQuiz.entryCode,
       };
       dispatch(updateQuiz({ quiz: updatedQuiz })).then(() => {
         if (user) dispatch(fetchAllUserQuizzes(user.id));

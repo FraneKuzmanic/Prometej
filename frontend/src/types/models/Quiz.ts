@@ -4,6 +4,8 @@ export interface QuizBaseModel {
     creatorName: string;
     isPrivate: boolean;
     entryCode?: number;
+    // only in a Creator's own list: how many Quiz Games deleting the Quiz would delete
+    quizGameCount?: number;
 }
 
 export interface QuestionCreateRequest {
@@ -12,7 +14,8 @@ export interface QuestionCreateRequest {
     secondAnswer:string
     thirdAnswer:string
     fourthAnswer:string
-    correctAnswer:string
+    // which of the four answers is correct, 1 to 4; 0 while none is marked in the editor
+    correctOption:number
     hintText:string
     exploreMore:string
 }
@@ -24,7 +27,7 @@ export interface QuestionEditRequest {
     secondAnswer:string
     thirdAnswer:string
     fourthAnswer:string
-    correctAnswer:string
+    correctOption:number
     hintText:string
     exploreMore:string
 }
@@ -32,14 +35,12 @@ export interface QuestionEditRequest {
 export interface QuizCreateRequest {
     title: string;
     isPrivate: boolean;
-    entryCode: number;
 }
 
 export interface QuizEditRequest {
     id: number;
     title: string;
     isPrivate: boolean;
-    entryCode?: number;
 }
 
 export interface QuizViewModel {
@@ -59,14 +60,14 @@ export interface QuestionViewModel {
     secondAnswer:string
     thirdAnswer:string
     fourthAnswer:string
-    correctAnswer:string
+    correctOption:number
     hintText:string
     exploreMore:string
 }
 
 export interface AnswerCreateRequest{
     questionId:number;
-    answerText:string;
+    chosenOption:number;
 }
 
 export interface AnswerViewModel {

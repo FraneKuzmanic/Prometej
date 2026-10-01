@@ -1,6 +1,8 @@
 import {
+  Alert,
   Box,
   Button,
+  FormControlLabel,
   IconButton,
   LinearProgress,
   Menu,
@@ -9,6 +11,7 @@ import {
   SpeedDial,
   SpeedDialAction,
   SpeedDialIcon,
+  Switch,
   TextField,
   Tooltip,
   Typography,
@@ -21,15 +24,20 @@ import AddIcon from "@mui/icons-material/Add";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import SaveIcon from "@mui/icons-material/Save";
 import CancelIcon from "@mui/icons-material/Cancel";
-import React from "react";
 
 // A Question already stored has an id; one added in the editor has none yet.
 export type EditorQuestion = QuestionCreateRequest & { id?: number };
 
 interface QuizEditorProps {
   initialTitle: string;
+  initialIsPrivate: boolean;
   initialQuestions: EditorQuestion[];
-  onSave: (title: string, questions: EditorQuestion[]) => Promise<unknown>;
+  // Resolves to whether the Quiz was saved; the editor stays open when it was not.
+  onSave: (
+    title: string,
+    isPrivate: boolean,
+    questions: EditorQuestion[]
+  ) => Promise<boolean>;
   onCancel: () => void;
 }
 
@@ -39,13 +47,31 @@ const emptyQuestion: EditorQuestion = {
   secondAnswer: "",
   thirdAnswer: "",
   fourthAnswer: "",
-  correctAnswer: "",
+  correctOption: 0,
   hintText: "",
   exploreMore: "",
 };
 
+// The server's rule for a Question, checked here first so the Teacher is told which one.
+const isComplete = (question: EditorQuestion) => {
+  const options = [
+    question.firstAnswer,
+    question.secondAnswer,
+    question.thirdAnswer,
+    question.fourthAnswer,
+  ].map((option) => option.trim());
+  return (
+    question.questionTitle.trim() !== "" &&
+    options.every((option) => option !== "") &&
+    new Set(options).size === options.length &&
+    question.correctOption >= 1 &&
+    question.correctOption <= 4
+  );
+};
+
 export default function QuizEditor({
   initialTitle,
+  initialIsPrivate,
   initialQuestions,
   onSave,
   onCancel,
@@ -56,36 +82,54 @@ export default function QuizEditor({
   );
   const [selected, setSelected] = useState<number>(0);
   const [quizTitle, setQuizTitle] = useState<string>(initialTitle);
+  const [isPrivate, setIsPrivate] = useState<boolean>(initialIsPrivate);
   const [isSaving, setIsSaving] = useState<boolean>(false);
+  const [saveFailed, setSaveFailed] = useState<boolean>(false);
   const [inputDrawer, setInputDrawer] = useState<boolean>(false);
-  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-  const open = Boolean(anchorEl);
-  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
-  const handleClose = () => {
-    setAnchorEl(null);
+  // The number of the first Question that kept the Quiz from being saved.
+  const [incompleteNo, setIncompleteNo] = useState<number | null>(null);
+  // One menu for the whole strip; it remembers which Question it was opened for.
+  const [menu, setMenu] = useState<{
+    anchor: HTMLElement;
+    index: number;
+  } | null>(null);
+
+  const handleSave = () => {
+    const incomplete = quizQuestions.findIndex(
+      (question) => !isComplete(question)
+    );
+    if (incomplete !== -1) {
+      setSelected(incomplete);
+      setIncompleteNo(incomplete + 1);
+      return;
+    }
+    setSaveFailed(false);
+    setInputDrawer(true);
   };
 
   const saveQuiz = () => {
     setIsSaving(true);
-    onSave(quizTitle, quizQuestions).then(() => {
+    setSaveFailed(false);
+    onSave(quizTitle.trim(), isPrivate, quizQuestions).then((saved) => {
       setIsSaving(false);
-      setInputDrawer(false);
+      setSaveFailed(!saved);
     });
   };
 
   const addQuestion = () => {
     setSelected(quizQuestions.length);
     setQuizQuestions([...quizQuestions, emptyQuestion]);
+    setIncompleteNo(null);
   };
 
-  const handleDelete = () => {
-    const newQuestions = [...quizQuestions];
-    newQuestions.splice(selected, 1);
-    setSelected(selected > 0 ? selected - 1 : selected);
+  const handleDelete = (index: number) => {
+    const newQuestions = quizQuestions.filter((_, i) => i !== index);
+    setSelected(
+      selected > index ? selected - 1 : Math.min(selected, newQuestions.length - 1)
+    );
     setQuizQuestions(newQuestions);
-    handleClose();
+    setIncompleteNo(null);
+    setMenu(null);
   };
 
   useEffect(() => {
@@ -104,10 +148,17 @@ export default function QuizEditor({
         index === questionNo ? { ...question, ...updates } : question
       )
     );
+    setIncompleteNo(null);
   };
 
   return (
     <Box className="quiz-screen-wrapper">
+      {incompleteNo !== null && (
+        <Alert severity="warning" className="quiz-editor-message">
+          Pitanje {incompleteNo} nije potpuno: unesite pitanje, četiri različita
+          odgovora i označite točan.
+        </Alert>
+      )}
       <QuestionContainer
         currentQuestion={quizQuestions[selected]}
         selected={selected}
@@ -140,37 +191,27 @@ export default function QuizEditor({
             {quizQuestions.length > 1 && (
               <Box className="question-container-opt">
                 <IconButton
-                  aria-label="more"
-                  id="long-button"
-                  aria-controls={open ? "basic-menu" : undefined}
-                  aria-expanded={open ? "true" : undefined}
+                  aria-label={`Mogućnosti pitanja ${index + 1}`}
                   aria-haspopup="true"
-                  onClick={handleClick}
+                  onClick={(event) =>
+                    setMenu({ anchor: event.currentTarget, index })
+                  }
                 >
                   <MoreVertIcon />
                 </IconButton>
-                <Menu
-                  id="basic-menu"
-                  anchorEl={anchorEl}
-                  open={open}
-                  onClose={handleClose}
-                  MenuListProps={{
-                    "aria-labelledby": "basic-button",
-                  }}
-                >
-                  <MenuItem
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      handleDelete();
-                    }}
-                  >
-                    Izbriši
-                  </MenuItem>
-                </Menu>
               </Box>
             )}
           </Paper>
         ))}
+        <Menu
+          anchorEl={menu?.anchor}
+          open={menu !== null}
+          onClose={() => setMenu(null)}
+        >
+          <MenuItem onClick={() => menu && handleDelete(menu.index)}>
+            Izbriši
+          </MenuItem>
+        </Menu>
         <Paper onClick={() => addQuestion()} className="question-container-add">
           <AddIcon />
         </Paper>
@@ -188,7 +229,7 @@ export default function QuizEditor({
             key={"Spremi"}
             icon={<SaveIcon />}
             tooltipTitle={"Spremi"}
-            onClick={() => setInputDrawer(true)}
+            onClick={() => handleSave()}
           />
           <SpeedDialAction
             key={"Odustani"}
@@ -204,23 +245,40 @@ export default function QuizEditor({
             Unesite naslov kviza
           </Typography>
           <TextField
-            sx={{ marginTop: "3.5rem" }}
+            sx={{ marginTop: "2rem" }}
             type="text"
             placeholder="Naslov kviza"
             fullWidth
             required
+            inputProps={{ maxLength: 100 }}
             value={quizTitle}
             onChange={(e) => setQuizTitle(e.target.value)}
           />
-          {isSaving ? <LinearProgress /> : null}
+          <FormControlLabel
+            sx={{ marginTop: "0.5rem" }}
+            control={
+              <Switch
+                checked={isPrivate}
+                onChange={(e) => setIsPrivate(e.target.checked)}
+              />
+            }
+            label="Privatni kviz"
+          />
+          {isSaving ? <LinearProgress sx={{ width: "100%" }} /> : null}
+          {saveFailed && (
+            <Typography color="error" sx={{ fontSize: 14 }}>
+              Kviz nije spremljen. Pokušajte ponovno.
+            </Typography>
+          )}
           <Button
             variant="contained"
+            disabled={isSaving}
             onClick={() => {
-              quizTitle ? saveQuiz() : null;
+              quizTitle.trim() ? saveQuiz() : null;
             }}
             style={{
               backgroundColor: "#553b08",
-              marginTop: "2rem",
+              marginTop: "1rem",
               width: "80%",
             }}
           >

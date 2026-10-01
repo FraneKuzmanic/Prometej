@@ -13,30 +13,28 @@ interface QuestionContainerProps {
   ) => void;
 }
 
+// The Correct Answer is the option's number, so editing an option's text cannot unmark it.
+const options = [
+  { letter: "A", field: "firstAnswer", number: 1 },
+  { letter: "B", field: "secondAnswer", number: 2 },
+  { letter: "C", field: "thirdAnswer", number: 3 },
+  { letter: "D", field: "fourthAnswer", number: 4 },
+] as const;
+
 export default function QuestionContainer({
   currentQuestion,
   handleQuestionChange,
   selected,
 }: QuestionContainerProps) {
-  const handleCheckboxChange = (
-    e: React.ChangeEvent<HTMLInputElement>,
-    answer?: string
-  ) => {
-    if (e.target.checked && answer) {
-      handleQuestionChange(selected, { correctAnswer: answer });
-    } else {
-      handleQuestionChange(selected, { correctAnswer: "" });
-    }
-  };
-
   return (
     <Box className="question-wrapper">
       <Box className="question-title">
         <TextField
           className="input-title"
-          id="outlined-basic"
+          id="question-title"
           label="Unesite pitanje"
           multiline
+          inputProps={{ maxLength: 500 }}
           value={currentQuestion ? currentQuestion.questionTitle : ""}
           onChange={(e) =>
             handleQuestionChange(selected, { questionTitle: e.target.value })
@@ -49,122 +47,36 @@ export default function QuestionContainer({
         rowSpacing={4}
         columnSpacing={{ xs: 1, sm: 2, md: 3 }}
       >
-        <Grid className="answer" item xs={6}>
-          <Typography className="letter" component="span">
-            A
-          </Typography>
-          <TextField
-            className="input"
-            id="outlined-basic"
-            label="Unesite odgovor"
-            value={currentQuestion ? currentQuestion.firstAnswer : ""}
-            onChange={(e) =>
-              handleQuestionChange(selected, { firstAnswer: e.target.value })
-            }
-            multiline
-          />
-          <Checkbox
-            className="question-checkbox"
-            {...{ inputProps: { "aria-label": "Checkbox demo" } }}
-            icon={<RadioButtonUncheckedIcon />}
-            checkedIcon={<CheckCircleIcon />}
-            checked={
-              currentQuestion && currentQuestion.correctAnswer
-                ? currentQuestion.correctAnswer === currentQuestion.firstAnswer
-                : false
-            }
-            onChange={(e) =>
-              handleCheckboxChange(e, currentQuestion?.firstAnswer)
-            }
-          />
-        </Grid>
-        <Grid className="answer" item xs={6}>
-          <Typography className="letter" component="span">
-            B
-          </Typography>
-          <TextField
-            className="input"
-            id="outlined-basic"
-            label="Unesite odgovor"
-            value={currentQuestion ? currentQuestion.secondAnswer : ""}
-            onChange={(e) =>
-              handleQuestionChange(selected, { secondAnswer: e.target.value })
-            }
-            multiline
-          />
-          <Checkbox
-            className="question-checkbox"
-            {...{ inputProps: { "aria-label": "Checkbox demo" } }}
-            icon={<RadioButtonUncheckedIcon />}
-            checkedIcon={<CheckCircleIcon />}
-            checked={
-              currentQuestion && currentQuestion.correctAnswer
-                ? currentQuestion.correctAnswer === currentQuestion.secondAnswer
-                : false
-            }
-            onChange={(e) =>
-              handleCheckboxChange(e, currentQuestion?.secondAnswer)
-            }
-          />
-        </Grid>
-        <Grid className="answer" item xs={6}>
-          <Typography className="letter" component="span">
-            C
-          </Typography>
-          <TextField
-            className="input"
-            id="outlined-basic"
-            label="Unesite odgovor"
-            value={currentQuestion ? currentQuestion.thirdAnswer : ""}
-            onChange={(e) =>
-              handleQuestionChange(selected, { thirdAnswer: e.target.value })
-            }
-            multiline
-          />
-          <Checkbox
-            className="question-checkbox"
-            {...{ inputProps: { "aria-label": "Checkbox demo" } }}
-            icon={<RadioButtonUncheckedIcon />}
-            checkedIcon={<CheckCircleIcon />}
-            checked={
-              currentQuestion && currentQuestion.correctAnswer
-                ? currentQuestion.correctAnswer === currentQuestion.thirdAnswer
-                : false
-            }
-            onChange={(e) =>
-              handleCheckboxChange(e, currentQuestion?.thirdAnswer)
-            }
-          />
-        </Grid>
-        <Grid className="answer" item xs={6}>
-          <Typography className="letter" component="span">
-            D
-          </Typography>
-          <TextField
-            className="input"
-            id="outlined-basic"
-            label="Unesite odgovor"
-            value={currentQuestion ? currentQuestion.fourthAnswer : ""}
-            onChange={(e) =>
-              handleQuestionChange(selected, { fourthAnswer: e.target.value })
-            }
-            multiline
-          />
-          <Checkbox
-            className="question-checkbox"
-            {...{ inputProps: { "aria-label": "Checkbox demo" } }}
-            icon={<RadioButtonUncheckedIcon />}
-            checkedIcon={<CheckCircleIcon />}
-            checked={
-              currentQuestion && currentQuestion.correctAnswer
-                ? currentQuestion.correctAnswer === currentQuestion.fourthAnswer
-                : false
-            }
-            onChange={(e) =>
-              handleCheckboxChange(e, currentQuestion?.fourthAnswer)
-            }
-          />
-        </Grid>
+        {options.map(({ letter, field, number }) => (
+          <Grid className="answer" item xs={6} key={number}>
+            <Typography className="letter" component="span">
+              {letter}
+            </Typography>
+            <TextField
+              className="input"
+              id={`answer-${number}`}
+              label="Unesite odgovor"
+              inputProps={{ maxLength: 500 }}
+              value={currentQuestion ? currentQuestion[field] : ""}
+              onChange={(e) =>
+                handleQuestionChange(selected, { [field]: e.target.value })
+              }
+              multiline
+            />
+            <Checkbox
+              className="question-checkbox"
+              inputProps={{ "aria-label": `Točan odgovor ${letter}` }}
+              icon={<RadioButtonUncheckedIcon />}
+              checkedIcon={<CheckCircleIcon />}
+              checked={currentQuestion?.correctOption === number}
+              onChange={(e) =>
+                handleQuestionChange(selected, {
+                  correctOption: e.target.checked ? number : 0,
+                })
+              }
+            />
+          </Grid>
+        ))}
       </Grid>
     </Box>
   );

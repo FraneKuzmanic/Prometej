@@ -84,7 +84,15 @@
     align-items: center;
     z-index: 1000; /* Ensure it is on top of other elements */
     width: 300px;
-    height: 300px;
+    min-height: 300px;
+}
+
+.quiz-editor-message{
+    position: fixed;
+    bottom: calc(18vh + 1rem);
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1;
 }
 
 .buttons-wrapper{
