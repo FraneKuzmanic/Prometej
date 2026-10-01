@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Prometej_api.ErrorHandling;
 using Prometej_core.DataAccessLayer;
 using Prometej_core.Models.efModels;
 using Prometej_core.Services.Contracts;
@@ -51,16 +52,24 @@ builder.Services.AddScoped<IQuizService, QuizService>();
 
 #endregion Service DI
 
+builder.Services.AddExceptionHandler<DomainExceptionHandler>();
+builder.Services.AddProblemDetails();
+
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+using (var scope = app.Services.CreateScope())
 {
-    app.UseDeveloperExceptionPage();
+    var db = scope.ServiceProvider.GetRequiredService<DataContext>();
+    if (!app.Environment.IsProduction())
+    {
+        db.Database.Migrate();
+    }
 }
-else
+
+// Configure the HTTP request pipeline.
+app.UseExceptionHandler();
+if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Error");
     app.UseHsts();
 }
 
@@ -79,3 +88,5 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+public partial class Program { }

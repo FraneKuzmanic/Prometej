@@ -7,8 +7,6 @@ using Prometej_core.Models.ViewModels;
 using Prometej_core.Services.Contracts;
 using System.Security.Claims;
 using System.Text;
-using System.IdentityModel.Tokens.Jwt;
-using Microsoft.IdentityModel.Tokens;
 
 namespace Prometej_core.Services.Implementations
 {
