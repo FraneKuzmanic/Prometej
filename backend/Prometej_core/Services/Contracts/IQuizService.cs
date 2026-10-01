@@ -20,5 +20,7 @@ namespace Prometej_core.Services.Contracts
         int Create(QuizCreateRequest quiz, List<QuestionCreateRequest> questions, int creatorId);
         void Update(QuizEditRequest quiz, List<QuestionEditRequest>? questions, int callerId, bool isAdmin);
         void Delete(int id, int callerId, bool isAdmin);
+        QuizGameViewModel SubmitQuiz(QuizSubmitRequest request, int userId);
+        List<QuizGameViewModel> GetQuizAnalytics(int quizId, int callerId, bool isAdmin);
     }
 }

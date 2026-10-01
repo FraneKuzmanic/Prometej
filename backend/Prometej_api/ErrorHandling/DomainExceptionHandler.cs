@@ -10,6 +10,7 @@ namespace Prometej_api.ErrorHandling
         {
             int? status = exception switch
             {
+                BadRequestException => StatusCodes.Status400BadRequest,
                 InvalidCredentialsException => StatusCodes.Status401Unauthorized,
                 ForbiddenException => StatusCodes.Status403Forbidden,
                 NotFoundException => StatusCodes.Status404NotFound,

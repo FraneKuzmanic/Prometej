@@ -21,11 +21,15 @@ namespace Prometej_core.Services.Implementations
         private readonly IMapper _mapper;
         private readonly IRepository<Quiz> _quizRepository;
         private readonly IRepository<Question> _questionRepository;
-        public QuizService(IMapper mapper, IRepository<Quiz> quizRepository, IRepository<Question> questionRepository)
+        private readonly IRepository<QuizGame> _quizGameRepository;
+        private readonly IRepository<User> _userRepository;
+        public QuizService(IMapper mapper, IRepository<Quiz> quizRepository, IRepository<Question> questionRepository, IRepository<QuizGame> quizGameRepository, IRepository<User> userRepository)
         {
             _mapper = mapper;
             _quizRepository = quizRepository;
             _questionRepository = questionRepository;
+            _quizGameRepository = quizGameRepository;
+            _userRepository = userRepository;
         }
          
         public List<QuizBaseModel> getAllPublicQuizzes()
@@ -106,7 +110,7 @@ namespace Prometej_core.Services.Implementations
         public void Update(QuizEditRequest quiz, List<QuestionEditRequest>? questions, int callerId, bool isAdmin)
         {
             var quizEntity = _quizRepository.GetAll().Include(q => q.Questions).FirstOrDefault(q => q.Id == quiz.Id);
-            EnsureCanChange(quizEntity, callerId, isAdmin);
+            EnsureCreatorOrAdmin(quizEntity, callerId, isAdmin);
 
             quizEntity.Title = quiz.Title;
             quizEntity.IsPrivate = quiz.IsPrivate;
@@ -140,13 +144,86 @@ namespace Prometej_core.Services.Implementations
         public void Delete(int id, int callerId, bool isAdmin)
         {
             var quizEntity = _quizRepository.ReadAll().FirstOrDefault(q => q.Id == id);
-            EnsureCanChange(quizEntity, callerId, isAdmin);
+            EnsureCreatorOrAdmin(quizEntity, callerId, isAdmin);
 
             _quizRepository.Delete(id);
             _quizRepository.Save();
         }
 
-        private static void EnsureCanChange([NotNull] Quiz? quiz, int callerId, bool isAdmin)
+        public QuizGameViewModel SubmitQuiz(QuizSubmitRequest request, int userId)
+        {
+            var quiz = _quizRepository.ReadAll().Include(q => q.Questions).FirstOrDefault(q => q.Id == request.QuizId);
+            if (quiz == null)
+            {
+                throw new NotFoundException("Quiz not found");
+            }
+
+            // A creator trying out their own quiz is a preview, not a result for the analytics.
+            if (quiz.CreatorId == userId)
+            {
+                throw new ForbiddenException("A creator's play of their own quiz is not recorded");
+            }
+
+            var questions = quiz.Questions.ToDictionary(q => q.Id);
+            var answeredIds = request.Answers.Select(a => a.QuestionId).ToHashSet();
+            if (request.Answers.Count != questions.Count || !answeredIds.SetEquals(questions.Keys))
+            {
+                throw new BadRequestException("A submission must answer every question of the quiz exactly once");
+            }
+
+            // Only foreign keys are set below. The quiz and its questions were read untracked,
+            // so assigning them as navigations would make EF insert them a second time.
+            var answers = new List<Answer>();
+            foreach (var answer in request.Answers)
+            {
+                var question = questions[answer.QuestionId];
+                string[] options = [question.FirstAnswer, question.SecondAnswer, question.ThirdAnswer, question.FourthAnswer];
+                if (!options.Contains(answer.AnswerText))
+                {
+                    throw new BadRequestException("An answer must be one of its question's options");
+                }
+
+                answers.Add(new Answer
+                {
+                    QuestionId = question.Id,
+                    AnswerText = answer.AnswerText,
+                    // Kept with the answer, so the play still reads right after the question is edited.
+                    CorrectAnswer = question.CorrectAnswer,
+                });
+            }
+
+            var user = _userRepository.ReadAll().FirstOrDefault(u => u.Id == userId);
+            if (user == null)
+            {
+                throw new NotFoundException("User not found");
+            }
+
+            var quizGame = new QuizGame
+            {
+                QuizId = quiz.Id,
+                UserId = user.Id,
+                UserName = user.FirstName + " " + user.LastName,
+                Score = answers.Count(a => a.AnswerText == a.CorrectAnswer),
+                DatePlayed = DateTime.UtcNow,
+                Answers = answers,
+            };
+            _quizGameRepository.Create(quizGame);
+            _quizGameRepository.Save();
+
+            return _mapper.Map<QuizGameViewModel>(quizGame);
+        }
+
+        public List<QuizGameViewModel> GetQuizAnalytics(int quizId, int callerId, bool isAdmin)
+        {
+            var quiz = _quizRepository.ReadAll().FirstOrDefault(q => q.Id == quizId);
+            EnsureCreatorOrAdmin(quiz, callerId, isAdmin);
+
+            var quizGames = _quizGameRepository.ReadAll().Include(g => g.Answers).Where(g => g.QuizId == quizId).OrderByDescending(g => g.DatePlayed).ToList();
+
+            return _mapper.Map<List<QuizGameViewModel>>(quizGames);
+        }
+
+        private static void EnsureCreatorOrAdmin([NotNull] Quiz? quiz, int callerId, bool isAdmin)
         {
             if (quiz == null)
             {
@@ -155,7 +232,7 @@ namespace Prometej_core.Services.Implementations
 
             if (!isAdmin && quiz.CreatorId != callerId)
             {
-                throw new ForbiddenException("Only the quiz's creator can change it");
+                throw new ForbiddenException("Only the quiz's creator or an admin can do this");
             }
         }
 

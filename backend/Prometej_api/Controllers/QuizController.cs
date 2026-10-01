@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Prometej_api.Auth;
 using Prometej_core.Auth;
 using Prometej_core.Models.Dtos;
+using Prometej_core.Models.Requests.Quiz;
 using Prometej_core.Services.Contracts;
 
 namespace Prometej_api.Controllers
@@ -78,6 +79,20 @@ namespace Prometej_api.Controllers
             _quizService.Delete(id, User.GetUserId(), User.IsAdmin());
 
             return NoContent();
+        }
+
+        [Authorize]
+        [HttpPost("submit")]
+        public IActionResult SubmitQuiz(QuizSubmitRequest request)
+        {
+            return StatusCode(201, _quizService.SubmitQuiz(request, User.GetUserId()));
+        }
+
+        [Authorize(Roles = Roles.TeacherOrAdmin)]
+        [HttpGet("getAnalytics/{id}")]
+        public IActionResult GetQuizAnalytics(int id)
+        {
+            return Ok(_quizService.GetQuizAnalytics(id, User.GetUserId(), User.IsAdmin()));
         }
     }
 }

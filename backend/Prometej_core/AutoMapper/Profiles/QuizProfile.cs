@@ -26,7 +26,9 @@ namespace Prometej_core.AutoMapper.Profiles
             CreateMap<QuestionCreateRequest, Question>();
             CreateMap<Question, QuestionViewModel>();
             CreateMap<QuestionEditRequest, Question>();
-            
+
+            CreateMap<QuizGame, QuizGameViewModel>();
+            CreateMap<Answer, AnswerViewModel>();
 
         }
     }
