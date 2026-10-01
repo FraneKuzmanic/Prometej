@@ -1,6 +1,11 @@
 import {
   Box,
   Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   Grid,
   IconButton,
   Menu,
@@ -21,7 +26,6 @@ import {
 import { useSelector } from "react-redux";
 import { QuizBaseModel } from "../../types/models/Quiz";
 import "./styles.css";
-import React from "react";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { useNavigate } from "react-router-dom";
 
@@ -31,20 +35,23 @@ export default function MyQuizzes() {
   const { quizzes } = useSelector((state: RootState) => state.quiz);
   const { user } = useSelector((state: RootState) => state.user);
   const dispatch = useAppDispatch();
-  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  // One menu for all the cards; it remembers which Quiz it was opened for. Closing clears
+  // only the anchor, so the items do not change while the menu fades out.
+  const [menu, setMenu] = useState<{
+    anchor: HTMLElement | null;
+    quiz: QuizBaseModel;
+  } | null>(null);
   const [inputDrawer, setInputDrawer] = useState<boolean>(false);
   const [quizTitle, setQuizTitle] = useState<string>("");
   const [currentQuiz, setCurrentQuiz] = useState<QuizBaseModel | null>(null);
-  const open = Boolean(anchorEl);
+  const [quizToDelete, setQuizToDelete] = useState<QuizBaseModel | null>(null);
   const navigate = useNavigate();
-  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
   const handleClose = () => {
-    setAnchorEl(null);
+    setMenu((current) => current && { ...current, anchor: null });
   };
 
   const handleDelete = (quizId: number) => {
+    setQuizToDelete(null);
     dispatch(deleteQuiz(quizId)).then(() => {
       if (user) dispatch(fetchAllUserQuizzes(user.id));
     });
@@ -69,7 +76,7 @@ export default function MyQuizzes() {
     if (currentQuiz && user) {
       const updatedQuiz = {
         id: currentQuiz.id,
-        title: quizTitle,
+        title: quizTitle.trim(),
         isPrivate: currentQuiz.isPrivate,
       };
       dispatch(updateQuiz({ quiz: updatedQuiz })).then(() => {
@@ -117,10 +124,7 @@ export default function MyQuizzes() {
             sx={{ position: "relative" }}
             onClick={(event) => {
               const target = event.target as HTMLElement;
-              if (
-                !target.closest(".quiz-container-opt") &&
-                !target.closest("#basic-menu")
-              ) {
+              if (!target.closest(".quiz-container-opt")) {
                 navigate(`/edit-quiz/${quiz.id}`);
               }
             }}
@@ -132,78 +136,82 @@ export default function MyQuizzes() {
             />
             <Box className="quiz-container-opt">
               <IconButton
-                aria-label="more"
-                id="long-button"
-                aria-controls={open ? "basic-menu" : undefined}
-                aria-expanded={open ? "true" : undefined}
+                aria-label={`Mogućnosti kviza ${quiz.title}`}
                 aria-haspopup="true"
                 onClick={(event) => {
                   event.stopPropagation();
-                  handleClick(event);
+                  setMenu({ anchor: event.currentTarget, quiz });
                 }}
               >
                 <MoreVertIcon />
               </IconButton>
-              <Menu
-                id="basic-menu"
-                anchorEl={anchorEl}
-                open={open}
-                onClose={handleClose}
-                MenuListProps={{
-                  "aria-labelledby": "basic-button",
-                }}
-              >
-                {quiz.isPrivate && (
-                  <MenuItem
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      handleVisibilityChange(quiz, true);
-                    }}
-                  >
-                    Učini javnim
-                  </MenuItem>
-                )}
-                {!quiz.isPrivate && (
-                  <MenuItem
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      handleVisibilityChange(quiz, false);
-                    }}
-                  >
-                    Učini privatnim
-                  </MenuItem>
-                )}
-                <MenuItem
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    setCurrentQuiz(quiz);
-                    setInputDrawer(true);
-                    handleClose();
-                  }}
-                >
-                  Promijeni ime
-                </MenuItem>
-                <MenuItem
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    handleDelete(quiz.id);
-                  }}
-                >
-                  Izbriši
-                </MenuItem>
-                <MenuItem
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    navigate(`/quiz-details/${quiz.id}`);
-                  }}
-                >
-                  Detalji
-                </MenuItem>
-              </Menu>
             </Box>
           </Grid>
         ))}
       </Grid>
+      <Menu
+        id="basic-menu"
+        anchorEl={menu?.anchor}
+        open={Boolean(menu?.anchor)}
+        onClose={handleClose}
+      >
+        {menu?.quiz.isPrivate ? (
+          <MenuItem onClick={() => handleVisibilityChange(menu.quiz, true)}>
+            Učini javnim
+          </MenuItem>
+        ) : (
+          <MenuItem
+            onClick={() => menu && handleVisibilityChange(menu.quiz, false)}
+          >
+            Učini privatnim
+          </MenuItem>
+        )}
+        <MenuItem
+          onClick={() => {
+            if (menu) {
+              setCurrentQuiz(menu.quiz);
+              setQuizTitle(menu.quiz.title);
+              setInputDrawer(true);
+            }
+            handleClose();
+          }}
+        >
+          Promijeni ime
+        </MenuItem>
+        <MenuItem
+          onClick={() => {
+            if (menu) setQuizToDelete(menu.quiz);
+            handleClose();
+          }}
+        >
+          Izbriši
+        </MenuItem>
+        <MenuItem
+          onClick={() => menu && navigate(`/quiz-details/${menu.quiz.id}`)}
+        >
+          Detalji
+        </MenuItem>
+      </Menu>
+      <Dialog open={quizToDelete !== null} onClose={() => setQuizToDelete(null)}>
+        <DialogTitle>Obriši kviz</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Jeste li sigurni da želite obrisati kviz „{quizToDelete?.title}”?
+            {quizToDelete?.quizGameCount
+              ? ` Broj spremljenih rezultata koji će biti trajno obrisani: ${quizToDelete.quizGameCount}.`
+              : ""}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setQuizToDelete(null)}>Odustani</Button>
+          <Button
+            color="error"
+            onClick={() => quizToDelete && handleDelete(quizToDelete.id)}
+          >
+            Obriši
+          </Button>
+        </DialogActions>
+      </Dialog>
       <Pagination
         page={currentPage}
         count={quizzes ? Math.ceil(quizzes.length / postsPerPage) : 1}
@@ -227,13 +235,14 @@ export default function MyQuizzes() {
             placeholder="Naslov kviza"
             fullWidth
             required
+            inputProps={{ maxLength: 100 }}
             value={quizTitle}
             onChange={(e) => setQuizTitle(e.target.value)}
           />
           <Button
             variant="contained"
             onClick={() => {
-              quizTitle ? handleNameChange() : null;
+              quizTitle.trim() ? handleNameChange() : null;
             }}
             style={{
               backgroundColor: "#553b08",
