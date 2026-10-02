@@ -13,7 +13,7 @@ namespace Prometej_core.Services.Contracts
     {
         List<QuizBaseModel> getAllPublicQuizzes();
 
-        List<QuizBaseModel> searchQuizzes(string search);
+        List<QuizBaseModel> searchQuizzes(string? search);
         List<CreatorQuizViewModel> getAllUserQuizzes(int id);
         QuizViewModel GetQuiz(int id, int? code, int? callerId, bool isAdmin);
         QuizViewModel GetQuizByCode(int quizCode);

@@ -16,6 +16,8 @@ namespace Prometej_persistance
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            // Quiz search compares text without its diacritics.
+            modelBuilder.HasPostgresExtension("unaccent");
             modelBuilder.Entity<User>().HasIndex(u => u.Email).IsUnique();
             // Only a private quiz has an entry code; PostgreSQL lets any number of rows hold NULL.
             modelBuilder.Entity<Quiz>().HasIndex(q => q.EntryCode).IsUnique();

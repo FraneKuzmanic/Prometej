@@ -188,9 +188,9 @@ namespace Prometej_tests
             var publicQuiz = await CreateQuiz(teacher);
             var anonymous = factory.CreateHttpsClient();
 
-            var privateHits = await anonymous.GetStringAsync($"/api/quiz/search/{privateQuiz.Title}");
-            var publicHits = await anonymous.GetStringAsync($"/api/quiz/search/{publicQuiz.Title}");
-            var byCreator = await anonymous.GetStringAsync("/api/quiz/search/Tea");
+            var privateHits = await anonymous.GetStringAsync($"/api/quiz/search?query={privateQuiz.Title}");
+            var publicHits = await anonymous.GetStringAsync($"/api/quiz/search?query={publicQuiz.Title}");
+            var byCreator = await anonymous.GetStringAsync("/api/quiz/search?query=Tea");
 
             Assert.Equal("[]", privateHits);
             Assert.Contains(publicQuiz.Title, publicHits);

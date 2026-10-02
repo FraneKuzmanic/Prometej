@@ -5,6 +5,7 @@ using Prometej_core.Auth;
 using Prometej_core.Models.Dtos;
 using Prometej_core.Models.Requests.Quiz;
 using Prometej_core.Services.Contracts;
+using System.ComponentModel.DataAnnotations;
 
 namespace Prometej_api.Controllers
 {
@@ -25,8 +26,8 @@ namespace Prometej_api.Controllers
             return Ok(_quizService.getAllPublicQuizzes());
         }
 
-        [HttpGet("search/{query}")]
-        public IActionResult SearchQuizzes(string query)
+        [HttpGet("search")]
+        public IActionResult SearchQuizzes([FromQuery, StringLength(100)] string? query)
         {
             return Ok(_quizService.searchQuizzes(query));
         }

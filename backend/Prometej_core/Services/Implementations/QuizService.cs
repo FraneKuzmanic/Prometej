@@ -44,9 +44,21 @@ namespace Prometej_core.Services.Implementations
             return quizBaseModels;
         }
 
-        public List<QuizBaseModel> searchQuizzes(string search)
+        public List<QuizBaseModel> searchQuizzes(string? search)
         {
-            var quizes = _quizRepository.ReadAll().Include(q => q.Creator).Where(q => !q.IsPrivate).Where(q => q.Title.Contains(search) || search.Contains(q.Creator.FirstName) || search.Contains(q.Creator.LastName) || q.Creator.FirstName.Contains(search) || q.Creator.LastName.Contains(search)).ToList();
+            if (string.IsNullOrWhiteSpace(search))
+            {
+                return getAllPublicQuizzes();
+            }
+
+            // The query is text to find, so the characters LIKE reads as wildcards are escaped.
+            var pattern = "%" + search.Trim().Replace("\\", "\\\\").Replace("%", "\\%").Replace("_", "\\_") + "%";
+            // unaccent on both sides first: what ILIKE then compares is plain ASCII, so the
+            // match ignores case and diacritics whatever the database's locale is.
+            var quizes = _quizRepository.ReadAll().Include(q => q.Creator).Where(q => !q.IsPrivate)
+                .Where(q => EF.Functions.ILike(EF.Functions.Unaccent(q.Title), EF.Functions.Unaccent(pattern), "\\")
+                         || EF.Functions.ILike(EF.Functions.Unaccent(q.Creator.FirstName + " " + q.Creator.LastName), EF.Functions.Unaccent(pattern), "\\"))
+                .ToList();
             List<QuizBaseModel> quizBaseModels = _mapper.Map<List<QuizBaseModel>>(quizes);
 
             return quizBaseModels;
