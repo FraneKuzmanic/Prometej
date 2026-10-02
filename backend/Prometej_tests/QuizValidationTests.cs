@@ -176,6 +176,14 @@ namespace Prometej_tests
             var nulled = (await GetQuiz(teacher, id)).GetProperty("questions")[0];
             Assert.Equal(JsonValueKind.Null, nulled.GetProperty("hintText").ValueKind);
             Assert.Equal(JsonValueKind.Null, nulled.GetProperty("exploreMore").ValueKind);
+
+            var createdWithNull = await teacher.PostAsJsonAsync("/api/quiz/create", new
+            {
+                quiz = new { title = "Kviz", isPrivate = false },
+                questions = new[] { Question(hint: null, exploreMore: null) },
+            });
+
+            Assert.Equal(HttpStatusCode.Created, createdWithNull.StatusCode);
         }
 
         [Fact]

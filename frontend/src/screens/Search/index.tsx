@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { RootState, useAppDispatch } from "../../store/store";
 import { useSelector } from "react-redux";
 import { Box, Button, Typography } from "@mui/material";
@@ -16,13 +16,15 @@ export default function SearchContent() {
   const [searchParams] = useSearchParams();
   const query = (searchParams.get("q") ?? "").trim();
   const tooShort = query.length < 2;
+  // Changes on every navigation, so Enter on the same query searches again.
+  const { key } = useLocation();
 
   useEffect(() => {
     if (tooShort) return;
     const request = dispatch(searchPeriodContent(query));
     // A newer search drops this request, so its late answer cannot replace the newer results.
     return () => request.abort();
-  }, [dispatch, query, tooShort]);
+  }, [dispatch, query, tooShort, key]);
 
   if (tooShort) {
     return (

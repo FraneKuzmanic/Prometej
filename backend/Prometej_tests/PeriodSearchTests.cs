@@ -114,6 +114,24 @@ namespace Prometej_tests
         }
 
         [Fact]
+        public async Task A_match_at_either_end_of_a_long_paragraph_is_cut_on_one_side_only()
+        {
+            var (first, last) = (Word(), Word());
+            var filler = string.Concat(Enumerable.Repeat("riječ ", 170));
+            await Write(8, $"<p>{first} {filler}{last}</p>");
+
+            var (_, atStart) = Assert.Single(Passages(Assert.Single(await Search(first))));
+            var (_, atEnd) = Assert.Single(Passages(Assert.Single(await Search(last))));
+
+            Assert.InRange(atStart.Length, 200, 301);
+            Assert.StartsWith($"{first} riječ ", atStart);
+            Assert.EndsWith(" riječ…", atStart);
+            Assert.InRange(atEnd.Length, 200, 301);
+            Assert.StartsWith("…riječ ", atEnd);
+            Assert.EndsWith($" riječ {last}", atEnd);
+        }
+
+        [Fact]
         public async Task A_query_that_cannot_match_returns_nothing_and_one_too_long_is_refused()
         {
             await Write(6, "<p>Antika</p>");

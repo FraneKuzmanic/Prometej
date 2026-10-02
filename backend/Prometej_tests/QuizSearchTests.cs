@@ -100,6 +100,22 @@ namespace Prometej_tests
         }
 
         [Fact]
+        public async Task Search_survives_a_query_with_an_apostrophe_or_a_url_character()
+        {
+            var teacher = await factory.LoginAs(ApiFactory.TeacherEmail);
+            var word = Word();
+            await CreateQuiz(teacher, $"O'Brien {word}");
+
+            Assert.Equal([$"O'Brien {word}"], await Search($"o'brien {word}"));
+            foreach (var query in new[] { "a/b", "a#b", "tko?" })
+            {
+                Assert.Equal(HttpStatusCode.OK, (await Get(query)).StatusCode);
+            }
+
+            Assert.Empty(await Search("a\0b"));
+        }
+
+        [Fact]
         public async Task A_blank_query_returns_every_public_quiz_and_one_too_long_is_refused()
         {
             var teacher = await factory.LoginAs(ApiFactory.TeacherEmail);

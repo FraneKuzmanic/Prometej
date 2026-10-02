@@ -135,6 +135,10 @@ const quizSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
+    // Cleared first, so "no quizzes" is never said about a list another screen left here.
+    builder.addCase(fetchAllPublicQuizzes.pending, (state) => {
+      state.quizzes = undefined;
+    });
     builder.addCase(fetchAllPublicQuizzes.fulfilled, (state, action: PayloadAction<QuizBaseModel[]>) => {
       state.quizzes = action.payload;
     });

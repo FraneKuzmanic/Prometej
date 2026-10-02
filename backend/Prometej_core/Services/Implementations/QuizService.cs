@@ -51,6 +51,13 @@ namespace Prometej_core.Services.Implementations
                 return getAllPublicQuizzes();
             }
 
+            // PostgreSQL text cannot hold a NUL character, so no title has one and the query
+            // could not even be sent.
+            if (search.Contains('\0'))
+            {
+                return [];
+            }
+
             // The query is text to find, so the characters LIKE reads as wildcards are escaped.
             var pattern = "%" + search.Trim().Replace("\\", "\\\\").Replace("%", "\\%").Replace("_", "\\_") + "%";
             // unaccent on both sides first: what ILIKE then compares is plain ASCII, so the
@@ -277,8 +284,8 @@ namespace Prometej_core.Services.Implementations
 
         // The shape of a question (nothing empty, nothing too long, a correct option of 1 to 4) is
         // checked on the request models. What is stored is the trimmed text, so two options that
-        // differ only by spaces around them are the same option, and a hint or further reading
-        // of nothing but spaces is none.
+        // differ only by spaces around them are the same option, and a hint or an explore more
+        // text of nothing but spaces is none.
         private static void TrimAndCheck(IEnumerable<QuestionCreateRequest> questions)
         {
             foreach (var question in questions)

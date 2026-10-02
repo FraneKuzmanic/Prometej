@@ -53,7 +53,6 @@ const periodSlice = createSlice({
     });
     builder.addCase(fetchPeriodContent.fulfilled, (state, action: PayloadAction<PeriodContentViewModel>) => {
       state.periodContent = action.payload;
-      state.searchContent = undefined;
     });
     // Cleared first, so one search never shows the results of the one before it.
     builder.addCase(searchPeriodContent.pending, (state) => {
