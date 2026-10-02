@@ -29,8 +29,10 @@ import {
   deleteCurrentUser,
 } from "../../../store/slices/userSlice";
 import { useLocation } from "react-router-dom";
-import { searchQuizzes } from "../../../store/slices/quizSlice";
-import { searchPeriodContent } from "../../../store/slices/periodSlice";
+import {
+  fetchAllPublicQuizzes,
+  searchQuizzes,
+} from "../../../store/slices/quizSlice";
 
 interface HeaderProps {
   toggle: boolean;
@@ -61,10 +63,13 @@ export default function Header({ toggle, toggleSidebar }: HeaderProps) {
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
+      const query = search.trim();
       if (pathname.includes("/learning") || pathname.includes("/search")) {
-        dispatch(searchPeriodContent(search)).then(() => navigate("/search"));
+        // The search screen reads the query from the address and fetches the results.
+        navigate(`/search?q=${encodeURIComponent(query)}`);
       } else if (pathname.includes("/quizzes")) {
-        dispatch(searchQuizzes(search));
+        if (query) dispatch(searchQuizzes(query));
+        else dispatch(fetchAllPublicQuizzes());
       }
     }
   };
@@ -155,7 +160,7 @@ export default function Header({ toggle, toggleSidebar }: HeaderProps) {
           </SearchIconWrapper>
           <StyledInputBase
             placeholder="Pretraži..."
-            inputProps={{ "aria-label": "search" }}
+            inputProps={{ "aria-label": "search", maxLength: 100 }}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             onKeyDown={handleKeyDown}

@@ -15,7 +15,15 @@ export interface PeriodContentViewModel{
     content: string;
 }
 
+export interface PeriodSearchPassage{
+    // the nearest heading above the passage
+    heading: string | null;
+    text: string;
+}
+
 export interface PeriodSearchContent{
     periodId: number;
-    searchContent: string;
+    // how many passages of the Period match; only the first few are sent
+    matchCount: number;
+    passages: PeriodSearchPassage[];
 }

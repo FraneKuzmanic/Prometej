@@ -9,7 +9,7 @@ const { quiz } = endpoints;
 export default {
   getAll: () => axios.get(`${quiz.base}/getAll`),
   getAllUserQuizzes: (userId: number) => axios.get(`${quiz.base}/getAllUserQuizzes/${userId}`),
-  search: (query: string) => axios.get(`${quiz.base}/search/${query}`),
+  search: (query: string) => axios.get(`${quiz.base}/search`, { params: { query } }),
   get: (quizId: number, code?: string) => axios.get(`${quiz.base}/get/${quizId}`, { params: { code } }),
   create: (data: CreateQuizPayload) => axios.post(`${quiz.base}/create`, data),
   Update: (data: UpdateQuizPayload) => axios.put(`${quiz.base}/update`, data),

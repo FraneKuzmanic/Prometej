@@ -1,4 +1,4 @@
-import { Box, Grid, Pagination } from "@mui/material";
+import { Box, Grid, Pagination, Typography } from "@mui/material";
 import QuizContainer from "../../components/QuizContainer";
 import { useEffect, useState } from "react";
 import { RootState, useAppDispatch } from "../../store/store";
@@ -18,6 +18,11 @@ export default function Quizzes() {
   useEffect(() => {
     dispatch(fetchAllPublicQuizzes());
   }, [dispatch]);
+
+  // A search can leave fewer pages than the one that was open.
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [quizzes]);
 
   const indexOfLastPost = currentPage * postsPerPage;
   const indexOfFirstPost = indexOfLastPost - postsPerPage;
@@ -56,18 +61,22 @@ export default function Quizzes() {
           </Grid>
         ))}
       </Grid>
-      <Pagination
-        page={currentPage}
-        count={quizzes ? Math.ceil(quizzes.length / postsPerPage) : 1}
-        onChange={(_event, value: number) => handlePageChange(value)}
-        className="pagination"
-        sx={{
-          position: "absolute",
-          bottom: 0,
-          left: "50%",
-          transform: "translateX(-50%)",
-        }}
-      />
+      {quizzes?.length === 0 ? (
+        <Typography>Nema kvizova za prikaz.</Typography>
+      ) : (
+        <Pagination
+          page={currentPage}
+          count={quizzes ? Math.ceil(quizzes.length / postsPerPage) : 1}
+          onChange={(_event, value: number) => handlePageChange(value)}
+          className="pagination"
+          sx={{
+            position: "absolute",
+            bottom: 0,
+            left: "50%",
+            transform: "translateX(-50%)",
+          }}
+        />
+      )}
     </Box>
   );
 }

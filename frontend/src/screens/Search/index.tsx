@@ -1,24 +1,63 @@
-import { useNavigate } from "react-router-dom";
-import { RootState } from "../../store/store";
+import { useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { RootState, useAppDispatch } from "../../store/store";
 import { useSelector } from "react-redux";
-import { Box, Button } from "@mui/material";
-import { PeriodSearchContent } from "../../types/models/Period";
+import { Box, Button, Typography } from "@mui/material";
+import { searchPeriodContent } from "../../store/slices/periodSlice";
 import "./styles.css";
 
 export default function SearchContent() {
   const navigate = useNavigate();
-  const { searchContent } = useSelector((state: RootState) => state.period);
+  const dispatch = useAppDispatch();
+  const { searchContent, searchFailed } = useSelector(
+    (state: RootState) => state.period
+  );
+  // The query is in the address, so a search can be reloaded or sent to someone.
+  const [searchParams] = useSearchParams();
+  const query = (searchParams.get("q") ?? "").trim();
+  const tooShort = query.length < 2;
+
+  useEffect(() => {
+    if (tooShort) return;
+    const request = dispatch(searchPeriodContent(query));
+    // A newer search drops this request, so its late answer cannot replace the newer results.
+    return () => request.abort();
+  }, [dispatch, query, tooShort]);
+
+  if (tooShort) {
+    return (
+      <Typography>Upišite najmanje dva znaka za pretraživanje.</Typography>
+    );
+  }
+  if (searchFailed) {
+    return <Typography>Pretraživanje nije uspjelo. Pokušajte ponovno.</Typography>;
+  }
+  if (!searchContent) {
+    return null;
+  }
+  if (searchContent.length === 0) {
+    return <Typography>Nema rezultata za „{query}”.</Typography>;
+  }
 
   return (
     <Box sx={{ width: "100%" }}>
-      {searchContent?.map((content: PeriodSearchContent) => (
+      {searchContent.map((content) => (
         <Box key={content.periodId}>
-          <Box
-            className="content"
-            dangerouslySetInnerHTML={{
-              __html: content.searchContent,
-            }}
-          />
+          {content.passages.map((passage, index) => (
+            <Box className="search-passage" key={index}>
+              {passage.heading && (
+                <Typography variant="h6" component="h2">
+                  {passage.heading}
+                </Typography>
+              )}
+              <Typography>{passage.text}</Typography>
+            </Box>
+          ))}
+          {content.matchCount > content.passages.length && (
+            <Typography variant="body2" color="text.secondary">
+              Broj podudaranja u ovom razdoblju: {content.matchCount}.
+            </Typography>
+          )}
           <Button
             onClick={() => navigate(`/learning/${content.periodId}`)}
             variant="text"

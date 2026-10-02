@@ -6,11 +6,13 @@ import { PeriodContentViewModel, PeriodContentEditRequest, PeriodSearchContent }
 interface PeriodState {
     periodContent: PeriodContentViewModel | undefined;
     searchContent: PeriodSearchContent[] | undefined;
+    searchFailed: boolean;
 }
 
 const initialState: PeriodState = {
     periodContent: undefined,
     searchContent: undefined,
+    searchFailed: false,
 };
 
 const fetchPeriodContent = createAsyncThunk(
@@ -53,8 +55,19 @@ const periodSlice = createSlice({
       state.periodContent = action.payload;
       state.searchContent = undefined;
     });
+    // Cleared first, so one search never shows the results of the one before it.
+    builder.addCase(searchPeriodContent.pending, (state) => {
+      state.searchContent = undefined;
+      state.searchFailed = false;
+    });
     builder.addCase(searchPeriodContent.fulfilled, (state, action: PayloadAction<PeriodSearchContent[]>) => {
       state.searchContent = action.payload;
+    });
+    // An aborted request is one the screen has already replaced with another.
+    builder.addCase(searchPeriodContent.rejected, (state, action) => {
+      if (!action.meta.aborted) {
+        state.searchFailed = true;
+      }
     });
   }
 });
