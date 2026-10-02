@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Prometej_core.Auth;
 using Prometej_core.Models.Requests.Period;
 using Prometej_core.Services.Contracts;
+using System.ComponentModel.DataAnnotations;
 
 namespace Prometej_api.Controllers
 {
@@ -23,8 +24,8 @@ namespace Prometej_api.Controllers
             return Ok(_periodService.GetPeriodContent(id));
         }
 
-        [HttpGet("content/search/{query}")]
-        public IActionResult SearchPeriodContent(string query)
+        [HttpGet("content/search")]
+        public IActionResult SearchPeriodContent([FromQuery, StringLength(100)] string? query)
         {
             return Ok(_periodService.SearchPeriodContent(query));
         }

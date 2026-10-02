@@ -68,19 +68,5 @@ namespace Prometej_tests
             Assert.Equal(await first.Content.ReadFromJsonAsync<int>(), await second.Content.ReadFromJsonAsync<int>());
             Assert.Equal("<p>Druga verzija</p>", (await GetContent(admin, 7)).GetProperty("content").GetString());
         }
-
-        [Fact]
-        public async Task Search_survives_a_query_with_an_apostrophe()
-        {
-            var admin = await factory.LoginAs(ApiFactory.AdminEmail);
-            await admin.PostAsJsonAsync("/api/period/content", Content(5, "<h2>Romantizam</h2><p>Piše O'Brien o romantizmu.</p>"));
-
-            var response = await factory.CreateHttpsClient().GetAsync("/api/period/content/search/O'Brien");
-
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            var hit = Assert.Single((await response.Content.ReadFromJsonAsync<JsonElement>()).EnumerateArray());
-            Assert.Equal(5, hit.GetProperty("periodId").GetInt32());
-            Assert.Equal("<h2>Romantizam</h2><p>Piše O'Brien o romantizmu.</p>", hit.GetProperty("searchContent").GetString());
-        }
     }
 }

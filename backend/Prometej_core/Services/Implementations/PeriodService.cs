@@ -37,62 +37,161 @@ namespace Prometej_core.Services.Implementations
             return periodViewModel;
         }
 
-        public List<PeriodSearchContentViewModel> SearchPeriodContent(string query)
+        // The search reads the text of these elements, which is what the editor writes. Markup is
+        // never matched, and text outside them (a table cell, a bare div) is not searched.
+        private static readonly HashSet<string> HeadingTags = ["h1", "h2", "h3", "h4", "h5", "h6"];
+        private static readonly HashSet<string> BlockTags = [.. HeadingTags, "p", "li", "blockquote", "pre"];
+        private const int MaxPassagesPerPeriod = 3;
+        private const int SnippetLength = 300;
+
+        public List<PeriodSearchContentViewModel> SearchPeriodContent(string? query)
         {
-            List<PeriodSearchContentViewModel> searchResults = new List<PeriodSearchContentViewModel>();
-
-            var periodEntities = _periodRepository.ReadAll().ToList();
-            List<PeriodContentViewModel> periodViewModels = _mapper.Map<List<PeriodContentViewModel>>(periodEntities);
-
-            foreach (PeriodContentViewModel periodContent in periodViewModels)
+            var foldedQuery = Fold(CleanText(query ?? ""));
+            // One letter matches nearly every paragraph.
+            if (foldedQuery.Length < 2)
             {
-                if (periodContent.Content.Contains(query))
-                {
-                    string searchContent = ConstructSearchContent(periodContent.Content, query);
+                return [];
+            }
 
-                    PeriodSearchContentViewModel searchResult = new PeriodSearchContentViewModel
+            // Every Period Content is loaded and searched in memory: there is no text to compare
+            // until its HTML is parsed, and the Periods are a short, fixed list.
+            var periodEntities = _periodRepository.ReadAll().OrderBy(p => p.PeriodId).ToList();
+
+            var searchResults = new List<PeriodSearchContentViewModel>();
+            foreach (var periodContent in periodEntities)
+            {
+                var htmlDoc = new HtmlDocument();
+                htmlDoc.LoadHtml(periodContent.Content);
+
+                string? heading = null;
+                var matchCount = 0;
+                var passages = new List<PeriodSearchPassageViewModel>();
+                foreach (var block in htmlDoc.DocumentNode.Descendants().Where(IsInnermostBlock))
+                {
+                    var text = TextOf(block);
+                    if (text.Length == 0)
+                    {
+                        continue;
+                    }
+
+                    var isHeading = HeadingTags.Contains(block.Name);
+                    if (isHeading)
+                    {
+                        heading = text;
+                    }
+
+                    // Folding keeps one character per character, so the index found in the
+                    // folded text is the place of the match in the text itself.
+                    var matchIndex = Fold(text).IndexOf(foldedQuery, StringComparison.Ordinal);
+                    if (matchIndex < 0)
+                    {
+                        continue;
+                    }
+
+                    matchCount++;
+                    if (passages.Count < MaxPassagesPerPeriod)
+                    {
+                        passages.Add(new PeriodSearchPassageViewModel
+                        {
+                            Heading = isHeading ? null : heading,
+                            Text = Snippet(text, matchIndex, foldedQuery.Length),
+                        });
+                    }
+                }
+
+                if (matchCount > 0)
+                {
+                    searchResults.Add(new PeriodSearchContentViewModel
                     {
                         PeriodId = periodContent.PeriodId,
-                        SearchContent = searchContent
-                    };
-
-                    searchResults.Add(searchResult);
+                        MatchCount = matchCount,
+                        Passages = passages,
+                    });
                 }
-
             }
 
-                return searchResults;
-
+            return searchResults;
         }
 
-        public string ConstructSearchContent(string content, string query)
+        private static bool IsInnermostBlock(HtmlNode node) =>
+            BlockTags.Contains(node.Name) && !node.Descendants().Any(d => BlockTags.Contains(d.Name));
+
+        // The text a reader sees: inline markup dropped, entities decoded, a line break read as a space.
+        private static string TextOf(HtmlNode block)
         {
-            HtmlDocument htmlDoc = new HtmlDocument();
-            htmlDoc.LoadHtml(content);
-
-            // Find the paragraph (<p>) tag containing the query
-            // Filtered here rather than inside the XPath: a query containing a quote would break the expression.
-            HtmlNode? paragraphNode = htmlDoc.DocumentNode.SelectNodes("//p")?.FirstOrDefault(p => p.InnerText.Contains(query));
-
-            if (paragraphNode != null)
+            var raw = new StringBuilder();
+            foreach (var node in block.Descendants())
             {
-                // Find the closest preceding h2 tag
-                HtmlNode h2Tag = paragraphNode.SelectSingleNode("preceding-sibling::h2");
-
-                if (h2Tag != null)
+                if (node is HtmlTextNode textNode)
                 {
-                    // Return the outer HTML of both the h2 tag and the paragraph
-                    return h2Tag.OuterHtml + paragraphNode.OuterHtml;
+                    raw.Append(textNode.Text);
                 }
-                else
+                else if (node.Name == "br")
                 {
-                    // If no preceding h2 tag is found, return just the outer HTML of the paragraph
-                    return paragraphNode.OuterHtml;
+                    raw.Append(' ');
                 }
             }
 
-            // If the paragraph containing the query is not found, return an empty string
-            return string.Empty;
+            return CleanText(HtmlEntity.DeEntitize(raw.ToString()));
+        }
+
+        // Composed characters and single spaces, so "š" is one character however it was typed.
+        private static string CleanText(string text) =>
+            string.Join(' ', text.Normalize(NormalizationForm.FormC).Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
+
+        // Lower case without diacritics, one character for each character of the text.
+        private static string Fold(string text) =>
+            string.Create(text.Length, text, (folded, source) =>
+            {
+                for (var i = 0; i < source.Length; i++)
+                {
+                    folded[i] = FoldCharacter(source[i]);
+                }
+            });
+
+        private static char FoldCharacter(char character)
+        {
+            // "đ" is a letter of its own in Unicode and does not decompose into "d" and a stroke.
+            if (character is 'đ' or 'Đ')
+            {
+                return 'd';
+            }
+
+            var lower = char.ToLowerInvariant(character);
+            if (lower < 128 || char.IsSurrogate(lower))
+            {
+                return lower;
+            }
+
+            return lower.ToString().Normalize(NormalizationForm.FormD)[0];
+        }
+
+        // A short text whole; otherwise the words around the match, cut at spaces.
+        private static string Snippet(string text, int matchIndex, int matchLength)
+        {
+            if (text.Length <= SnippetLength)
+            {
+                return text;
+            }
+
+            var start = Math.Max(0, matchIndex - (SnippetLength - matchLength) / 2);
+            var end = Math.Min(text.Length, start + SnippetLength);
+            start = Math.Max(0, end - SnippetLength);
+
+            if (start > 0)
+            {
+                var space = text.IndexOf(' ', start, matchIndex - start);
+                start = space < 0 ? start : space + 1;
+            }
+
+            if (end < text.Length)
+            {
+                var matchEnd = matchIndex + matchLength;
+                var space = text.LastIndexOf(' ', end - 1, end - matchEnd);
+                end = space < 0 ? end : space;
+            }
+
+            return (start > 0 ? "…" : "") + text[start..end] + (end < text.Length ? "…" : "");
         }
 
         public int UpdatePeriodContent(PeriodContentEditRequest period)
