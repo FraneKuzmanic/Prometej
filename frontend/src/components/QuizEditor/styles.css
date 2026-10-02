@@ -5,6 +5,10 @@
     background-position: center;
     height: 100vh;
     position: relative;
+    box-sizing: border-box;
+    /* the question strip is fixed over the bottom: its height and its padding */
+    padding-bottom: calc(18vh + 4rem);
+    overflow-y: auto;
 }
 
 .questions-nav{
@@ -88,12 +92,9 @@
 }
 
 .quiz-editor-message{
-    position: fixed;
-    /* above the question strip: its height, its padding, and a gap */
-    bottom: calc(18vh + 5rem);
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 1;
+    /* in the flow above the question, so it pushes the fields down instead of covering one */
+    width: fit-content;
+    margin: 0 auto;
 }
 
 .buttons-wrapper{

@@ -61,8 +61,8 @@ export interface QuestionViewModel {
     thirdAnswer:string
     fourthAnswer:string
     correctOption:number
-    hintText:string
-    exploreMore:string
+    hintText:string | null
+    exploreMore:string | null
 }
 
 export interface AnswerCreateRequest{

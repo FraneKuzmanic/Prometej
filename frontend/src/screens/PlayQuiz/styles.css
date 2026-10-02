@@ -1,5 +1,7 @@
 .play-quiz-screen-wrapper{
-    height: 100vh;
+    min-height: 100vh;
+    box-sizing: border-box;
+    padding: 20px 0;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -11,8 +13,9 @@
 
 .quiz-play-container{
     width:600px;
-    height:600px;
-    position: relative;
+    min-height:600px;
+    display: flex;
+    flex-direction: column;
 }
 
 .quiz-play-title.MuiTypography-root{
@@ -68,9 +71,29 @@
     pointer-events: none;
 }
 
+.quiz-play-hint-row{
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.quiz-play-hint{
+    flex: 1;
+}
+
+.quiz-play-explore{
+    margin-top: 15px;
+    padding: 10px 20px;
+    border-left: 3px solid #78C1F3;
+}
+
+.quiz-play-hint, .quiz-play-explore{
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+}
+
 .quiz-play-footer{
-    position: absolute;
-    bottom: 0;
+    margin-top: auto;
     display: flex;
     justify-content: space-between;
     box-sizing: border-box;

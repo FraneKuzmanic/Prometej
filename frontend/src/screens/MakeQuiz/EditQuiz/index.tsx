@@ -45,7 +45,11 @@ export default function EditQuiz() {
       key={quiz.id}
       initialTitle={quiz.title}
       initialIsPrivate={quiz.isPrivate}
-      initialQuestions={quiz.questions}
+      initialQuestions={quiz.questions.map((question) => ({
+        ...question,
+        hintText: question.hintText ?? "",
+        exploreMore: question.exploreMore ?? "",
+      }))}
       onSave={saveQuiz}
       onCancel={() => navigate("/my-quizzes")}
     />

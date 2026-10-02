@@ -21,6 +21,20 @@ const options = [
   { letter: "D", field: "fourthAnswer", number: 4 },
 ] as const;
 
+// Both are optional. A Student can open the Hint before answering and sees Explore More after.
+const explanations = [
+  {
+    field: "hintText",
+    id: "question-hint",
+    caption: "Pomoć prije odgovora (neobavezno)",
+  },
+  {
+    field: "exploreMore",
+    id: "question-explore-more",
+    caption: "Saznaj više nakon odgovora (neobavezno)",
+  },
+] as const;
+
 export default function QuestionContainer({
   currentQuestion,
   handleQuestionChange,
@@ -78,6 +92,28 @@ export default function QuestionContainer({
           </Grid>
         ))}
       </Grid>
+      <Box className="explanations">
+        {explanations.map(({ field, id, caption }) => (
+          <Box className="explanation" key={field}>
+            <Typography className="explanation-caption" component="span">
+              {caption}
+            </Typography>
+            <TextField
+              className="explanation-input"
+              id={id}
+              size="small"
+              fullWidth
+              multiline
+              maxRows={2}
+              inputProps={{ maxLength: 1000, "aria-label": caption }}
+              value={currentQuestion ? currentQuestion[field] : ""}
+              onChange={(e) =>
+                handleQuestionChange(selected, { [field]: e.target.value })
+              }
+            />
+          </Box>
+        ))}
+      </Box>
     </Box>
   );
 }

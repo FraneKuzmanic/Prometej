@@ -12,8 +12,10 @@ import {
   submitQuiz,
 } from "../../store/slices/quizSlice";
 import {
+  Alert,
   Box,
   Button,
+  IconButton,
   LinearProgress,
   List,
   ListItemText,
@@ -37,6 +39,8 @@ export default function PlayQuiz() {
   const [showScore, setShowScore] = useState(false);
   // which of the four answers was clicked, 1 to 4; undefined until the Question is answered
   const [chosenOption, setChosenOption] = useState<number>();
+  // Opening the Hint is the Student's choice; it does not change the Score.
+  const [hintShown, setHintShown] = useState(false);
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const { id } = useParams();
@@ -66,6 +70,7 @@ export default function PlayQuiz() {
     setCurrentQuestionNo(currentQuestionNo + 1);
     setQuestionAnswered(false);
     setChosenOption(undefined);
+    setHintShown(false);
   };
 
   const handleAnswer = (option: number) => {
@@ -133,7 +138,7 @@ export default function PlayQuiz() {
           </Box>
           <Box className="quiz-play-content">
             <Typography variant="h4" className="quiz-play-question">
-              {currentQuestionNo + 1}. {currentQuestion.questionTitle}?
+              {currentQuestionNo + 1}. {currentQuestion.questionTitle}
             </Typography>
             <List className="quiz-play-answers">
               {[
@@ -164,18 +169,29 @@ export default function PlayQuiz() {
                   </ListItemText>
                 );
               })}
-              <Box
-                sx={{
-                  position: "absolute",
-                  bottom: -70,
-                  left: 5,
-                  cursor: "pointer",
-                }}
-              >
-                <img width={30} height={30} src="/hint-icon.png"></img>
-              </Box>
             </List>
-            {}
+            {currentQuestion.hintText && (
+              <Box className="quiz-play-hint-row">
+                <IconButton
+                  aria-label="Prikaži pomoć"
+                  aria-expanded={hintShown}
+                  onClick={() => setHintShown(!hintShown)}
+                >
+                  <img width={30} height={30} src="/hint-icon.png" alt="" />
+                </IconButton>
+                {hintShown && (
+                  <Alert severity="info" icon={false} className="quiz-play-hint">
+                    {currentQuestion.hintText}
+                  </Alert>
+                )}
+              </Box>
+            )}
+            {chosenOption !== undefined && currentQuestion.exploreMore && (
+              <Box className="quiz-play-explore">
+                <Typography variant="subtitle2">Saznaj više</Typography>
+                <Typography>{currentQuestion.exploreMore}</Typography>
+              </Box>
+            )}
           </Box>
           <Box className="quiz-play-footer">
             <Typography>
