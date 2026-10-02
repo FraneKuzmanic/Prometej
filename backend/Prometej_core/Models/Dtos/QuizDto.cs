@@ -1,4 +1,5 @@
-﻿using Prometej_core.Models.Requests.Quiz;
+﻿using Prometej_core.Models.Requests;
+using Prometej_core.Models.Requests.Quiz;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Collections.Generic;
@@ -12,7 +13,7 @@ namespace Prometej_core.Models.Dtos
     {
         [Required]
         public required QuizCreateRequest Quiz { get; set; }
-        [Required, MinLength(1)]
+        [Required, MinLength(1), NoNullItems]
         public required List<QuestionCreateRequest> Questions { get; set; }
     }
 
@@ -21,7 +22,7 @@ namespace Prometej_core.Models.Dtos
         [Required]
         public required QuizEditRequest Quiz { get; set; }
         // Left out: the questions stay as they are. Sent: this is the whole set.
-        [MinLength(1)]
+        [MinLength(1), NoNullItems]
         public List<QuestionEditRequest>? Questions { get; set; }
     }
 }

@@ -153,6 +153,7 @@ namespace Prometej_tests
             var notAnOption = Body(Answer(ids[0]), Answer(ids[1]), Answer(ids[2], 5));
             var noOption = Body(Answer(ids[0]), Answer(ids[1]), new { questionId = ids[2] });
             var empty = Body();
+            var nullAnswer = Body(Answer(ids[0]), Answer(ids[1]), null!);
 
             // Each body is paired with the reason the server gives, so a rejection for the wrong rule fails.
             const string everyQuestionOnce = "every question of the quiz exactly once";
@@ -165,6 +166,7 @@ namespace Prometej_tests
                 (notAnOption, "ChosenOption"),
                 (noOption, "ChosenOption"),
                 (empty, "Answers"),
+                (nullAnswer, "must not contain null"),
             };
             foreach (var (body, reason) in cases)
             {

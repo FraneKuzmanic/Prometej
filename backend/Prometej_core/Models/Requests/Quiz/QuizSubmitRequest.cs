@@ -7,7 +7,7 @@ namespace Prometej_core.Models.Requests.Quiz
     public class QuizSubmitRequest
     {
         public int QuizId { get; set; }
-        [Required, MinLength(1)]
+        [Required, MinLength(1), NoNullItems]
         public required List<AnswerSubmitRequest> Answers { get; set; }
     }
 

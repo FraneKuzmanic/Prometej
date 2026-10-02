@@ -37,6 +37,7 @@ namespace Prometej_tests
             ("an option of 501 characters", "Kviz", [Question(fourth: new string('a', 501))]),
             ("a question title of 501 characters", "Kviz", [Question(title: new string('a', 501))]),
             ("an invalid question after a valid one", "Kviz", [Question(), Question(second: "A")]),
+            ("a null in place of a question", "Kviz", [Question(), null!]),
         ];
 
         private static async Task<int> CreateQuiz(HttpClient client, bool isPrivate = false, string title = "Kviz")
