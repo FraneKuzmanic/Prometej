@@ -16,7 +16,7 @@ namespace Prometej_core.Models.ViewModels
         public string ThirdAnswer { get; set; }
         public string FourthAnswer { get; set; }
         public int CorrectOption { get; set; }
-        public string HintText { get; set; }
-        public string ExploreMore { get; set; }
+        public string? HintText { get; set; }
+        public string? ExploreMore { get; set; }
     }
 }

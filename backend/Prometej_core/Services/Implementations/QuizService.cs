@@ -265,7 +265,8 @@ namespace Prometej_core.Services.Implementations
 
         // The shape of a question (nothing empty, nothing too long, a correct option of 1 to 4) is
         // checked on the request models. What is stored is the trimmed text, so two options that
-        // differ only by spaces around them are the same option.
+        // differ only by spaces around them are the same option, and a hint or further reading
+        // of nothing but spaces is none.
         private static void TrimAndCheck(IEnumerable<QuestionCreateRequest> questions)
         {
             foreach (var question in questions)
@@ -275,6 +276,8 @@ namespace Prometej_core.Services.Implementations
                 question.SecondAnswer = question.SecondAnswer.Trim();
                 question.ThirdAnswer = question.ThirdAnswer.Trim();
                 question.FourthAnswer = question.FourthAnswer.Trim();
+                question.HintText = TrimOrNull(question.HintText);
+                question.ExploreMore = TrimOrNull(question.ExploreMore);
 
                 string[] options = [question.FirstAnswer, question.SecondAnswer, question.ThirdAnswer, question.FourthAnswer];
                 if (options.Distinct().Count() != options.Length)
@@ -283,6 +286,9 @@ namespace Prometej_core.Services.Implementations
                 }
             }
         }
+
+        private static string? TrimOrNull(string? text) =>
+            string.IsNullOrWhiteSpace(text) ? null : text.Trim();
 
         // A private quiz gets an entry code, a public one has none. The lookup makes a taken
         // code unlikely; the unique index is what refuses one, and then another is tried.

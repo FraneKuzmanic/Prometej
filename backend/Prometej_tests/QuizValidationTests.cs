@@ -7,7 +7,8 @@ namespace Prometej_tests
     public class QuizValidationTests(ApiFactory factory) : IClassFixture<ApiFactory>
     {
         private static object Question(string title = "Pitanje", string first = "A", string second = "B",
-            string third = "C", string fourth = "D", int correctOption = 1, int id = 0) => new
+            string third = "C", string fourth = "D", int correctOption = 1, int id = 0,
+            string? hint = "", string? exploreMore = "") => new
         {
             id,
             questionTitle = title,
@@ -16,8 +17,8 @@ namespace Prometej_tests
             thirdAnswer = third,
             fourthAnswer = fourth,
             correctOption,
-            hintText = "",
-            exploreMore = "",
+            hintText = hint,
+            exploreMore,
         };
 
         // Every way a quiz can break the rule "a quiz is valid or it is not saved".
@@ -36,6 +37,8 @@ namespace Prometej_tests
             ("correct option 5", "Kviz", [Question(correctOption: 5)]),
             ("an option of 501 characters", "Kviz", [Question(fourth: new string('a', 501))]),
             ("a question title of 501 characters", "Kviz", [Question(title: new string('a', 501))]),
+            ("a hint of 1001 characters", "Kviz", [Question(hint: new string('a', 1001))]),
+            ("further reading of 1001 characters", "Kviz", [Question(exploreMore: new string('a', 1001))]),
             ("an invalid question after a valid one", "Kviz", [Question(), Question(second: "A")]),
             ("a null in place of a question", "Kviz", [Question(), null!]),
         ];
@@ -139,6 +142,40 @@ namespace Prometej_tests
             var question = stored.GetProperty("questions")[0];
             Assert.Equal(3, question.GetProperty("correctOption").GetInt32());
             Assert.Equal("Novi tekst", question.GetProperty("thirdAnswer").GetString());
+        }
+
+        [Fact]
+        public async Task A_hint_and_further_reading_are_stored_trimmed_and_an_empty_one_is_stored_as_none()
+        {
+            var teacher = await factory.LoginAs(ApiFactory.TeacherEmail);
+            var body = new
+            {
+                quiz = new { title = "Kviz", isPrivate = false },
+                questions = new[] { Question(hint: " Sjetite se Marulića. ", exploreMore: "   ") },
+            };
+
+            var id = await (await teacher.PostAsJsonAsync("/api/quiz/create", body)).Content.ReadFromJsonAsync<int>();
+
+            var created = (await GetQuiz(teacher, id)).GetProperty("questions")[0];
+            Assert.Equal("Sjetite se Marulića.", created.GetProperty("hintText").GetString());
+            Assert.Equal(JsonValueKind.Null, created.GetProperty("exploreMore").ValueKind);
+
+            var questionId = created.GetProperty("id").GetInt32();
+            var cleared = await Update(teacher, id, "Kviz", isPrivate: false,
+                [Question(id: questionId, hint: "", exploreMore: new string('a', 1000))]);
+
+            Assert.Equal(HttpStatusCode.NoContent, cleared.StatusCode);
+            var updated = (await GetQuiz(teacher, id)).GetProperty("questions")[0];
+            Assert.Equal(JsonValueKind.Null, updated.GetProperty("hintText").ValueKind);
+            Assert.Equal(1000, updated.GetProperty("exploreMore").GetString()!.Length);
+
+            var withNull = await Update(teacher, id, "Kviz", isPrivate: false,
+                [Question(id: questionId, hint: null, exploreMore: null)]);
+
+            Assert.Equal(HttpStatusCode.NoContent, withNull.StatusCode);
+            var nulled = (await GetQuiz(teacher, id)).GetProperty("questions")[0];
+            Assert.Equal(JsonValueKind.Null, nulled.GetProperty("hintText").ValueKind);
+            Assert.Equal(JsonValueKind.Null, nulled.GetProperty("exploreMore").ValueKind);
         }
 
         [Fact]
