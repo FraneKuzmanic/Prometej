@@ -91,8 +91,8 @@ namespace Prometej_core.Services.Implementations
 
         public void Delete(int id)
         {
-            // Deleting the account would delete its quizzes, and with them every result
-            // students have stored for those quizzes. The quizzes go first, one by one.
+            // Deleting the account would delete its quizzes, and with them every quiz game
+            // students played on those quizzes. The quizzes go first, one by one.
             if (_quizRepository.ReadAll().Any(q => q.CreatorId == id))
             {
                 throw new ConflictException("Delete your quizzes before deleting your account");

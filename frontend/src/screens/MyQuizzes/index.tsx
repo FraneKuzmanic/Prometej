@@ -44,26 +44,28 @@ export default function MyQuizzes() {
   const [inputDrawer, setInputDrawer] = useState<boolean>(false);
   const [quizTitle, setQuizTitle] = useState<string>("");
   const [currentQuiz, setCurrentQuiz] = useState<QuizBaseModel | null>(null);
+  // Kept after the dialog closes, so its text does not change while it fades out.
   const [quizToDelete, setQuizToDelete] = useState<QuizBaseModel | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState<boolean>(false);
   const navigate = useNavigate();
   const handleClose = () => {
     setMenu((current) => current && { ...current, anchor: null });
   };
 
   const handleDelete = (quizId: number) => {
-    setQuizToDelete(null);
+    setDeleteDialogOpen(false);
     dispatch(deleteQuiz(quizId)).then(() => {
       if (user) dispatch(fetchAllUserQuizzes(user.id));
     });
   };
 
   // The server gives a Quiz made private its Entry Code and takes it from one made public.
-  const handleVisibilityChange = (quiz: QuizBaseModel, isPrivate: boolean) => {
+  const toggleVisibility = (quiz: QuizBaseModel) => {
     if (user) {
       const updatedQuiz = {
         id: quiz.id,
         title: quiz.title,
-        isPrivate: !isPrivate,
+        isPrivate: !quiz.isPrivate,
       };
       dispatch(updateQuiz({ quiz: updatedQuiz })).then(() => {
         dispatch(fetchAllUserQuizzes(user.id));
@@ -155,17 +157,9 @@ export default function MyQuizzes() {
         open={Boolean(menu?.anchor)}
         onClose={handleClose}
       >
-        {menu?.quiz.isPrivate ? (
-          <MenuItem onClick={() => handleVisibilityChange(menu.quiz, true)}>
-            Učini javnim
-          </MenuItem>
-        ) : (
-          <MenuItem
-            onClick={() => menu && handleVisibilityChange(menu.quiz, false)}
-          >
-            Učini privatnim
-          </MenuItem>
-        )}
+        <MenuItem onClick={() => menu && toggleVisibility(menu.quiz)}>
+          {menu?.quiz.isPrivate ? "Učini javnim" : "Učini privatnim"}
+        </MenuItem>
         <MenuItem
           onClick={() => {
             if (menu) {
@@ -180,7 +174,10 @@ export default function MyQuizzes() {
         </MenuItem>
         <MenuItem
           onClick={() => {
-            if (menu) setQuizToDelete(menu.quiz);
+            if (menu) {
+              setQuizToDelete(menu.quiz);
+              setDeleteDialogOpen(true);
+            }
             handleClose();
           }}
         >
@@ -192,7 +189,7 @@ export default function MyQuizzes() {
           Detalji
         </MenuItem>
       </Menu>
-      <Dialog open={quizToDelete !== null} onClose={() => setQuizToDelete(null)}>
+      <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
         <DialogTitle>Obriši kviz</DialogTitle>
         <DialogContent>
           <DialogContentText>
@@ -203,7 +200,7 @@ export default function MyQuizzes() {
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setQuizToDelete(null)}>Odustani</Button>
+          <Button onClick={() => setDeleteDialogOpen(false)}>Odustani</Button>
           <Button
             color="error"
             onClick={() => quizToDelete && handleDelete(quizToDelete.id)}

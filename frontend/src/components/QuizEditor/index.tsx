@@ -216,7 +216,7 @@ export default function QuizEditor({
           <AddIcon />
         </Paper>
         <SpeedDial
-          ariaLabel="SpeedDial basic example"
+          ariaLabel="Radnje kviza"
           sx={{
             position: "fixed",
             bottom: 16,
