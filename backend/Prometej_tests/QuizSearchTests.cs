@@ -124,14 +124,13 @@ namespace Prometej_tests
             await CreateQuiz(teacher, $"Privatni {word}", isPrivate: true);
             var anonymous = factory.CreateHttpsClient();
 
-            var all = await anonymous.GetStringAsync("/api/quiz/getAll");
-            var blank = await anonymous.GetStringAsync("/api/quiz/search?query=%20");
             var noQuery = await anonymous.GetStringAsync("/api/quiz/search");
+            var blank = await anonymous.GetStringAsync("/api/quiz/search?query=%20");
             var tooLong = await Get(new string('a', 101));
 
-            Assert.Contains($"Javni {word}", all);
-            Assert.Equal(all, blank);
-            Assert.Equal(all, noQuery);
+            Assert.Contains($"Javni {word}", noQuery);
+            Assert.DoesNotContain($"Privatni {word}", noQuery);
+            Assert.Equal(noQuery, blank);
             Assert.Equal(HttpStatusCode.BadRequest, tooLong.StatusCode);
             Assert.Empty(await Search(Word()));
         }

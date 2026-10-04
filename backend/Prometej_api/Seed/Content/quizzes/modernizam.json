@@ -1,5 +1,5 @@
 {
-  "quiz": { "title": "Modernizam: provjera znanja", "isPrivate": false },
+  "quiz": { "title": "Modernizam: provjera znanja", "isPrivate": false, "periodId": 6 },
   "questions": [
     {
       "questionTitle": "Tko je autor zbirke „Cvjetovi zla”?",

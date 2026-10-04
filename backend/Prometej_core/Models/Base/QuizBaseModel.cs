@@ -13,5 +13,8 @@ namespace Prometej_core.Models.Base
         public required string CreatorName { get; set; }
         public bool IsPrivate { get; set; }
         public int? EntryCode { get; set; }
+        public int? PeriodId { get; set; }
+        public string? PeriodName { get; set; }
+        public int QuestionCount { get; set; }
     }
 }

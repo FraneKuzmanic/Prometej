@@ -26,8 +26,10 @@ namespace Prometej_core.Services.Implementations
         private readonly IRepository<QuizGame> _quizGameRepository;
         private readonly IRepository<User> _userRepository;
         private readonly IRepository<Answer> _answerRepository;
-        public QuizService(IMapper mapper, IRepository<Quiz> quizRepository, IRepository<Question> questionRepository, IRepository<QuizGame> quizGameRepository, IRepository<User> userRepository, IRepository<Answer> answerRepository)
+        private readonly IRepository<Period> _periodRepository;
+        public QuizService(IMapper mapper, IRepository<Quiz> quizRepository, IRepository<Question> questionRepository, IRepository<QuizGame> quizGameRepository, IRepository<User> userRepository, IRepository<Answer> answerRepository, IRepository<Period> periodRepository)
         {
+            _periodRepository = periodRepository;
             _answerRepository = answerRepository;
             _mapper = mapper;
             _quizRepository = quizRepository;
@@ -36,44 +38,47 @@ namespace Prometej_core.Services.Implementations
             _userRepository = userRepository;
         }
          
-        public List<QuizBaseModel> getAllPublicQuizzes()
+        // The public list: every listed Quiz, or those of one Period, or those a search finds.
+        public List<QuizBaseModel> searchQuizzes(string? search, int? periodId)
         {
-            var quizes = _quizRepository.ReadAll().Include(q => q.Creator).Where(q => !q.IsPrivate).ToList();
-            List<QuizBaseModel> quizBaseModels = _mapper.Map<List<QuizBaseModel>>(quizes);
-
-            return quizBaseModels;
-        }
-
-        public List<QuizBaseModel> searchQuizzes(string? search)
-        {
-            if (string.IsNullOrWhiteSpace(search))
+            var quizzes = _quizRepository.ReadAll().Where(Quiz.IsListed);
+            if (periodId != null)
             {
-                return getAllPublicQuizzes();
+                quizzes = quizzes.Where(q => q.PeriodId == periodId);
             }
 
-            // PostgreSQL text cannot hold a NUL character, so no title has one and the query
-            // could not even be sent.
-            if (search.Contains('\0'))
+            if (!string.IsNullOrWhiteSpace(search))
             {
-                return [];
+                // PostgreSQL text cannot hold a NUL character, so no title has one and the query
+                // could not even be sent.
+                if (search.Contains('\0'))
+                {
+                    return [];
+                }
+
+                // The query is text to find, so the characters LIKE reads as wildcards are escaped.
+                var pattern = "%" + search.Trim().Replace("\\", "\\\\").Replace("%", "\\%").Replace("_", "\\_") + "%";
+                // unaccent on both sides first: what ILIKE then compares is plain ASCII, so the
+                // match ignores case and diacritics whatever the database's locale is.
+                quizzes = quizzes
+                    .Where(q => EF.Functions.ILike(EF.Functions.Unaccent(q.Title), EF.Functions.Unaccent(pattern), "\\")
+                             || EF.Functions.ILike(EF.Functions.Unaccent(q.Creator.FirstName + " " + q.Creator.LastName), EF.Functions.Unaccent(pattern), "\\"));
             }
 
-            // The query is text to find, so the characters LIKE reads as wildcards are escaped.
-            var pattern = "%" + search.Trim().Replace("\\", "\\\\").Replace("%", "\\%").Replace("_", "\\_") + "%";
-            // unaccent on both sides first: what ILIKE then compares is plain ASCII, so the
-            // match ignores case and diacritics whatever the database's locale is.
-            var quizes = _quizRepository.ReadAll().Include(q => q.Creator).Where(q => !q.IsPrivate)
-                .Where(q => EF.Functions.ILike(EF.Functions.Unaccent(q.Title), EF.Functions.Unaccent(pattern), "\\")
-                         || EF.Functions.ILike(EF.Functions.Unaccent(q.Creator.FirstName + " " + q.Creator.LastName), EF.Functions.Unaccent(pattern), "\\"))
+            // Curriculum order, as on the learning screen. The first key puts the Quizzes
+            // without a Period last, whatever the database does with a null when it sorts.
+            var listed = quizzes.Include(q => q.Creator).Include(q => q.Period)
+                .OrderBy(q => q.PeriodId == null).ThenBy(q => q.Period!.SortOrder).ThenBy(q => q.Id)
                 .ToList();
-            List<QuizBaseModel> quizBaseModels = _mapper.Map<List<QuizBaseModel>>(quizes);
+            var quizBaseModels = _mapper.Map<List<QuizBaseModel>>(listed);
+            SetQuestionCounts(quizBaseModels);
 
             return quizBaseModels;
         }
 
         public List<CreatorQuizViewModel> getAllUserQuizzes(int id)
         {
-            var quizes = _quizRepository.ReadAll().Include(q => q.Creator).Where(q => q.CreatorId == id).ToList();
+            var quizes = _quizRepository.ReadAll().Include(q => q.Creator).Include(q => q.Period).Where(q => q.CreatorId == id).OrderBy(q => q.Id).ToList();
             var quizGameCounts = _quizGameRepository.ReadAll().Where(g => g.Quiz.CreatorId == id)
                 .GroupBy(g => g.QuizId).Select(g => new { QuizId = g.Key, Count = g.Count() })
                 .ToDictionary(g => g.QuizId, g => g.Count);
@@ -83,13 +88,27 @@ namespace Prometej_core.Services.Implementations
             {
                 quiz.QuizGameCount = quizGameCounts.GetValueOrDefault(quiz.Id);
             }
+            SetQuestionCounts(creatorQuizzes);
 
             return creatorQuizzes;
         }
 
+        private void SetQuestionCounts(IReadOnlyCollection<QuizBaseModel> quizzes)
+        {
+            var quizIds = quizzes.Select(q => q.Id).ToList();
+            var questionCounts = _questionRepository.ReadAll().Where(x => quizIds.Contains(x.QuizId) && !x.IsRetired)
+                .GroupBy(x => x.QuizId).Select(g => new { QuizId = g.Key, Count = g.Count() })
+                .ToDictionary(g => g.QuizId, g => g.Count);
+
+            foreach (var quiz in quizzes)
+            {
+                quiz.QuestionCount = questionCounts.GetValueOrDefault(quiz.Id);
+            }
+        }
+
         public QuizViewModel GetQuiz(int id, int? code, int? callerId, bool isAdmin)
         {
-            var quiz = _quizRepository.ReadAll().Include(q => q.Creator).Include(q => q.Questions.Where(x => !x.IsRetired).OrderBy(x => x.Id)).FirstOrDefault(q => q.Id == id);
+            var quiz = _quizRepository.ReadAll().Include(q => q.Creator).Include(q => q.Period).Include(q => q.Questions.Where(x => !x.IsRetired).OrderBy(x => x.Id)).FirstOrDefault(q => q.Id == id);
 
             // A private quiz opens for its creator, an admin, or whoever has its entry code.
             // Everyone else gets the same answer as for a quiz that does not exist.
@@ -107,7 +126,7 @@ namespace Prometej_core.Services.Implementations
 
         public QuizViewModel GetQuizByCode(int quizCode)
         {
-            var quiz = _quizRepository.ReadAll().Include(q => q.Creator).Include(q => q.Questions.Where(x => !x.IsRetired).OrderBy(x => x.Id)).FirstOrDefault(q => q.IsPrivate && q.EntryCode == quizCode);
+            var quiz = _quizRepository.ReadAll().Include(q => q.Creator).Include(q => q.Period).Include(q => q.Questions.Where(x => !x.IsRetired).OrderBy(x => x.Id)).FirstOrDefault(q => q.IsPrivate && q.EntryCode == quizCode);
             if (quiz == null)
             {
                 throw new NotFoundException("Quiz not found");
@@ -121,6 +140,7 @@ namespace Prometej_core.Services.Implementations
         public int Create(QuizCreateRequest quiz, List<QuestionCreateRequest> questions, int creatorId)
         {
             TrimAndCheck(questions);
+            EnsurePeriodExists(quiz.PeriodId);
 
             var quizEntity = _mapper.Map<Quiz>(quiz);
             quizEntity.Title = quiz.Title.Trim();
@@ -140,9 +160,11 @@ namespace Prometej_core.Services.Implementations
             var quizEntity = _quizRepository.GetAll().Include(q => q.Questions.Where(x => !x.IsRetired)).FirstOrDefault(q => q.Id == quiz.Id);
             EnsureCreatorOrAdmin(quizEntity, callerId, isAdmin);
             TrimAndCheck(questions ?? []);
+            EnsurePeriodExists(quiz.PeriodId);
 
             quizEntity.Title = quiz.Title.Trim();
             quizEntity.IsPrivate = quiz.IsPrivate;
+            quizEntity.PeriodId = quiz.PeriodId;
 
             if (questions != null)
             {
@@ -348,6 +370,15 @@ namespace Prometej_core.Services.Implementations
             while (_quizRepository.ReadAll().Any(q => q.EntryCode == code));
 
             return code;
+        }
+
+        // Without this the foreign key would refuse the id, as a server error.
+        private void EnsurePeriodExists(int? periodId)
+        {
+            if (periodId != null && !_periodRepository.ReadAll().Any(p => p.Id == periodId))
+            {
+                throw new BadRequestException("Period not found");
+            }
         }
 
         private static void EnsureCreatorOrAdmin([NotNull] Quiz? quiz, int callerId, bool isAdmin)

@@ -58,7 +58,7 @@ namespace Prometej_tests
             var teacher = await factory.LoginAs(ApiFactory.TeacherEmail);
             var quiz = await CreateQuiz(teacher);
 
-            var response = await factory.CreateHttpsClient().GetAsync("/api/quiz/getAll");
+            var response = await factory.CreateHttpsClient().GetAsync("/api/quiz/search");
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Contains(quiz.Title, await response.Content.ReadAsStringAsync());

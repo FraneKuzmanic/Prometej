@@ -20,18 +20,29 @@ namespace Prometej_core.Services.Implementations
         private readonly IMapper _mapper;
         private readonly IRepository<PeriodContent> _periodRepository;
         private readonly IRepository<Period> _periodListRepository;
-        public PeriodService(IMapper mapper, IRepository<PeriodContent> periodRepository, IRepository<Period> periodListRepository)
+        private readonly IRepository<Quiz> _quizRepository;
+        public PeriodService(IMapper mapper, IRepository<PeriodContent> periodRepository, IRepository<Period> periodListRepository, IRepository<Quiz> quizRepository)
         {
             _mapper = mapper;
             _periodRepository = periodRepository;
             _periodListRepository = periodListRepository;
+            _quizRepository = quizRepository;
         }
 
         public List<PeriodViewModel> GetPeriods()
         {
             var periods = _periodListRepository.ReadAll().OrderBy(p => p.SortOrder).ToList();
+            var quizCounts = _quizRepository.ReadAll().Where(Quiz.IsListed).Where(q => q.PeriodId != null)
+                .GroupBy(q => q.PeriodId).Select(g => new { PeriodId = g.Key, Count = g.Count() })
+                .ToDictionary(g => g.PeriodId!.Value, g => g.Count);
 
-            return _mapper.Map<List<PeriodViewModel>>(periods);
+            var periodViewModels = _mapper.Map<List<PeriodViewModel>>(periods);
+            foreach (var period in periodViewModels)
+            {
+                period.QuizCount = quizCounts.GetValueOrDefault(period.Id);
+            }
+
+            return periodViewModels;
         }
 
         public PeriodContentViewModel GetPeriodContent(int id)

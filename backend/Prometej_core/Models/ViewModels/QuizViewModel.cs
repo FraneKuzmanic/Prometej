@@ -14,6 +14,8 @@ namespace Prometej_core.Models.ViewModels
         public int CreatorId { get; set; }
         public string CreatorName { get; set; }
         public int? EntryCode { get; set; }
+        public int? PeriodId { get; set; }
+        public string? PeriodName { get; set; }
         public List<QuestionViewModel> Questions { get; set; }
     }
 }

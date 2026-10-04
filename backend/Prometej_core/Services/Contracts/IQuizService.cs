@@ -11,9 +11,7 @@ namespace Prometej_core.Services.Contracts
 {
     public interface IQuizService
     {
-        List<QuizBaseModel> getAllPublicQuizzes();
-
-        List<QuizBaseModel> searchQuizzes(string? search);
+        List<QuizBaseModel> searchQuizzes(string? search, int? periodId);
         List<CreatorQuizViewModel> getAllUserQuizzes(int id);
         QuizViewModel GetQuiz(int id, int? code, int? callerId, bool isAdmin);
         QuizViewModel GetQuizByCode(int quizCode);

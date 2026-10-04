@@ -57,12 +57,16 @@ namespace Prometej_api.Seed
 
             var quizService = services.GetRequiredService<IQuizService>();
             var json = new JsonSerializerOptions(JsonSerializerDefaults.Web);
+            // All or none: a Creator left with one Quiz would never get the others.
+            using var transaction = db.Database.BeginTransaction();
             foreach (var name in ResourceNames(QuizFiles))
             {
                 // A Quiz file is the body of a request to create that Quiz.
                 var quiz = JsonSerializer.Deserialize<QuizCreateDto>(Read(name), json)!;
                 quizService.Create(quiz.Quiz, quiz.Questions, creator.Id);
             }
+
+            transaction.Commit();
         }
 
         private static IEnumerable<string> ResourceNames(string prefix) =>

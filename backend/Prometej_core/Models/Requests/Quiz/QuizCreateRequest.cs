@@ -12,5 +12,6 @@ namespace Prometej_core.Models.Requests.Quiz
         [Required, StringLength(100)]
         public required string Title { get; set; }
         public bool IsPrivate { get; set; }
+        public int? PeriodId { get; set; }
     }
 }

@@ -20,16 +20,10 @@ namespace Prometej_api.Controllers
             _quizService = quizService;
         }
 
-        [HttpGet("getAll")]
-        public IActionResult GetAllQuizzes()
-        {
-            return Ok(_quizService.getAllPublicQuizzes());
-        }
-
         [HttpGet("search")]
-        public IActionResult SearchQuizzes([FromQuery, StringLength(100)] string? query)
+        public IActionResult SearchQuizzes([FromQuery, StringLength(100)] string? query, [FromQuery] int? periodId)
         {
-            return Ok(_quizService.searchQuizzes(query));
+            return Ok(_quizService.searchQuizzes(query, periodId));
         }
 
         [Authorize(Roles = Roles.TeacherOrAdmin)]

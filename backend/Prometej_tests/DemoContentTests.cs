@@ -61,7 +61,7 @@ namespace Prometej_tests
 
         private async Task<List<JsonElement>> DemoQuizzes()
         {
-            var quizzes = await factory.CreateHttpsClient().GetFromJsonAsync<JsonElement>("/api/quiz/getAll");
+            var quizzes = await factory.CreateHttpsClient().GetFromJsonAsync<JsonElement>("/api/quiz/search");
             return quizzes.EnumerateArray().Where(q => q.GetProperty("creatorName").GetString() == DemoCreatorName).ToList();
         }
 
@@ -166,6 +166,22 @@ namespace Prometej_tests
             }
         }
 
+        [Fact]
+        public async Task Each_demo_quiz_is_linked_to_the_period_it_is_about()
+        {
+            var quizzes = await DemoQuizzes();
+            var periods = await factory.CreateHttpsClient().GetFromJsonAsync<JsonElement>("/api/period");
+
+            // In curriculum order, which is not the order of the files' names.
+            Assert.Equal(["Renesansa", "Realizam", "Modernizam"], quizzes.Select(q => q.GetProperty("periodName").GetString()));
+            Assert.All(quizzes, q => Assert.Equal(
+                $"{q.GetProperty("periodName").GetString()}: provjera znanja", q.GetProperty("title").GetString()));
+            foreach (var period in periods.EnumerateArray().Where(p => FullPeriods.Contains(p.GetProperty("id").GetInt32())))
+            {
+                Assert.True(period.GetProperty("quizCount").GetInt32() >= 1, period.GetProperty("name").GetString());
+            }
+        }
+
         // The seeder calls the service, which does not run the request models' validation.
         [Fact]
         public async Task A_seeded_quiz_file_is_accepted_by_the_api()
@@ -176,7 +192,12 @@ namespace Prometej_tests
             {
                 var body = new
                 {
-                    quiz = new { title = $"Provjera datoteke {Guid.NewGuid():N}", isPrivate = false },
+                    quiz = new
+                    {
+                        title = $"Provjera datoteke {Guid.NewGuid():N}",
+                        isPrivate = false,
+                        periodId = file.GetProperty("quiz").GetProperty("periodId").GetInt32(),
+                    },
                     questions = file.GetProperty("questions"),
                 };
 
@@ -220,7 +241,7 @@ namespace Prometej_tests
 
             var edit = await admin.PostAsJsonAsync("/api/period/content", new { id = 0, periodId = 12, content = "<p>Uredio admin</p>" });
             edit.EnsureSuccessStatusCode();
-            var quizzes = await admin.GetFromJsonAsync<JsonElement>("/api/quiz/getAll");
+            var quizzes = await admin.GetFromJsonAsync<JsonElement>("/api/quiz/search");
             var demoQuiz = quizzes.EnumerateArray().First(q => q.GetProperty("creatorName").GetString() == "Uredništvo Prometeja");
             var delete = await admin.DeleteAsync($"/api/quiz/delete/{demoQuiz.GetProperty("id").GetInt32()}");
             delete.EnsureSuccessStatusCode();
@@ -242,7 +263,7 @@ namespace Prometej_tests
             var anonymous = factory.CreateHttpsClient();
 
             var content = await anonymous.GetAsync("/api/period/content/1");
-            var quizzes = await anonymous.GetFromJsonAsync<JsonElement>("/api/quiz/getAll");
+            var quizzes = await anonymous.GetFromJsonAsync<JsonElement>("/api/quiz/search");
 
             Assert.Equal(HttpStatusCode.NotFound, content.StatusCode);
             Assert.DoesNotContain(quizzes.EnumerateArray(), q => q.GetProperty("creatorName").GetString() == "Uredništvo Prometeja");

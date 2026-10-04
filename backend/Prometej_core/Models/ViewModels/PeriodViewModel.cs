@@ -7,5 +7,7 @@ namespace Prometej_core.Models.ViewModels
         public required string TimeFrame { get; set; }
         public required string Description { get; set; }
         public string? Image { get; set; }
+        // The Public Quizzes about this Period that have Questions.
+        public int QuizCount { get; set; }
     }
 }

@@ -1,5 +1,5 @@
 {
-  "quiz": { "title": "Realizam: provjera znanja", "isPrivate": false },
+  "quiz": { "title": "Realizam: provjera znanja", "isPrivate": false, "periodId": 4 },
   "questions": [
     {
       "questionTitle": "Tko je autor romana „Zločin i kazna”?",

@@ -1,5 +1,5 @@
 {
-  "quiz": { "title": "Renesansa: provjera znanja", "isPrivate": false },
+  "quiz": { "title": "Renesansa: provjera znanja", "isPrivate": false, "periodId": 3 },
   "questions": [
     {
       "questionTitle": "Tko je napisao spjev „Judita”?",
