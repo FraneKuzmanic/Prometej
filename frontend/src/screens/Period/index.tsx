@@ -4,6 +4,7 @@ import "react-quill/dist/quill.snow.css";
 import { useEffect, useState } from "react";
 import { RootState, useAppDispatch } from "../../store/store";
 import {
+  fetchPeriods,
   fetchPeriodContent,
   editPeriodContent,
 } from "../../store/slices/periodSlice";
@@ -14,6 +15,7 @@ import {
   SpeedDial,
   SpeedDialAction,
   SpeedDialIcon,
+  Typography,
 } from "@mui/material";
 import BorderColorIcon from "@mui/icons-material/BorderColor";
 import SaveIcon from "@mui/icons-material/Save";
@@ -68,12 +70,18 @@ const formats = [
 
 export default function Period() {
   const { id } = useParams<{ id: string }>();
-  const { periodContent } = useSelector((state: RootState) => state.period);
+  const { periods, periodsFailed, periodContent, periodContentFailed } = useSelector(
+    (state: RootState) => state.period
+  );
   const { user } = useSelector((state: RootState) => state.user);
   const dispatch = useAppDispatch();
   const [value, setValue] = useState("");
   const [text, setText] = useState("");
   const [isEdit, setIsEdit] = useState(false);
+
+  useEffect(() => {
+    if (!periods) dispatch(fetchPeriods());
+  }, [dispatch, periods]);
 
   useEffect(() => {
     if (id) dispatch(fetchPeriodContent(id));
@@ -115,6 +123,21 @@ export default function Period() {
     setIsEdit(false);
     setValue(text);
   };
+
+  // Until the list is here the page cannot tell an empty Period from one that does not exist.
+  if (!periods) {
+    return periodsFailed ? (
+      <Typography>Razdoblja se nisu učitala. Pokušajte ponovno.</Typography>
+    ) : null;
+  }
+  if (!periods.some((period) => period.id === Number(id))) {
+    return <Typography>Razdoblje ne postoji.</Typography>;
+  }
+  // Without this an Admin could take a lost connection for an empty Period and write over
+  // the content that did not load.
+  if (periodContentFailed) {
+    return <Typography>Gradivo se nije učitalo. Pokušajte ponovno.</Typography>;
+  }
 
   return (
     <Box className="content-wrapper">
@@ -172,12 +195,16 @@ export default function Period() {
               />
             </SpeedDial>
           )}
-          <Box
-            className="content"
-            dangerouslySetInnerHTML={{
-              __html: text,
-            }}
-          />
+          {periodContent === null && text === "" ? (
+            <Typography>Za ovo razdoblje još nema gradiva.</Typography>
+          ) : (
+            <Box
+              className="content"
+              dangerouslySetInnerHTML={{
+                __html: text,
+              }}
+            />
+          )}
         </Container>
       )}
     </Box>

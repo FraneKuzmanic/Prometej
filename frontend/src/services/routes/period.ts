@@ -6,6 +6,7 @@ import { PeriodContentEditRequest } from "../../types/models/Period";
 const { period } = endpoints;
 
 export default {
+  getAll: () => axios.get(period.base),
   edit: (data: PeriodContentEditRequest) => axios.post(`${period.base}/content`, data),
   get: (id: string) => axios.get(`${period.base}/content/${id}`,),
   search: (query: string) => axios.get(`${period.base}/content/search`, { params: { query } }),

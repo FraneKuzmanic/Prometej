@@ -10,8 +10,24 @@
   object-fit: cover;
 }
 
+.img-placeholder{
+    justify-content: center;
+    padding: 16px;
+    text-align: center;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: white;
+    background-color: #553b08;
+}
+
+.img-placeholder span{
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
 .item{
     display: flex;
+    height: 100%;
     min-height: 200px;
 }
 

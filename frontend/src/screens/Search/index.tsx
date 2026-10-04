@@ -45,10 +45,14 @@ export default function SearchContent() {
     <Box sx={{ width: "100%" }}>
       {searchContent.map((content) => (
         <Box key={content.periodId}>
+          <Typography variant="h5" component="h2" gutterBottom>
+            {content.periodName}
+          </Typography>
           {content.passages.map((passage, index) => (
             <Box className="search-passage" key={index}>
-              {passage.heading && (
-                <Typography variant="h6" component="h2">
+              {/* A Period Content usually opens with its Period's name as a heading. */}
+              {passage.heading && passage.heading !== content.periodName && (
+                <Typography variant="h6" component="h3">
                   {passage.heading}
                 </Typography>
               )}

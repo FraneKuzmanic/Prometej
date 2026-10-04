@@ -1,3 +1,12 @@
+export interface Period{
+    id: number;
+    name: string;
+    timeFrame: string;
+    description: string;
+    // a file in the public folder; a Period without one gets a plain card
+    image: string | null;
+}
+
 export interface PeriodContentCreateRequest{
     periodId: number;
     content: string;
@@ -23,6 +32,7 @@ export interface PeriodSearchPassage{
 
 export interface PeriodSearchContent{
     periodId: number;
+    periodName: string;
     // how many passages of the Period match; only the first few are sent
     matchCount: number;
     passages: PeriodSearchPassage[];
