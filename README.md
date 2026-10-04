@@ -43,7 +43,7 @@ dotnet user-secrets set "Seed:Users:0:FirstName" "Admin" --project Prometej_api
 dotnet user-secrets set "Seed:Users:0:LastName" "Prometej" --project Prometej_api
 dotnet user-secrets set "Seed:Users:0:Role" "admin" --project Prometej_api</pre>
 <p>Repeat with index <code>1</code> and role <code>teacher</code> for a teacher account.</p>
-<p>6. Start the server. In development it applies the database migrations on start and fills the periods with sample content and three quizzes when <code>Seed:DemoContent</code> is enabled. The sample was written for this project and checked against Hrvatska enciklopedija and the NCVVO exam catalogue.</p>
+<p>6. Start the server. In development it applies the database migrations on start and fills the periods with sample content and three quizzes when <code>Seed:DemoContent</code> is enabled. The sample was written for this project, with Hrvatska enciklopedija and the NCVVO exam catalogue as its sources.</p>
 <pre lang="markdown">dotnet run --project Prometej_api --launch-profile https</pre>
 <p>The client development server forwards <code>/api</code> to <code>https://localhost:7041</code>, so start the server before opening the client.</p>
 
