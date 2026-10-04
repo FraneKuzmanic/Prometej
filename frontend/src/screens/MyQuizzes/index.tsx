@@ -31,7 +31,8 @@ import { useNavigate } from "react-router-dom";
 
 export default function MyQuizzes() {
   const [currentPage, setCurrentPage] = useState(1);
-  const [postsPerPage] = useState(9);
+  // Two rows: a third row of cards does not fit on a 720 px high screen.
+  const [postsPerPage] = useState(6);
   const { quizzes } = useSelector((state: RootState) => state.quiz);
   const { user } = useSelector((state: RootState) => state.user);
   const dispatch = useAppDispatch();
@@ -66,6 +67,7 @@ export default function MyQuizzes() {
         id: quiz.id,
         title: quiz.title,
         isPrivate: !quiz.isPrivate,
+        periodId: quiz.periodId,
       };
       dispatch(updateQuiz({ quiz: updatedQuiz })).then(() => {
         dispatch(fetchAllUserQuizzes(user.id));
@@ -80,6 +82,7 @@ export default function MyQuizzes() {
         id: currentQuiz.id,
         title: quizTitle.trim(),
         isPrivate: currentQuiz.isPrivate,
+        periodId: currentQuiz.periodId,
       };
       dispatch(updateQuiz({ quiz: updatedQuiz })).then(() => {
         if (user) dispatch(fetchAllUserQuizzes(user.id));
@@ -135,6 +138,8 @@ export default function MyQuizzes() {
               name={quiz.title}
               authorName={quiz.creatorName}
               entryCode={quiz.entryCode}
+              periodName={quiz.periodName}
+              questionCount={quiz.questionCount}
             />
             <Box className="quiz-container-opt">
               <IconButton

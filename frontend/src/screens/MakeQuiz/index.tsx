@@ -10,10 +10,11 @@ export default function MakeQuiz() {
   const saveQuiz = async (
     title: string,
     isPrivate: boolean,
+    periodId: number | null,
     questions: EditorQuestion[]
   ) => {
     const result = await dispatch(
-      createQuiz({ quiz: { title, isPrivate }, questions })
+      createQuiz({ quiz: { title, isPrivate, periodId }, questions })
     );
     const saved = createQuiz.fulfilled.match(result);
     if (saved) navigate("/learning");
@@ -24,6 +25,7 @@ export default function MakeQuiz() {
     <QuizEditor
       initialTitle=""
       initialIsPrivate={true}
+      initialPeriodId={null}
       initialQuestions={[]}
       onSave={saveQuiz}
       onCancel={() => navigate("/learning")}

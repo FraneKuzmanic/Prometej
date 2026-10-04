@@ -5,6 +5,8 @@ export interface Period{
     description: string;
     // a file in the public folder; a Period without one gets a plain card
     image: string | null;
+    // the Public Quizzes about this Period that have Questions
+    quizCount: number;
 }
 
 export interface PeriodContentCreateRequest{

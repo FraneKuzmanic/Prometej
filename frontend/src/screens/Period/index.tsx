@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import { useEffect, useState } from "react";
@@ -11,6 +11,7 @@ import {
 import { useSelector } from "react-redux";
 import {
   Box,
+  Button,
   Container,
   SpeedDial,
   SpeedDialAction,
@@ -75,13 +76,16 @@ export default function Period() {
   );
   const { user } = useSelector((state: RootState) => state.user);
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
   const [value, setValue] = useState("");
   const [text, setText] = useState("");
   const [isEdit, setIsEdit] = useState(false);
 
+  // Fetched whenever the screen opens, not only once: the number of a Period's Quizzes can
+  // have changed. One answer holds every Period, so going from one to another needs no more.
   useEffect(() => {
-    if (!periods) dispatch(fetchPeriods());
-  }, [dispatch, periods]);
+    dispatch(fetchPeriods());
+  }, [dispatch]);
 
   useEffect(() => {
     if (id) dispatch(fetchPeriodContent(id));
@@ -130,7 +134,8 @@ export default function Period() {
       <Typography>Razdoblja se nisu učitala. Pokušajte ponovno.</Typography>
     ) : null;
   }
-  if (!periods.some((period) => period.id === Number(id))) {
+  const period = periods.find((period) => period.id === Number(id));
+  if (!period) {
     return <Typography>Razdoblje ne postoji.</Typography>;
   }
   // Without this an Admin could take a lost connection for an empty Period and write over
@@ -204,6 +209,18 @@ export default function Period() {
                 __html: text,
               }}
             />
+          )}
+          {period.quizCount > 0 && (
+            <Box className="period-quizzes">
+              <Button
+                variant="contained"
+                style={{ backgroundColor: "#553b08" }}
+                onClick={() => navigate(`/quizzes?period=${period.id}`)}
+              >
+                Provjeri znanje
+              </Button>
+              <Typography>Kvizova za ovo razdoblje: {period.quizCount}</Typography>
+            </Box>
           )}
         </Container>
       )}

@@ -19,6 +19,13 @@
     margin-top: 3rem;
 }
 
+.period-quizzes{
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin: 3rem 0 2rem 0;
+}
+
 .content img{
     margin-right: 20px;
 }

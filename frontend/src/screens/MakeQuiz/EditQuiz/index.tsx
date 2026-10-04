@@ -23,11 +23,12 @@ export default function EditQuiz() {
   const saveQuiz = async (
     title: string,
     isPrivate: boolean,
+    periodId: number | null,
     questions: EditorQuestion[]
   ) => {
     const result = await dispatch(
       updateQuiz({
-        quiz: { id: quiz.id, title, isPrivate },
+        quiz: { id: quiz.id, title, isPrivate, periodId },
         // The list is the whole set: a stored Question left out of it is removed.
         questions: questions.map((question) => ({
           ...question,
@@ -45,6 +46,7 @@ export default function EditQuiz() {
       key={quiz.id}
       initialTitle={quiz.title}
       initialIsPrivate={quiz.isPrivate}
+      initialPeriodId={quiz.periodId}
       initialQuestions={quiz.questions.map((question) => ({
         ...question,
         hintText: question.hintText ?? "",

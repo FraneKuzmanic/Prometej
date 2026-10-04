@@ -29,10 +29,6 @@ import {
   deleteCurrentUser,
 } from "../../../store/slices/userSlice";
 import { useLocation } from "react-router-dom";
-import {
-  fetchAllPublicQuizzes,
-  searchQuizzes,
-} from "../../../store/slices/quizSlice";
 
 interface HeaderProps {
   toggle: boolean;
@@ -67,9 +63,15 @@ export default function Header({ toggle, toggleSidebar }: HeaderProps) {
       if (pathname.includes("/learning") || pathname.includes("/search")) {
         // The search screen reads the query from the address and fetches the results.
         navigate(`/search?q=${encodeURIComponent(query)}`);
-      } else if (pathname.includes("/quizzes")) {
-        if (query) dispatch(searchQuizzes(query));
-        else dispatch(fetchAllPublicQuizzes());
+      } else {
+        // The quiz list reads its query and its Period from the address. A search from
+        // "Moji kvizovi" or from a quiz's details opens the public list.
+        const params = new URLSearchParams(
+          pathname === "/quizzes" ? location.search : ""
+        );
+        if (query) params.set("q", query);
+        else params.delete("q");
+        navigate({ pathname: "/quizzes", search: params.toString() });
       }
     }
   };

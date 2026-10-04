@@ -41,13 +41,6 @@ const initialState: QuizState = {
     submitStatus: "idle",
 };
 
-const fetchAllPublicQuizzes = createAsyncThunk(
-    'quiz/getAllPublicQuizzes',
-    async () => {
-        const response = await QuizService.getAll();
-        return response.data;
-    }
-);
 const fetchAllUserQuizzes = createAsyncThunk(
     'quiz/getAllUserQuizzes',
     async (userId: number) => {
@@ -58,8 +51,9 @@ const fetchAllUserQuizzes = createAsyncThunk(
 
 const searchQuizzes = createAsyncThunk(
     'quiz/search',
-    async (query: string) => {
-        const response = await QuizService.search(query);
+    // The public list: all of it, or the Quizzes of one Period, or those a query finds.
+    async ({ query, periodId }: { query: string; periodId?: number }) => {
+        const response = await QuizService.search(query, periodId);
         return response.data;
     }
 );
@@ -136,11 +130,8 @@ const quizSlice = createSlice({
   },
   extraReducers: (builder) => {
     // Cleared first, so "no quizzes" is never said about a list another screen left here.
-    builder.addCase(fetchAllPublicQuizzes.pending, (state) => {
+    builder.addCase(searchQuizzes.pending, (state) => {
       state.quizzes = undefined;
-    });
-    builder.addCase(fetchAllPublicQuizzes.fulfilled, (state, action: PayloadAction<QuizBaseModel[]>) => {
-      state.quizzes = action.payload;
     });
     builder.addCase(fetchAllUserQuizzes.fulfilled, (state, action: PayloadAction<QuizBaseModel[]>) => {
         state.quizzes = action.payload;
@@ -189,7 +180,6 @@ const quizSlice = createSlice({
 export const { resetSubmit } = quizSlice.actions;
 
 export {
-    fetchAllPublicQuizzes,
     fetchAllUserQuizzes,
     createQuiz,
     updateQuiz,

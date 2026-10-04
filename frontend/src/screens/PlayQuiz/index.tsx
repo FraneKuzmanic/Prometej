@@ -269,9 +269,19 @@ export default function PlayQuiz() {
             <Typography>
               {currentQuestionNo + 1}. od {totalQuestionNo}
             </Typography>
-            <Button onClick={() => navigate("/")} variant="contained">
-              Vrati na početnu
-            </Button>
+            <Box sx={{ display: "flex", gap: 1 }}>
+              {quiz?.periodId && (
+                <Button
+                  onClick={() => navigate(`/learning/${quiz.periodId}`)}
+                  variant="outlined"
+                >
+                  Ponovi gradivo: {quiz.periodName}
+                </Button>
+              )}
+              <Button onClick={() => navigate("/")} variant="contained">
+                Vrati na početnu
+              </Button>
+            </Box>
           </Box>
         </Paper>
       )}

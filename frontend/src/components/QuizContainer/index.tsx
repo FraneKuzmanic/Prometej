@@ -9,7 +9,13 @@ interface Props {
   name: string;
   authorName: string;
   entryCode?: number;
+  periodName: string | null;
+  questionCount: number;
 }
+
+// "1 pitanje", "21 pitanje", and "pitanja" for every other number.
+const questionsLabel = (count: number) =>
+  `${count} ${count % 10 === 1 && count % 100 !== 11 ? "pitanje" : "pitanja"}`;
 
 export default function QuizContainer(props: Props) {
   return (
@@ -17,6 +23,9 @@ export default function QuizContainer(props: Props) {
       <CardActionArea>
         <CardHeader
           title={<Typography variant="h6">{props.name}</Typography>}
+          subheader={[props.periodName, questionsLabel(props.questionCount)]
+            .filter(Boolean)
+            .join(" · ")}
         />
         <CardContent
           sx={{

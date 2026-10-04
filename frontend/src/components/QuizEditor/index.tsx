@@ -24,6 +24,9 @@ import AddIcon from "@mui/icons-material/Add";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import SaveIcon from "@mui/icons-material/Save";
 import CancelIcon from "@mui/icons-material/Cancel";
+import { useSelector } from "react-redux";
+import { RootState, useAppDispatch } from "../../store/store";
+import { fetchPeriods } from "../../store/slices/periodSlice";
 
 // A Question already stored has an id; one added in the editor has none yet.
 export type EditorQuestion = QuestionCreateRequest & { id?: number };
@@ -31,11 +34,13 @@ export type EditorQuestion = QuestionCreateRequest & { id?: number };
 interface QuizEditorProps {
   initialTitle: string;
   initialIsPrivate: boolean;
+  initialPeriodId: number | null;
   initialQuestions: EditorQuestion[];
   // Resolves to whether the Quiz was saved; the editor stays open when it was not.
   onSave: (
     title: string,
     isPrivate: boolean,
+    periodId: number | null,
     questions: EditorQuestion[]
   ) => Promise<boolean>;
   onCancel: () => void;
@@ -72,10 +77,19 @@ const isComplete = (question: EditorQuestion) => {
 export default function QuizEditor({
   initialTitle,
   initialIsPrivate,
+  initialPeriodId,
   initialQuestions,
   onSave,
   onCancel,
 }: QuizEditorProps) {
+  const dispatch = useAppDispatch();
+  const { periods } = useSelector((state: RootState) => state.period);
+  const [periodId, setPeriodId] = useState<number | null>(initialPeriodId);
+
+  useEffect(() => {
+    if (!periods) dispatch(fetchPeriods());
+  }, [dispatch, periods]);
+
   // A new Quiz, and an old one stored without Questions, start with one to fill in.
   const [quizQuestions, setQuizQuestions] = useState<EditorQuestion[]>(
     initialQuestions.length > 0 ? initialQuestions : [emptyQuestion]
@@ -110,7 +124,7 @@ export default function QuizEditor({
   const saveQuiz = () => {
     setIsSaving(true);
     setSaveFailed(false);
-    onSave(quizTitle.trim(), isPrivate, quizQuestions).then((saved) => {
+    onSave(quizTitle.trim(), isPrivate, periodId, quizQuestions).then((saved) => {
       setIsSaving(false);
       setSaveFailed(!saved);
     });
@@ -254,6 +268,28 @@ export default function QuizEditor({
             value={quizTitle}
             onChange={(e) => setQuizTitle(e.target.value)}
           />
+          <TextField
+            select
+            fullWidth
+            size="small"
+            label="Razdoblje"
+            sx={{ marginTop: "1rem" }}
+            // The chosen Period is kept while the list loads; the field only cannot show it yet.
+            disabled={!periods}
+            value={periods && periodId !== null ? String(periodId) : ""}
+            onChange={(e) =>
+              setPeriodId(e.target.value ? Number(e.target.value) : null)
+            }
+            SelectProps={{ displayEmpty: true }}
+            InputLabelProps={{ shrink: true }}
+          >
+            <MenuItem value="">Bez razdoblja</MenuItem>
+            {periods?.map((period) => (
+              <MenuItem key={period.id} value={String(period.id)}>
+                {period.name}
+              </MenuItem>
+            ))}
+          </TextField>
           <FormControlLabel
             sx={{ marginTop: "0.5rem" }}
             control={
