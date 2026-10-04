@@ -4,8 +4,8 @@ using System.Text.Json;
 
 namespace Prometej_tests
 {
-    // Each test writes one Period of its own, with a word no other test uses: the tests of a
-    // class share one database.
+    // Each test writes its content with a word no other test uses, and searches for that word:
+    // the tests of a class share one database.
     public class PeriodSearchTests(ApiFactory factory) : IClassFixture<ApiFactory>
     {
         private static string Word() => $"w{Guid.NewGuid():N}"[..12];
@@ -129,6 +129,24 @@ namespace Prometej_tests
             Assert.InRange(atEnd.Length, 200, 301);
             Assert.StartsWith("…riječ ", atEnd);
             Assert.EndsWith($" riječ {last}", atEnd);
+        }
+
+        [Fact]
+        public async Task A_result_names_its_period_and_results_follow_the_curriculum_order()
+        {
+            var word = Word();
+            // Written out of order, and Romantizam (5) comes before Realizam (4) in the curriculum.
+            foreach (var periodId in new[] { 12, 4, 11, 5 })
+            {
+                await Write(periodId, $"<p>{word}</p>");
+            }
+
+            var hits = await Search(word);
+
+            Assert.Equal([5, 4, 11, 12], hits.Select(hit => hit.GetProperty("periodId").GetInt32()));
+            Assert.Equal(
+                ["Romantizam", "Realizam", "Ekspresionizam", "Suvremena književnost"],
+                hits.Select(hit => hit.GetProperty("periodName").GetString()));
         }
 
         [Fact]

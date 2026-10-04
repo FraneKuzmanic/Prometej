@@ -10,6 +10,7 @@ namespace Prometej_core.Services.Contracts
 {
     public interface IPeriodService
     {
+        List<PeriodViewModel> GetPeriods();
         int UpdatePeriodContent(PeriodContentEditRequest period);
         PeriodContentViewModel GetPeriodContent(int id);
         List<PeriodSearchContentViewModel> SearchPeriodContent(string? query);

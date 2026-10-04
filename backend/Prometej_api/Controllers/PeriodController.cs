@@ -18,6 +18,12 @@ namespace Prometej_api.Controllers
             _periodService = periodService;
         }
 
+        [HttpGet]
+        public IActionResult GetPeriods()
+        {
+            return Ok(_periodService.GetPeriods());
+        }
+
         [HttpGet("content/{id}")]
         public IActionResult GetPeriodContent(int id)
         {

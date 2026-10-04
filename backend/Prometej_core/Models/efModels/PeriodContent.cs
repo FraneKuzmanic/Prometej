@@ -10,6 +10,7 @@ namespace Prometej_core.Models.efModels
     {
         public int Id { get; set; }
         public int PeriodId { get; set; }
+        public Period? Period { get; set; }
         public required string Content { get; set; }
     }
 }

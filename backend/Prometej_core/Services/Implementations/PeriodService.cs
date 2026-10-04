@@ -11,6 +11,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using HtmlAgilityPack;
+using Microsoft.EntityFrameworkCore;
 
 namespace Prometej_core.Services.Implementations
 {
@@ -18,10 +19,19 @@ namespace Prometej_core.Services.Implementations
     {
         private readonly IMapper _mapper;
         private readonly IRepository<PeriodContent> _periodRepository;
-        public PeriodService(IMapper mapper, IRepository<PeriodContent> periodRepository)
+        private readonly IRepository<Period> _periodListRepository;
+        public PeriodService(IMapper mapper, IRepository<PeriodContent> periodRepository, IRepository<Period> periodListRepository)
         {
             _mapper = mapper;
             _periodRepository = periodRepository;
+            _periodListRepository = periodListRepository;
+        }
+
+        public List<PeriodViewModel> GetPeriods()
+        {
+            var periods = _periodListRepository.ReadAll().OrderBy(p => p.SortOrder).ToList();
+
+            return _mapper.Map<List<PeriodViewModel>>(periods);
         }
 
         public PeriodContentViewModel GetPeriodContent(int id)
@@ -54,8 +64,8 @@ namespace Prometej_core.Services.Implementations
             }
 
             // Every Period Content is loaded and searched in memory: there is no text to compare
-            // until its HTML is parsed, and the Periods are a short, fixed list.
-            var periodEntities = _periodRepository.ReadAll().OrderBy(p => p.PeriodId).ToList();
+            // until its HTML is parsed, and the Periods are a short list fixed by the schema.
+            var periodEntities = _periodRepository.ReadAll().Include(p => p.Period).OrderBy(p => p.Period!.SortOrder).ToList();
 
             var searchResults = new List<PeriodSearchContentViewModel>();
             foreach (var periodContent in periodEntities)
@@ -104,6 +114,7 @@ namespace Prometej_core.Services.Implementations
                     searchResults.Add(new PeriodSearchContentViewModel
                     {
                         PeriodId = periodContent.PeriodId,
+                        PeriodName = periodContent.Period!.Name,
                         MatchCount = matchCount,
                         Passages = passages,
                     });
@@ -197,7 +208,13 @@ namespace Prometej_core.Services.Implementations
         public int UpdatePeriodContent(PeriodContentEditRequest period)
         {
             // A Period has one content. Looking it up by PeriodId, not by the row id the client
-            // sends, means a stale id can never overwrite another Period's content.
+            // sends, means a stale id can never overwrite another Period's content, and a
+            // number that is no Period's id gets none.
+            if (!_periodListRepository.ReadAll().Any(p => p.Id == period.PeriodId))
+            {
+                throw new NotFoundException("Period not found");
+            }
+
             var periodEntity = _periodRepository.ReadAll().FirstOrDefault(p => p.PeriodId == period.PeriodId);
             if (periodEntity == null)
             {
