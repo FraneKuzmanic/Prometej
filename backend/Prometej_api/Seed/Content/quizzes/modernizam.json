@@ -1,0 +1,80 @@
+{
+  "quiz": { "title": "Modernizam: provjera znanja", "isPrivate": false },
+  "questions": [
+    {
+      "questionTitle": "Tko je autor zbirke „Cvjetovi zla”?",
+      "firstAnswer": "Charles Baudelaire",
+      "secondAnswer": "Paul Verlaine",
+      "thirdAnswer": "Arthur Rimbaud",
+      "fourthAnswer": "Stéphane Mallarmé",
+      "correctOption": 1,
+      "exploreMore": "Baudelaire je „Cvjetove zla” objavio 1857. godine. Zbog zbirke mu je suđeno za povredu javnoga morala, a šest je pjesama zabranjeno."
+    },
+    {
+      "questionTitle": "Koje godine počinje hrvatska moderna?",
+      "firstAnswer": "1881.",
+      "secondAnswer": "1885.",
+      "thirdAnswer": "1891.",
+      "fourthAnswer": "1914.",
+      "correctOption": 3,
+      "hintText": "Te je godine Janko Leskovar objavio prozu s novim temama.",
+      "exploreMore": "Početak moderne označuju proze s novim temama, Leskovarova 1891. i Matoševa 1892. godine. Godine 1881. počinje realizam, a 1914. moderna završava."
+    },
+    {
+      "questionTitle": "Što u Baudelaireovoj pjesmi predstavlja albatros?",
+      "firstAnswer": "Slobodu naroda",
+      "secondAnswer": "Pjesnika među ljudima",
+      "thirdAnswer": "Prolaznost života",
+      "fourthAnswer": "Daleku domovinu",
+      "correctOption": 2,
+      "hintText": "Ptica je veličanstvena u letu, a nespretna na palubi.",
+      "exploreMore": "Albatros je slika pjesnika: u svojemu je svijetu velik, a među ljudima ismijan i nespretan. Pjesnik kao osamljenik u sukobu s društvom česta je tema modernizma."
+    },
+    {
+      "questionTitle": "Koja Matoševa novela pripada krugu priča iz domaće sredine?",
+      "firstAnswer": "„Camao”",
+      "secondAnswer": "„Cvijet sa raskršća”",
+      "thirdAnswer": "„Balkon”",
+      "fourthAnswer": "„Kip domovine leta 188*”",
+      "correctOption": 4,
+      "exploreMore": "Matoševe se novele dijele u dva kruga: priče o ljudima i događajima iz domaće sredine i priče s bizarnim likovima i nevjerojatnim događajima, u kojima radnja ima simbolično značenje, kao u „Camau” i „Cvijetu sa raskršća”."
+    },
+    {
+      "questionTitle": "Kojim je narječjem Vladimir Nazor napisao „Galiotovu pesan”?",
+      "firstAnswer": "Čakavskim",
+      "secondAnswer": "Kajkavskim",
+      "thirdAnswer": "Štokavskim ikavskim",
+      "fourthAnswer": "Štokavskim ijekavskim",
+      "correctOption": 1,
+      "hintText": "Nazor je rođen u Postirima na Braču.",
+      "exploreMore": "„Galiotova pesan” govori o robu veslaču na galiji. Nazor je inače pjesnik životne radosti, mita i narodne prošlosti, po čemu se razlikuje od većine pjesnika moderne."
+    },
+    {
+      "questionTitle": "Koja je Ujevićeva zbirka objavljena 1920. godine?",
+      "firstAnswer": "„Kolajna”",
+      "secondAnswer": "„Auto na korzu”",
+      "thirdAnswer": "„Lelek sebra”",
+      "fourthAnswer": "„Ojađeno zvono”",
+      "correctOption": 3,
+      "exploreMore": "Nakon „Leleka sebra” (1920.) slijede „Kolajna” (1926.), „Auto na korzu” (1932.) i „Ojađeno zvono” (1933.). Ujević je počeo kao Matošev učenik, a glavne je zbirke objavio poslije moderne."
+    },
+    {
+      "questionTitle": "Koji pravac vjeruje da iza vidljivih stvari postoji skrivena veza koju pjesma može naslutiti?",
+      "firstAnswer": "Naturalizam",
+      "secondAnswer": "Simbolizam",
+      "thirdAnswer": "Realizam",
+      "fourthAnswer": "Klasicizam",
+      "correctOption": 2,
+      "exploreMore": "Simbolisti vjeruju da iza vidljivih stvari postoji skrivena veza koju pjesma može naslutiti. Baudelaireova pjesma „Suglasja” čita se kao program simbolizma."
+    },
+    {
+      "questionTitle": "Koji događaji 1914. godine označuju kraj hrvatske moderne?",
+      "firstAnswer": "Smrt Augusta Šenoe i izlazak Kumičićeva romana",
+      "secondAnswer": "Pokretanje časopisa „Krugovi”",
+      "thirdAnswer": "Izlazak Šimićevih „Preobraženja”",
+      "fourthAnswer": "Matoševa smrt i izlazak antologije „Hrvatska mlada lirika”",
+      "correctOption": 4,
+      "exploreMore": "U antologiji „Hrvatska mlada lirika” objavljene su i pjesme mladoga Tina Ujevića. Šenoa je umro 1881., „Preobraženja” su izišla 1920., a „Krugovi” su pokrenuti 1952. godine."
+    }
+  ]
+}

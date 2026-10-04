@@ -130,6 +130,7 @@ using (var scope = app.Services.CreateScope())
         db.Database.Migrate();
     }
     DbSeeder.Run(scope.ServiceProvider, app.Configuration);
+    DemoContentSeeder.Run(scope.ServiceProvider, app.Configuration);
 }
 
 // Configure the HTTP request pipeline.

@@ -1,0 +1,81 @@
+{
+  "quiz": { "title": "Renesansa: provjera znanja", "isPrivate": false },
+  "questions": [
+    {
+      "questionTitle": "Tko je napisao spjev „Judita”?",
+      "firstAnswer": "Marin Držić",
+      "secondAnswer": "Marko Marulić",
+      "thirdAnswer": "Petar Hektorović",
+      "fourthAnswer": "Hanibal Lucić",
+      "correctOption": 2,
+      "hintText": "Splićanin kojega nazivamo ocem hrvatske književnosti.",
+      "exploreMore": "Marko Marulić napisao je „Juditu” 1501., a tiskana je u Veneciji 1521. godine. To je prvi umjetnički ep na hrvatskome jeziku."
+    },
+    {
+      "questionTitle": "Kojoj književnoj vrsti pripada Držićeva „Novela od Stanca”?",
+      "firstAnswer": "Tragediji",
+      "secondAnswer": "Pastirskoj igri",
+      "thirdAnswer": "Epu",
+      "fourthAnswer": "Komediji",
+      "correctOption": 4,
+      "exploreMore": "„Novela od Stanca” najkraća je Držićeva komedija, pokladna farsa u stihu, izvedena 1550. godine. Riječ „novela” u naslovu znači šalu, podvalu."
+    },
+    {
+      "questionTitle": "Tko Hamletu otkriva da mu je otac ubijen?",
+      "firstAnswer": "Očev duh",
+      "secondAnswer": "Horacije",
+      "thirdAnswer": "Polonije",
+      "fourthAnswer": "Gertruda",
+      "correctOption": 1,
+      "hintText": "Ukazuje se Hamletu na samome početku tragedije.",
+      "exploreMore": "Duh Hamletova oca otkriva da ga je ubio brat Klaudije, koji je zatim zauzeo prijestolje i oženio Hamletovu majku Gertrudu. Hamlet se zavjetuje na osvetu, ali je odgađa."
+    },
+    {
+      "questionTitle": "Koje se djelo često naziva prvim hrvatskim romanom?",
+      "firstAnswer": "„Ribanje i ribarsko prigovaranje”",
+      "secondAnswer": "„Robinja”",
+      "thirdAnswer": "„Planine”",
+      "fourthAnswer": "„Dundo Maroje”",
+      "correctOption": 3,
+      "exploreMore": "„Planine” Petra Zoranića nastale su oko 1536., a tiskane su u Veneciji 1569. godine. Pisane su u prozi i stihu, a u njima pisac izražava brigu za „rasutu bašćinu”."
+    },
+    {
+      "questionTitle": "Kojim je stihom ispjevana „Judita”?",
+      "firstAnswer": "Heksametrom",
+      "secondAnswer": "Dvostruko rimovanim dvanaestercem",
+      "thirdAnswer": "Osmercem",
+      "fourthAnswer": "Desetercem",
+      "correctOption": 2,
+      "hintText": "Istim je stihom Hektorović napisao „Ribanje i ribarsko prigovaranje”.",
+      "exploreMore": "„Judita” ima šest pjevanja i 2126 dvostruko rimovanih dvanaesteraca. Istim je stihom Držić napisao „Novelu od Stanca”."
+    },
+    {
+      "questionTitle": "Tko je autor romana „Don Quijote”?",
+      "firstAnswer": "Ludovico Ariosto",
+      "secondAnswer": "William Shakespeare",
+      "thirdAnswer": "Giovanni Boccaccio",
+      "fourthAnswer": "Miguel de Cervantes",
+      "correctOption": 4,
+      "exploreMore": "Cervantesov junak, zaluđen viteškim romanima, kreće u svijet kao vitez, pa se u romanu sudaraju mašta i stvarnost. Djelo se često naziva prvim modernim romanom."
+    },
+    {
+      "questionTitle": "Što se u „Noveli od Stanca” dogodi Stancu?",
+      "firstAnswer": "Maskirani mladići obriju mu bradu i odnesu robu",
+      "secondAnswer": "Pomladi se zahvaljujući vilama",
+      "thirdAnswer": "Pronađe sina koji mu je potrošio dukate",
+      "fourthAnswer": "Pobijedi mladiće u nadmudrivanju",
+      "correctOption": 1,
+      "hintText": "Stanac je lakovjeran, a noć je pokladna.",
+      "exploreMore": "Dživo Pešica uvjeri Stanca da se sam pomladio zahvaljujući vilama i da to može i on. Stanac čeka vile, a umjesto njih dolaze maskirani mladići. U komediji se sudaraju mladost i starost, grad i selo, lukavost i lakovjernost."
+    },
+    {
+      "questionTitle": "Što je od navedenoga obilježje renesanse?",
+      "firstAnswer": "Kićen stil i misao o prolaznosti života",
+      "secondAnswer": "Strogo jedinstvo mjesta, vremena i radnje",
+      "thirdAnswer": "Čovjek i njegov zemaljski život u središtu zanimanja",
+      "fourthAnswer": "Vjerno opisivanje suvremenoga društva",
+      "correctOption": 3,
+      "exploreMore": "Renesansa obnavlja zanimanje za antiku i vjeruje u čovjekove sposobnosti. Kićen stil obilježje je baroka, pravilo triju jedinstava klasicizma, a vjeran opis društva realizma."
+    }
+  ]
+}

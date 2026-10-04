@@ -1,0 +1,80 @@
+{
+  "quiz": { "title": "Realizam: provjera znanja", "isPrivate": false },
+  "questions": [
+    {
+      "questionTitle": "Tko je autor romana „Zločin i kazna”?",
+      "firstAnswer": "Lav Nikolajevič Tolstoj",
+      "secondAnswer": "Nikolaj Vasiljevič Gogolj",
+      "thirdAnswer": "Fjodor Mihajlovič Dostojevski",
+      "fourthAnswer": "Ivan Sergejevič Turgenjev",
+      "correctOption": 3,
+      "exploreMore": "Dostojevski je „Zločin i kaznu” objavio 1866. godine. Nakon toga napisao je romane „Idiot”, „Bjesovi” i „Braća Karamazovi”."
+    },
+    {
+      "questionTitle": "Kako se zove glavni junak romana „Zločin i kazna”?",
+      "firstAnswer": "Raskoljnikov",
+      "secondAnswer": "Porfirij Petrovič",
+      "thirdAnswer": "Lovro Mahnič",
+      "fourthAnswer": "Ante Stipančić",
+      "correctOption": 1,
+      "hintText": "Bivši student koji vjeruje da izuzetni ljudi smiju prekoračiti zakon.",
+      "exploreMore": "Raskoljnikov ubija staru lihvarku i njezinu sestru Lizavetu. Pravu mu kaznu ne donosi sud, nego savjest, a put pokajanja pokazuje mu Sonja Marmeladova."
+    },
+    {
+      "questionTitle": "U kojem se gradu događa radnja romana „Posljednji Stipančići”?",
+      "firstAnswer": "U Zagrebu",
+      "secondAnswer": "U Rijeci",
+      "thirdAnswer": "U Dubrovniku",
+      "fourthAnswer": "U Senju",
+      "correctOption": 4,
+      "hintText": "U tom je gradu rođen i autor romana, Vjenceslav Novak.",
+      "exploreMore": "Roman prati propast senjske patricijske obitelji u 19. stoljeću: slabljenje pomorske trgovine, dolazak ilirskih ideja i samovolju oca u patrijarhalnoj obitelji."
+    },
+    {
+      "questionTitle": "Kako se naziva razdoblje hrvatske književnosti od 1865. do 1881. godine?",
+      "firstAnswer": "Hrvatska moderna",
+      "secondAnswer": "Šenoino doba",
+      "thirdAnswer": "Ilirski pokret",
+      "fourthAnswer": "Razdoblje realizma",
+      "correctOption": 2,
+      "hintText": "Nazvano je po piscu „Zlatarova zlata”.",
+      "exploreMore": "August Šenoa presudno je utjecao na književni život toga doba. Njegovo djelo spaja romantičarsku fabulu s realističkim zanimanjem za društvo, pa priprema put realizmu, koji okvirno počinje 1881. godine."
+    },
+    {
+      "questionTitle": "Kakva je kompozicija Šenoine pripovijesti „Prijan Lovro”?",
+      "firstAnswer": "Uokvirena: pripovjedač udovici priča sudbinu svojega prijatelja",
+      "secondAnswer": "Roman u pismima koja junak piše prijatelju",
+      "thirdAnswer": "Dnevnik glavnoga junaka",
+      "fourthAnswer": "Niz samostalnih novela bez okvira",
+      "correctOption": 1,
+      "exploreMore": "Mlada udovica tvrdi da naš život ne daje građu za književnost. Da je razuvjeri, pripovjedač joj priča o Lovri Mahniču, darovitome seljačkom sinu kojega uništavaju siromaštvo i sredina."
+    },
+    {
+      "questionTitle": "Koji je roman napisao Ante Kovačić?",
+      "firstAnswer": "„Zlatarovo zlato”",
+      "secondAnswer": "„Pod starimi krovovi”",
+      "thirdAnswer": "„U registraturi”",
+      "fourthAnswer": "„Posljednji Stipančići”",
+      "correctOption": 3,
+      "exploreMore": "Kovačićev roman „U registraturi” (1888.) govori o putu sa sela u grad. „Zlatarovo zlato” napisao je Šenoa, „Pod starimi krovovi” Gjalski, a „Posljednje Stipančiće” Novak."
+    },
+    {
+      "questionTitle": "Koja je Kranjčevićeva zbirka objavljena 1885. godine?",
+      "firstAnswer": "„Trzaji”",
+      "secondAnswer": "„Izabrane pjesme”",
+      "thirdAnswer": "„Pjesme”",
+      "fourthAnswer": "„Bugarkinje”",
+      "correctOption": 4,
+      "exploreMore": "Nakon „Bugarkinja” (1885.) Kranjčević je objavio „Izabrane pjesme” (1898.) i „Trzaje” (1902.), a zbirka „Pjesme” izišla je 1908. godine."
+    },
+    {
+      "questionTitle": "Što je od navedenoga obilježje realizma?",
+      "firstAnswer": "Osjećaji i mašta važniji su od razuma",
+      "secondAnswer": "Vjeran prikaz suvremenoga društva i psihološki razrađeni likovi",
+      "thirdAnswer": "Stvarnost se naslućuje simbolima i zvukom riječi",
+      "fourthAnswer": "Uzor su antička djela i stroga pravila",
+      "correctOption": 2,
+      "exploreMore": "Realistički likovi imaju podrijetlo, zanimanje i psihologiju, a glavna je vrsta roman. Osjećaji i mašta obilježje su romantizma, simboli simbolizma, a antički uzori klasicizma."
+    }
+  ]
+}

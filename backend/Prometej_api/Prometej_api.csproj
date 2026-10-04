@@ -20,6 +20,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- The demo content the server can seed: one HTML file per Period, one JSON file per Quiz. -->
+    <Content Remove="Seed\Content\**" />
+    <EmbeddedResource Include="Seed\Content\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Prometej_core\Prometej_core.csproj" />
     <ProjectReference Include="..\Prometej_persistance\Prometej_persistance.csproj" />
   </ItemGroup>
