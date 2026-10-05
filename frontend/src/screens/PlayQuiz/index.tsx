@@ -125,7 +125,9 @@ export default function PlayQuiz() {
 
   return (
     <Box className="play-quiz-screen-wrapper">
-      {currentQuestion && (
+      {/* Not without the Quiz: a Quiz left in the store by an earlier play is copied into
+          this screen's state before the fetch for this address clears it. */}
+      {quiz && currentQuestion && (
         <Paper elevation={3} className="quiz-play-container">
           <Box className="quiz-play-header">
             <Typography className="quiz-play-title" variant="h5">
