@@ -17,5 +17,7 @@ namespace Prometej_core.Models.ViewModels
         public int? PeriodId { get; set; }
         public string? PeriodName { get; set; }
         public List<QuestionViewModel> Questions { get; set; }
+        // The passages those questions are asked about.
+        public List<SourceTextViewModel> SourceTexts { get; set; } = [];
     }
 }

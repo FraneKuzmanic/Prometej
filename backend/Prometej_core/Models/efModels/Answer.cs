@@ -22,5 +22,7 @@ namespace Prometej_core.Models.efModels
         // Its ordinal in the quiz game: the questions in the order they were played, and a
         // question's rows in order.
         public int Position { get; set; }
+        // The passage the question was played beside, in the version shown then.
+        public int? SourceTextId { get; set; }
     }
 }

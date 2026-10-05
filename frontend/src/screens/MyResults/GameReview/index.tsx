@@ -1,10 +1,12 @@
-import { useEffect } from "react";
+import { Fragment, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import { Box, Button, Paper, Typography } from "@mui/material";
 import { RootState, useAppDispatch } from "../../../store/store";
 import { fetchQuizGame } from "../../../store/slices/quizSlice";
 import { pointsLabel } from "../../../types/points";
+import AnswerGroup from "../../../components/AnswerGroup";
+import { groupAnswers } from "../../../components/AnswerGroup/group";
 import "../styles.css";
 
 const formatDate = (date: string) =>
@@ -31,6 +33,8 @@ export default function GameReview() {
     return () => request.abort();
   }, [dispatch, id]);
 
+  const groups = groupAnswers(gameReview?.answers ?? []);
+
   const backToResults = (
     <Button onClick={() => navigate("/my-results")}>Natrag na rezultate</Button>
   );
@@ -53,30 +57,36 @@ export default function GameReview() {
             {gameReview.answers.length} {pointsLabel(gameReview.answers.length)}
             {gameReview.periodName && ` · ${gameReview.periodName}`}
           </Typography>
-          {gameReview.answers.map((answer, index) => {
-            const correct = answer.answerText === answer.correctAnswer;
+          {groups.map((answers, index) => {
+            const { id, sourceTextId } = answers[0];
+            // Shown once, above the first of the Questions that were asked about it.
+            const sourceText =
+              sourceTextId !== null &&
+              sourceTextId !== groups[index - 1]?.[0].sourceTextId
+                ? gameReview.sourceTexts.find((text) => text.id === sourceTextId)
+                : undefined;
             return (
-              <Paper key={answer.id} className="game-review-answer">
-                <Typography variant="h6">
-                  {index + 1}. {answer.questionTitle}
-                </Typography>
-                <Typography
-                  className={
-                    correct ? "game-review-correct" : "game-review-wrong"
-                  }
-                >
-                  Vaš odgovor: {answer.answerText}
-                </Typography>
-                {!correct && (
-                  <Typography>Točan odgovor: {answer.correctAnswer}</Typography>
+              <Fragment key={id}>
+                {sourceText && (
+                  <details className="game-review-source">
+                    <summary>Polazni tekst</summary>
+                    <Typography variant="subtitle1">
+                      {sourceText.caption}
+                    </Typography>
+                    <Typography className="game-review-source-body">
+                      {sourceText.body}
+                    </Typography>
+                  </details>
                 )}
-                {answer.exploreMore && (
-                  <Box className="game-review-explore">
-                    <Typography variant="subtitle2">Saznaj više</Typography>
-                    <Typography>{answer.exploreMore}</Typography>
-                  </Box>
-                )}
-              </Paper>
+                <Paper className="game-review-answer">
+                  <AnswerGroup
+                    number={index + 1}
+                    answers={answers}
+                    answerLabel="Vaš odgovor"
+                    showExploreMore
+                  />
+                </Paper>
+              </Fragment>
             );
           })}
           <Box className="game-review-footer">

@@ -27,8 +27,10 @@ namespace Prometej_core.Services.Implementations
         private readonly IRepository<User> _userRepository;
         private readonly IRepository<Answer> _answerRepository;
         private readonly IRepository<Period> _periodRepository;
-        public QuizService(IMapper mapper, IRepository<Quiz> quizRepository, IRepository<Question> questionRepository, IRepository<QuizGame> quizGameRepository, IRepository<User> userRepository, IRepository<Answer> answerRepository, IRepository<Period> periodRepository)
+        private readonly IRepository<SourceText> _sourceTextRepository;
+        public QuizService(IMapper mapper, IRepository<Quiz> quizRepository, IRepository<Question> questionRepository, IRepository<QuizGame> quizGameRepository, IRepository<User> userRepository, IRepository<Answer> answerRepository, IRepository<Period> periodRepository, IRepository<SourceText> sourceTextRepository)
         {
+            _sourceTextRepository = sourceTextRepository;
             _periodRepository = periodRepository;
             _answerRepository = answerRepository;
             _mapper = mapper;
@@ -109,7 +111,7 @@ namespace Prometej_core.Services.Implementations
 
         public QuizViewModel GetQuiz(int id, int? code, int? callerId, bool isAdmin)
         {
-            var quiz = _quizRepository.ReadAll().Include(q => q.Creator).Include(q => q.Period).Include(q => q.Questions.Where(x => !x.IsRetired).OrderBy(x => x.Position).ThenBy(x => x.Id)).FirstOrDefault(q => q.Id == id);
+            var quiz = _quizRepository.ReadAll().Include(q => q.Creator).Include(q => q.Period).Include(q => q.Questions.Where(x => !x.IsRetired).OrderBy(x => x.Position).ThenBy(x => x.Id)).ThenInclude(x => x.SourceText).FirstOrDefault(q => q.Id == id);
 
             // A private quiz opens for its creator, an admin, or whoever has its entry code.
             // Everyone else gets the same answer as for a quiz that does not exist.
@@ -120,37 +122,48 @@ namespace Prometej_core.Services.Implementations
                 throw new NotFoundException("Quiz not found");
             }
 
-            var quizViewModel = _mapper.Map<QuizViewModel>(quiz);
-
-            return quizViewModel;
+            return ToViewModel(quiz!);
         }
 
         public QuizViewModel GetQuizByCode(int quizCode)
         {
-            var quiz = _quizRepository.ReadAll().Include(q => q.Creator).Include(q => q.Period).Include(q => q.Questions.Where(x => !x.IsRetired).OrderBy(x => x.Position).ThenBy(x => x.Id)).FirstOrDefault(q => q.IsPrivate && q.EntryCode == quizCode);
+            var quiz = _quizRepository.ReadAll().Include(q => q.Creator).Include(q => q.Period).Include(q => q.Questions.Where(x => !x.IsRetired).OrderBy(x => x.Position).ThenBy(x => x.Id)).ThenInclude(x => x.SourceText).FirstOrDefault(q => q.IsPrivate && q.EntryCode == quizCode);
             if (quiz == null)
             {
                 throw new NotFoundException("Quiz not found");
             }
 
+            return ToViewModel(quiz);
+        }
+
+        // The quiz with the source texts its questions are asked about, in the order they come up.
+        private QuizViewModel ToViewModel(Quiz quiz)
+        {
             var quizViewModel = _mapper.Map<QuizViewModel>(quiz);
+            quizViewModel.SourceTexts = _mapper.Map<List<SourceTextViewModel>>(
+                quiz.Questions.Where(q => q.SourceText != null).Select(q => q.SourceText).DistinctBy(s => s!.Id).ToList());
 
             return quizViewModel;
         }
 
-        public int Create(QuizCreateRequest quiz, List<QuestionCreateRequest> questions, int creatorId)
+        public int Create(QuizCreateRequest quiz, List<QuestionCreateRequest> questions, List<SourceTextRequest>? sourceTexts, int creatorId)
         {
+            sourceTexts ??= [];
             TrimAndCheck(questions);
+            TrimAndCheck(sourceTexts, questions);
             EnsurePeriodExists(quiz.PeriodId);
 
             var quizEntity = _mapper.Map<Quiz>(quiz);
             quizEntity.Title = quiz.Title.Trim();
             quizEntity.CreatorId = creatorId;
-            // Added through the quiz, so one save stores the quiz and its questions or neither.
+            // Added through the quiz, so one save stores the quiz, its questions and its source
+            // texts, or none of them.
             quizEntity.Questions = _mapper.Map<List<Question>>(questions);
+            quizEntity.SourceTexts = sourceTexts.Select(text => new SourceText { Caption = text.Caption, Body = text.Body }).ToList();
             for (var i = 0; i < quizEntity.Questions.Count; i++)
             {
                 quizEntity.Questions[i].Position = i;
+                quizEntity.Questions[i].SourceText = SourceTextOf(questions[i], quizEntity.SourceTexts);
             }
             _quizRepository.Create(quizEntity);
             SaveWithEntryCode(quizEntity);
@@ -158,22 +171,30 @@ namespace Prometej_core.Services.Implementations
             return quizEntity.Id;
         }
 
-        public void Update(QuizEditRequest quiz, List<QuestionEditRequest>? questions, int callerId, bool isAdmin)
+        public void Update(QuizEditRequest quiz, List<QuestionEditRequest>? questions, List<SourceTextRequest>? sourceTexts, int callerId, bool isAdmin)
         {
-            // Retired questions are not loaded, so an update can neither change nor restore one:
-            // its id is refused below like the id of another quiz's question.
-            var quizEntity = _quizRepository.GetAll().Include(q => q.Questions.Where(x => !x.IsRetired)).FirstOrDefault(q => q.Id == quiz.Id);
+            // Retired questions and source texts are not loaded, so an update can neither change
+            // nor restore one: its id is refused below like the id of another quiz's.
+            var quizEntity = _quizRepository.GetAll()
+                .Include(q => q.Questions.Where(x => !x.IsRetired))
+                .Include(q => q.SourceTexts.Where(s => !s.IsRetired))
+                .FirstOrDefault(q => q.Id == quiz.Id);
             EnsureCreatorOrAdmin(quizEntity, callerId, isAdmin);
+            // Without questions the source texts are left alone too, whatever was sent.
+            sourceTexts = questions == null ? [] : sourceTexts ?? [];
             TrimAndCheck(questions ?? []);
+            TrimAndCheck(sourceTexts, questions ?? []);
             EnsurePeriodExists(quiz.PeriodId);
 
             quizEntity.Title = quiz.Title.Trim();
             quizEntity.IsPrivate = quiz.IsPrivate;
             quizEntity.PeriodId = quiz.PeriodId;
 
+            List<SourceText> sourceTextEntities = [];
             if (questions != null)
             {
                 RemoveQuestionsNotIn(quizEntity, questions);
+                sourceTextEntities = StoreSourceTexts(quizEntity, sourceTexts);
             }
 
             // The place in the sent list is the question's place in the quiz.
@@ -200,6 +221,11 @@ namespace Prometej_core.Services.Implementations
                 }
 
                 questionEntity.Position = position++;
+                questionEntity.SourceText = SourceTextOf(questionRequest, sourceTextEntities);
+                if (questionEntity.SourceText == null)
+                {
+                    questionEntity.SourceTextId = null;
+                }
             }
 
             // The repositories share one context, so the quiz and its questions save together or not at all.
@@ -271,6 +297,7 @@ namespace Prometej_core.Services.Implementations
                     AnswerText = options[answer.ChosenOption - 1],
                     CorrectAnswer = options[question.CorrectOption - 1],
                     Position = answers.Count,
+                    SourceTextId = question.SourceTextId,
                 });
             }
 
@@ -392,6 +419,13 @@ namespace Prometej_core.Services.Implementations
 
             var review = _mapper.Map<QuizGameReviewViewModel>(quizGame);
             review.QuizIsListed = _quizRepository.ReadAll().Where(Quiz.IsListed).Any(q => q.Id == quizGame.QuizId);
+            // The versions the answers point to, which may have been retired since.
+            var sourceTextIds = quizGame.Answers.Where(a => a.SourceTextId != null).Select(a => a.SourceTextId!.Value).Distinct().ToList();
+            if (sourceTextIds.Count > 0)
+            {
+                review.SourceTexts = _mapper.Map<List<SourceTextViewModel>>(
+                    _sourceTextRepository.ReadAll().Where(s => sourceTextIds.Contains(s.Id)).OrderBy(s => s.Id).ToList());
+            }
 
             return review;
         }
@@ -423,7 +457,7 @@ namespace Prometej_core.Services.Implementations
         {
             var answers = quizGames.SelectMany(g => g.Answers).ToLookup(a => a.QuestionId);
             var questions = _questionRepository.ReadAll().Where(q => q.QuizId == quizId).OrderBy(q => q.Position).ThenBy(q => q.Id)
-                .Select(q => new { q.Id, q.QuestionTitle, q.IsRetired })
+                .Select(q => new { q.Id, q.QuestionTitle, q.IsRetired, SourceTextCaption = q.SourceText!.Caption })
                 .ToList();
 
             var report = new List<QuestionReportViewModel>();
@@ -440,6 +474,7 @@ namespace Prometej_core.Services.Implementations
                     QuestionId = question.Id,
                     QuestionTitle = question.QuestionTitle,
                     IsRetired = question.IsRetired,
+                    SourceTextCaption = question.SourceTextCaption,
                     AnswerCount = answers[question.Id].Count(),
                     CorrectCount = answers[question.Id].Count(a => a.AnswerText == a.CorrectAnswer),
                     MostChosenWrongAnswer = mostChosenWrong?.Key,
@@ -531,6 +566,117 @@ namespace Prometej_core.Services.Implementations
 
         private static string? TrimOrNull(string? text) =>
             string.IsNullOrWhiteSpace(text) ? null : text.Trim();
+
+        // A body keeps its line breaks, stored as "\n" whatever the browser sent. A source text
+        // has one to ten questions, and they come one after another in the quiz.
+        private static void TrimAndCheck(List<SourceTextRequest> sourceTexts, IEnumerable<QuestionCreateRequest> questions)
+        {
+            foreach (var sourceText in sourceTexts)
+            {
+                sourceText.Caption = (sourceText.Caption ?? "").Trim();
+                sourceText.Body = (sourceText.Body ?? "").Trim().Replace("\r\n", "\n").Replace('\r', '\n');
+                if (sourceText.Caption == "" || sourceText.Body == "")
+                {
+                    throw new BadRequestException("A source text needs a caption and a body");
+                }
+            }
+
+            if (sourceTexts.Where(s => s.Id != 0).GroupBy(s => s.Id).Any(g => g.Count() > 1))
+            {
+                throw new BadRequestException("A source text must not be sent twice");
+            }
+
+            var questionCounts = new int[sourceTexts.Count];
+            int? previous = null;
+            foreach (var question in questions)
+            {
+                var number = question.SourceTextNo;
+                if (number != null)
+                {
+                    if (number < 1 || number > sourceTexts.Count)
+                    {
+                        throw new BadRequestException("A question names a source text that was not sent");
+                    }
+
+                    // Counted before, and another question came in between.
+                    if (number != previous && questionCounts[number.Value - 1] > 0)
+                    {
+                        throw new BadRequestException("The questions of a source text must be together");
+                    }
+
+                    questionCounts[number.Value - 1]++;
+                }
+
+                previous = number;
+            }
+
+            if (questionCounts.Any(count => count < 1 || count > 10))
+            {
+                throw new BadRequestException("A source text needs between one and ten questions");
+            }
+        }
+
+        private static SourceText? SourceTextOf(QuestionCreateRequest question, List<SourceText> sourceTexts) =>
+            question.SourceTextNo == null ? null : sourceTexts[question.SourceTextNo.Value - 1];
+
+        // The sent list is the whole set, in the order the questions number it. A stored source
+        // text that was shown in a quiz game is never changed or deleted: a changed one gets a
+        // new row and the old one is retired, so that game's review still shows what was read.
+        private List<SourceText> StoreSourceTexts(Quiz quiz, List<SourceTextRequest> sourceTexts)
+        {
+            var stored = quiz.SourceTexts.ToDictionary(s => s.Id);
+            // An id from another quiz would otherwise let a caller rewrite another Creator's source text.
+            if (sourceTexts.Any(s => s.Id != 0 && !stored.ContainsKey(s.Id)))
+            {
+                throw new ForbiddenException("Source text does not belong to this quiz");
+            }
+
+            var sent = sourceTexts.Where(s => s.Id != 0).ToDictionary(s => s.Id);
+            var changedIds = stored.Values
+                .Where(s => !sent.TryGetValue(s.Id, out var request) || request.Caption != s.Caption || request.Body != s.Body)
+                .Select(s => s.Id).ToList();
+            var playedIds = _answerRepository.ReadAll()
+                .Where(a => a.SourceTextId != null && changedIds.Contains(a.SourceTextId.Value))
+                .Select(a => a.SourceTextId!.Value).Distinct().ToHashSet();
+
+            var entities = new List<SourceText>();
+            foreach (var request in sourceTexts)
+            {
+                var entity = request.Id == 0 ? null : stored[request.Id];
+                if (entity != null && playedIds.Contains(entity.Id))
+                {
+                    entity.IsRetired = true;
+                    entity = null;
+                }
+
+                if (entity == null)
+                {
+                    entity = new SourceText { QuizId = quiz.Id, Caption = request.Caption, Body = request.Body };
+                    _sourceTextRepository.Create(entity);
+                }
+                else
+                {
+                    entity.Caption = request.Caption;
+                    entity.Body = request.Body;
+                }
+
+                entities.Add(entity);
+            }
+
+            foreach (var removed in stored.Values.Where(s => !sent.ContainsKey(s.Id)))
+            {
+                if (playedIds.Contains(removed.Id))
+                {
+                    removed.IsRetired = true;
+                }
+                else
+                {
+                    _sourceTextRepository.Delete(removed.Id);
+                }
+            }
+
+            return entities;
+        }
 
         // A private quiz gets an entry code, a public one has none. The lookup makes a taken
         // code unlikely; the unique index is what refuses one, and then another is tried.

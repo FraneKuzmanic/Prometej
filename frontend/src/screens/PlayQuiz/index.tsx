@@ -21,6 +21,7 @@ import {
   Typography,
 } from "@mui/material";
 import ChoiceQuestion from "./ChoiceQuestion";
+import SourceTextPanel from "./SourceTextPanel";
 import { pointsLabel } from "../../types/points";
 import "./styles.css";
 
@@ -102,6 +103,13 @@ export default function PlayQuiz() {
     setShowScore(true);
   };
 
+  const sourceText =
+    quiz && currentQuestion
+      ? quiz.sourceTexts.find(
+          (text) => text.id === currentQuestion.sourceTextId
+        )
+      : undefined;
+
   // The stored Quiz Game is the result once there is one: an Answer row is a point.
   const savedGame = submitStatus === "saved" ? lastGame : undefined;
   const finalMaxScore = savedGame ? savedGame.answers.length : maxScore;
@@ -131,7 +139,12 @@ export default function PlayQuiz() {
       {/* Not without the Quiz: a Quiz left in the store by an earlier play is copied into
           this screen's state before the fetch for this address clears it. */}
       {quiz && currentQuestion && (
-        <Paper elevation={3} className="quiz-play-container">
+        <Paper
+          elevation={3}
+          className={`quiz-play-container${
+            sourceText ? " with-source-text" : ""
+          }`}
+        >
           <Box className="quiz-play-header">
             <Typography className="quiz-play-title" variant="h5">
               {quiz ? quiz.title : ""}
@@ -141,6 +154,10 @@ export default function PlayQuiz() {
               value={((currentQuestionNo + 1) / totalQuestionNo) * 100}
             />
           </Box>
+          {/* Keyed by the text, so it stays as the Student left it through its Questions. */}
+          {sourceText && (
+            <SourceTextPanel key={sourceText.id} sourceText={sourceText} />
+          )}
           <Box className="quiz-play-content">
             <Typography variant="h4" className="quiz-play-question">
               {currentQuestionNo + 1}. {currentQuestion.questionTitle}

@@ -9,5 +9,7 @@ namespace Prometej_core.Models.ViewModels
         public string? ExploreMore { get; set; }
         public required string AnswerText { get; set; }
         public required string CorrectAnswer { get; set; }
+        public int Position { get; set; }
+        public int? SourceTextId { get; set; }
     }
 }

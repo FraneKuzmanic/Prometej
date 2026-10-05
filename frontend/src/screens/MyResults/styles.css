@@ -26,23 +26,22 @@
     padding: 15px 20px;
 }
 
-.game-review-correct.MuiTypography-root{
-    color: #4F6F52;
-}
-
-.game-review-wrong.MuiTypography-root{
-    color: #fd3737;
-}
-
-.game-review-answer, .game-review-explore{
+.game-review-answer{
     overflow-wrap: anywhere;
 }
 
-.game-review-explore{
-    margin-top: 15px;
-    padding: 10px 20px;
-    border-left: 3px solid #78C1F3;
-    white-space: pre-line;
+.game-review-source{
+    margin-top: 1.5rem;
+}
+
+.game-review-source summary{
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.game-review-source-body.MuiTypography-root{
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
 }
 
 .game-review-footer{

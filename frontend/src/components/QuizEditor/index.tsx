@@ -16,10 +16,21 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import "./styles.css";
 import QuestionContainer from "../QuestionContainer";
-import { QuestionCreateRequest } from "../../types/models/Quiz";
+import SourceTextFields from "../QuestionContainer/SourceTextFields";
+import {
+  QuestionCreateRequest,
+  SourceTextRequest,
+} from "../../types/models/Quiz";
+import {
+  EditorPassages,
+  EditorQuestion,
+  emptyQuestion,
+  isComplete,
+  isPassageComplete,
+} from "./questions";
 import AddIcon from "@mui/icons-material/Add";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import SaveIcon from "@mui/icons-material/Save";
@@ -28,57 +39,32 @@ import { useSelector } from "react-redux";
 import { RootState, useAppDispatch } from "../../store/store";
 import { fetchPeriods } from "../../store/slices/periodSlice";
 
-// A Question already stored has an id; one added in the editor has none yet.
-export type EditorQuestion = QuestionCreateRequest & { id?: number };
-
 interface QuizEditorProps {
   initialTitle: string;
   initialIsPrivate: boolean;
   initialPeriodId: number | null;
   initialQuestions: EditorQuestion[];
+  initialPassages: EditorPassages;
   // Resolves to whether the Quiz was saved; the editor stays open when it was not.
   onSave: (
     title: string,
     isPrivate: boolean,
     periodId: number | null,
-    questions: EditorQuestion[]
+    questions: EditorQuestion[],
+    passages: EditorPassages
   ) => Promise<boolean>;
   onCancel: () => void;
 }
 
-const emptyQuestion: EditorQuestion = {
-  questionTitle: "",
-  firstAnswer: "",
-  secondAnswer: "",
-  thirdAnswer: "",
-  fourthAnswer: "",
-  correctOption: 0,
-  hintText: "",
-  exploreMore: "",
-};
-
-// The server's rule for a Question, checked here first so the Teacher is told which one.
-const isComplete = (question: EditorQuestion) => {
-  const options = [
-    question.firstAnswer,
-    question.secondAnswer,
-    question.thirdAnswer,
-    question.fourthAnswer,
-  ].map((option) => option.trim());
-  return (
-    question.questionTitle.trim() !== "" &&
-    options.every((option) => option !== "") &&
-    new Set(options).size === options.length &&
-    question.correctOption >= 1 &&
-    question.correctOption <= 4
-  );
-};
+// The server's limit of Questions for one Source Text.
+const MAX_PASSAGE_QUESTIONS = 10;
 
 export default function QuizEditor({
   initialTitle,
   initialIsPrivate,
   initialPeriodId,
   initialQuestions,
+  initialPassages,
   onSave,
   onCancel,
 }: QuizEditorProps) {
@@ -94,27 +80,43 @@ export default function QuizEditor({
   const [quizQuestions, setQuizQuestions] = useState<EditorQuestion[]>(
     initialQuestions.length > 0 ? initialQuestions : [emptyQuestion]
   );
+  // The Source Texts by key; a Question names the key of the one it is asked about.
+  const [passages, setPassages] = useState<EditorPassages>(initialPassages);
+  const newPassageNo = useRef(0);
   const [selected, setSelected] = useState<number>(0);
   const [quizTitle, setQuizTitle] = useState<string>(initialTitle);
   const [isPrivate, setIsPrivate] = useState<boolean>(initialIsPrivate);
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [saveFailed, setSaveFailed] = useState<boolean>(false);
   const [inputDrawer, setInputDrawer] = useState<boolean>(false);
-  // The number of the first Question that kept the Quiz from being saved.
-  const [incompleteNo, setIncompleteNo] = useState<number | null>(null);
+  // The first Question that kept the Quiz from being saved, and whether it was its
+  // Source Text that is not filled in.
+  const [incomplete, setIncomplete] = useState<{
+    no: number;
+    passage: boolean;
+  } | null>(null);
   // One menu for the whole strip; it remembers which Question it was opened for.
   const [menu, setMenu] = useState<{
     anchor: HTMLElement;
     index: number;
   } | null>(null);
+  const [addMenuAnchor, setAddMenuAnchor] = useState<HTMLElement | null>(null);
+
+  const passageOf = (question: EditorQuestion) =>
+    question.passageKey ? passages[question.passageKey] : undefined;
 
   const handleSave = () => {
-    const incomplete = quizQuestions.findIndex(
-      (question) => !isComplete(question)
-    );
-    if (incomplete !== -1) {
-      setSelected(incomplete);
-      setIncompleteNo(incomplete + 1);
+    const index = quizQuestions.findIndex((question) => {
+      const passage = passageOf(question);
+      return !isComplete(question) || (passage && !isPassageComplete(passage));
+    });
+    if (index !== -1) {
+      const passage = passageOf(quizQuestions[index]);
+      setSelected(index);
+      setIncomplete({
+        no: index + 1,
+        passage: !!passage && !isPassageComplete(passage),
+      });
       return;
     }
     setSaveFailed(false);
@@ -124,16 +126,53 @@ export default function QuizEditor({
   const saveQuiz = () => {
     setIsSaving(true);
     setSaveFailed(false);
-    onSave(quizTitle.trim(), isPrivate, periodId, quizQuestions).then((saved) => {
-      setIsSaving(false);
-      setSaveFailed(!saved);
-    });
+    onSave(quizTitle.trim(), isPrivate, periodId, quizQuestions, passages).then(
+      (saved) => {
+        setIsSaving(false);
+        setSaveFailed(!saved);
+      }
+    );
   };
 
-  const addQuestion = () => {
-    setSelected(quizQuestions.length);
-    setQuizQuestions([...quizQuestions, emptyQuestion]);
-    setIncompleteNo(null);
+  const insertQuestion = (index: number, question: EditorQuestion) => {
+    setSelected(index);
+    setQuizQuestions([
+      ...quizQuestions.slice(0, index),
+      question,
+      ...quizQuestions.slice(index),
+    ]);
+    setIncomplete(null);
+    setAddMenuAnchor(null);
+  };
+
+  const addQuestion = () => insertQuestion(quizQuestions.length, emptyQuestion);
+
+  // A new Source Text comes with its first Question.
+  const addPassage = () => {
+    const passageKey = `new-${newPassageNo.current++}`;
+    setPassages({ ...passages, [passageKey]: { id: 0, caption: "", body: "" } });
+    insertQuestion(quizQuestions.length, { ...emptyQuestion, passageKey });
+  };
+
+  // The Questions of one Source Text stay together: a new one goes after the last of them.
+  const addToPassage = (passageKey: string) => {
+    const last = quizQuestions.reduce(
+      (found, question, index) =>
+        question.passageKey === passageKey ? index : found,
+      -1
+    );
+    insertQuestion(last + 1, { ...emptyQuestion, passageKey });
+  };
+
+  const updatePassage = (
+    passageKey: string,
+    updates: Partial<SourceTextRequest>
+  ) => {
+    setPassages((prevPassages) => ({
+      ...prevPassages,
+      [passageKey]: { ...prevPassages[passageKey], ...updates },
+    }));
+    setIncomplete(null);
   };
 
   const handleDelete = (index: number) => {
@@ -142,16 +181,43 @@ export default function QuizEditor({
       selected > index ? selected - 1 : Math.min(selected, newQuestions.length - 1)
     );
     setQuizQuestions(newQuestions);
-    setIncompleteNo(null);
+    // A Source Text goes with its last Question.
+    const { passageKey } = quizQuestions[index];
+    if (
+      passageKey &&
+      !newQuestions.some((question) => question.passageKey === passageKey)
+    ) {
+      setPassages((prevPassages) => {
+        const rest = { ...prevPassages };
+        delete rest[passageKey];
+        return rest;
+      });
+    }
+    setIncomplete(null);
     setMenu(null);
   };
 
+  // A Question can be added in the middle of the strip, so the strip follows the selected one.
   useEffect(() => {
     const container = document.querySelector(".questions-nav");
-    if (container) {
+    if (!container) return;
+    if (selected === quizQuestions.length - 1) {
       container.scrollLeft = container.scrollWidth;
+    } else {
+      container
+        .querySelector(".question-nav-container.selected")
+        ?.scrollIntoView({ block: "nearest", inline: "nearest" });
     }
-  }, [quizQuestions]);
+  }, [quizQuestions.length, selected]);
+
+  // "Tekst 1", "Tekst 2": the Source Texts numbered in the order the Questions use them.
+  const passageNumbers = new Map<string, number>();
+  quizQuestions.forEach(({ passageKey }) => {
+    if (passageKey && !passageNumbers.has(passageKey)) {
+      passageNumbers.set(passageKey, passageNumbers.size + 1);
+    }
+  });
+  const selectedPassageKey = quizQuestions[selected]?.passageKey;
 
   const updateQuestion = (
     questionNo: number,
@@ -162,31 +228,52 @@ export default function QuizEditor({
         index === questionNo ? { ...question, ...updates } : question
       )
     );
-    setIncompleteNo(null);
+    setIncomplete(null);
   };
 
   return (
     <Box className="quiz-screen-wrapper">
-      {incompleteNo !== null && (
+      {incomplete !== null && (
         <Alert severity="warning" className="quiz-editor-message">
-          Pitanje {incompleteNo} nije potpuno: unesite pitanje, četiri različita
-          odgovora i označite točan.
+          {incomplete.passage
+            ? `Polazni tekst uz pitanje ${incomplete.no} nije potpun: unesite autora i naslov te tekst.`
+            : `Pitanje ${incomplete.no} nije potpuno: unesite pitanje, četiri različita odgovora i označite točan.`}
         </Alert>
       )}
       <QuestionContainer
         currentQuestion={quizQuestions[selected]}
         selected={selected}
         handleQuestionChange={updateQuestion}
+        sourceTextFields={
+          selectedPassageKey && (
+            <SourceTextFields
+              sourceText={passages[selectedPassageKey]}
+              onChange={(updates) => updatePassage(selectedPassageKey, updates)}
+              onAddQuestion={
+                quizQuestions.filter(
+                  (question) => question.passageKey === selectedPassageKey
+                ).length < MAX_PASSAGE_QUESTIONS
+                  ? () => addToPassage(selectedPassageKey)
+                  : undefined
+              }
+            />
+          )
+        }
       />
       <Box className="questions-nav">
         {quizQuestions.map((question, index) => (
           <Paper
             className={`question-nav-container ${
               selected === index ? "selected" : ""
-            }`}
+            } ${question.passageKey ? "with-source-text" : ""}`}
             onClick={() => setSelected(index)}
             key={index}
           >
+            {question.passageKey && (
+              <Typography className="question-container-passage">
+                Tekst {passageNumbers.get(question.passageKey)}
+              </Typography>
+            )}
             <Tooltip
               title={
                 <Typography sx={{ fontSize: 14 }}>
@@ -226,9 +313,24 @@ export default function QuizEditor({
             Izbriši
           </MenuItem>
         </Menu>
-        <Paper onClick={() => addQuestion()} className="question-container-add">
+        <Paper
+          onClick={(event) => setAddMenuAnchor(event.currentTarget)}
+          className="question-container-add"
+        >
           <AddIcon />
         </Paper>
+        <Menu
+          anchorEl={addMenuAnchor}
+          open={addMenuAnchor !== null}
+          onClose={() => setAddMenuAnchor(null)}
+        >
+          <MenuItem onClick={() => addQuestion()}>
+            Pitanje s četiri odgovora
+          </MenuItem>
+          <MenuItem onClick={() => addPassage()}>
+            Polazni tekst s pitanjima
+          </MenuItem>
+        </Menu>
         <SpeedDial
           ariaLabel="Radnje kviza"
           sx={{

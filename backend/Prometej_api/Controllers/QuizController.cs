@@ -49,14 +49,14 @@ namespace Prometej_api.Controllers
         [HttpPost("create")]
         public IActionResult CreateQuiz(QuizCreateDto quizDto)
         {
-            return StatusCode(201, _quizService.Create(quizDto.Quiz, quizDto.Questions, User.GetUserId()));
+            return StatusCode(201, _quizService.Create(quizDto.Quiz, quizDto.Questions, quizDto.SourceTexts, User.GetUserId()));
         }
 
         [Authorize(Roles = Roles.TeacherOrAdmin)]
         [HttpPut("update")]
         public IActionResult UpdateQuiz(QuizEditDto quizDto)
         {
-            _quizService.Update(quizDto.Quiz, quizDto.Questions, User.GetUserId(), User.IsAdmin());
+            _quizService.Update(quizDto.Quiz, quizDto.Questions, quizDto.SourceTexts, User.GetUserId(), User.IsAdmin());
 
             return NoContent();
         }

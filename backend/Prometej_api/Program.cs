@@ -37,6 +37,7 @@ builder.Services.AddTransient<IRepository<Quiz>, Repository<Quiz>>();
 builder.Services.AddTransient<IRepository<Question>, Repository<Question>>();
 builder.Services.AddTransient<IRepository<Answer>, Repository<Answer>>();
 builder.Services.AddTransient<IRepository<QuizGame>, Repository<QuizGame>>();
+builder.Services.AddTransient<IRepository<SourceText>, Repository<SourceText>>();
 
 #endregion Repo DI
 

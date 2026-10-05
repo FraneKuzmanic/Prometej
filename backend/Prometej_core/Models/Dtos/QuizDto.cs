@@ -15,6 +15,9 @@ namespace Prometej_core.Models.Dtos
         public required QuizCreateRequest Quiz { get; set; }
         [Required, MinLength(1), NoNullItems]
         public required List<QuestionCreateRequest> Questions { get; set; }
+        // The passages the questions name by their number in this list.
+        [NoNullItems]
+        public List<SourceTextRequest>? SourceTexts { get; set; }
     }
 
     public class  QuizEditDto
@@ -24,5 +27,8 @@ namespace Prometej_core.Models.Dtos
         // Left out: the questions stay as they are. Sent: this is the whole set.
         [MinLength(1), NoNullItems]
         public List<QuestionEditRequest>? Questions { get; set; }
+        // Read only together with the questions, and then this too is the whole set.
+        [NoNullItems]
+        public List<SourceTextRequest>? SourceTexts { get; set; }
     }
 }

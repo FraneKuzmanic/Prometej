@@ -25,6 +25,9 @@ namespace Prometej_core.Models.efModels
         public bool IsRetired { get; set; }
         // Its place in the quiz. Questions stored before this have 0 and keep their id order.
         public int Position { get; set; }
+        // The passage the question is asked about, if it has one.
+        public int? SourceTextId { get; set; }
+        public SourceText? SourceText { get; set; }
 
     }
 }

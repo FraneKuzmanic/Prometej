@@ -22,18 +22,27 @@ export interface QuestionCreateRequest {
     correctOption:number
     hintText:string
     exploreMore:string
+    // the 1-based number of the Question's Source Text in the request's list, if it has one
+    sourceTextNo?:number
 }
 
-export interface QuestionEditRequest {
+export interface QuestionEditRequest extends QuestionCreateRequest {
+    // 0 for a Question added in this edit
     id: number;
-    questionTitle:string
-    firstAnswer:string
-    secondAnswer:string
-    thirdAnswer:string
-    fourthAnswer:string
-    correctOption:number
-    hintText:string
-    exploreMore:string
+}
+
+// A passage some of a Quiz's Questions are asked about. id is 0 until it is stored.
+export interface SourceTextRequest {
+    id: number;
+    caption: string;
+    body: string;
+}
+
+export interface SourceTextViewModel {
+    id: number;
+    caption: string;
+    // plain text; its line breaks are part of it
+    body: string;
 }
 
 export interface QuizCreateRequest {
@@ -60,6 +69,8 @@ export interface QuizViewModel {
     periodId: number | null;
     periodName: string | null;
     questions: QuestionViewModel[];
+    // the Source Texts those Questions are asked about
+    sourceTexts: SourceTextViewModel[];
 }
 
 export interface QuestionViewModel {
@@ -72,6 +83,7 @@ export interface QuestionViewModel {
     correctOption:number
     hintText:string | null
     exploreMore:string | null
+    sourceTextId:number | null
 }
 
 export interface AnswerCreateRequest{
@@ -88,6 +100,10 @@ export interface AnswerViewModel {
     exploreMore:string | null;
     answerText:string;
     correctAnswer:string;
+    // its ordinal in the Quiz Game
+    position:number;
+    // the Source Text the Question was played beside, in the version shown then
+    sourceTextId:number | null;
 }
 
 export interface QuizGameViewModel {
@@ -105,6 +121,8 @@ export interface QuestionReport {
     // the title as it is today; the counts are over the Answers as they were played
     questionTitle: string;
     isRetired: boolean;
+    // the caption of the Question's Source Text as it is today; null without one
+    sourceTextCaption: string | null;
     answerCount: number;
     correctCount: number;
     // the wrong answer chosen most often, as its text was when played; null if nobody was wrong
@@ -141,6 +159,8 @@ export interface QuizGameReviewViewModel extends QuizGameViewModel {
     periodName: string | null;
     // whether the public list still shows the Quiz, so it can be played again
     quizIsListed: boolean;
+    // the Source Texts the Answers were given beside, as they were then
+    sourceTexts: SourceTextViewModel[];
 }
 
 export interface PlayedQuizGame {

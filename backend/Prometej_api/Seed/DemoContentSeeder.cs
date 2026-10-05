@@ -61,7 +61,7 @@ namespace Prometej_api.Seed
             {
                 // A Quiz file is the body of a request to create that Quiz.
                 var quiz = JsonSerializer.Deserialize<QuizCreateDto>(Read(name), json)!;
-                quizService.Create(quiz.Quiz, quiz.Questions, creator.Id);
+                quizService.Create(quiz.Quiz, quiz.Questions, quiz.SourceTexts, creator.Id);
             }
 
             transaction.Commit();

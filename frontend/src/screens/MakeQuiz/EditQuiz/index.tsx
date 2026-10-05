@@ -1,5 +1,11 @@
 import { useEffect } from "react";
-import QuizEditor, { EditorQuestion } from "../../../components/QuizEditor";
+import QuizEditor from "../../../components/QuizEditor";
+import {
+  EditorPassages,
+  EditorQuestion,
+  fromQuiz,
+  toRequest,
+} from "../../../components/QuizEditor/questions";
 import { fetchQuiz, updateQuiz } from "../../../store/slices/quizSlice";
 import { useSelector } from "react-redux";
 import { RootState, useAppDispatch } from "../../../store/store";
@@ -24,16 +30,14 @@ export default function EditQuiz() {
     title: string,
     isPrivate: boolean,
     periodId: number | null,
-    questions: EditorQuestion[]
+    questions: EditorQuestion[],
+    passages: EditorPassages
   ) => {
     const result = await dispatch(
       updateQuiz({
         quiz: { id: quiz.id, title, isPrivate, periodId },
-        // The list is the whole set: a stored Question left out of it is removed.
-        questions: questions.map((question) => ({
-          ...question,
-          id: question.id ?? 0,
-        })),
+        // The lists are the whole set: a stored Question or Source Text left out is removed.
+        ...toRequest(questions, passages),
       })
     );
     const saved = updateQuiz.fulfilled.match(result);
@@ -41,17 +45,16 @@ export default function EditQuiz() {
     return saved;
   };
 
+  const { questions, passages } = fromQuiz(quiz);
+
   return (
     <QuizEditor
       key={quiz.id}
       initialTitle={quiz.title}
       initialIsPrivate={quiz.isPrivate}
       initialPeriodId={quiz.periodId}
-      initialQuestions={quiz.questions.map((question) => ({
-        ...question,
-        hintText: question.hintText ?? "",
-        exploreMore: question.exploreMore ?? "",
-      }))}
+      initialQuestions={questions}
+      initialPassages={passages}
       onSave={saveQuiz}
       onCancel={() => navigate("/my-quizzes")}
     />

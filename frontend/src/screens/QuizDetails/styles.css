@@ -28,12 +28,10 @@
     margin: 0.5rem 0 1rem 0;
 }
 
-.quiz-details-correct.MuiTypography-root{
-    color: #4F6F52;
-}
-
-.quiz-details-wrong.MuiTypography-root{
-    color: #fd3737;
+.quiz-details-source.MuiTableCell-root{
+    font-weight: bold;
+    background-color: #f7f4ea;
+    overflow-wrap: anywhere;
 }
 
 .pie-chart-container{

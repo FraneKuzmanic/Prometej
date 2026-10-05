@@ -1,4 +1,5 @@
 import { Box, Checkbox, Grid, TextField, Typography } from "@mui/material";
+import { ReactNode } from "react";
 import "./styles.css";
 import { QuestionCreateRequest } from "../../types/models/Quiz";
 import RadioButtonUncheckedIcon from "@mui/icons-material/RadioButtonUnchecked";
@@ -11,6 +12,8 @@ interface QuestionContainerProps {
     questionNo: number,
     updates: Partial<QuestionCreateRequest>
   ) => void;
+  // The fields of the Question's Source Text, when it has one.
+  sourceTextFields?: ReactNode;
 }
 
 // The Correct Answer is the option's number, so editing an option's text cannot unmark it.
@@ -39,9 +42,11 @@ export default function QuestionContainer({
   currentQuestion,
   handleQuestionChange,
   selected,
+  sourceTextFields,
 }: QuestionContainerProps) {
   return (
     <Box className="question-wrapper">
+      {sourceTextFields}
       <Box className="question-title">
         <TextField
           className="input-title"

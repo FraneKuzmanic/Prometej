@@ -1,0 +1,15 @@
+.answer-group-correct.MuiTypography-root{
+    color: #4F6F52;
+}
+
+.answer-group-wrong.MuiTypography-root{
+    color: #fd3737;
+}
+
+.answer-group-explore{
+    margin-top: 15px;
+    padding: 10px 20px;
+    border-left: 3px solid #78C1F3;
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+}

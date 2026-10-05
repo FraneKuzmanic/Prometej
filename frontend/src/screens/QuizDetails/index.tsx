@@ -23,6 +23,8 @@ import "./styles.css";
 import { stringToColor } from "../../components/QuizContainer/stringToColor";
 import { PieChart } from "@mui/x-charts/PieChart";
 import { pointsLabel } from "../../types/points";
+import AnswerGroup from "../../components/AnswerGroup";
+import { groupAnswers } from "../../components/AnswerGroup/group";
 
 interface SeriesData {
   id: number;
@@ -146,8 +148,19 @@ export function QuizDetails() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {analytics.questions.map((question) => (
-                  <TableRow key={question.questionId}>
+                {analytics.questions.map((question, index) => (
+                  <Fragment key={question.questionId}>
+                  {/* A heading above the first of the Questions asked about one Source Text. */}
+                  {question.sourceTextCaption !== null &&
+                    question.sourceTextCaption !==
+                      analytics.questions[index - 1]?.sourceTextCaption && (
+                      <TableRow>
+                        <TableCell colSpan={3} className="quiz-details-source">
+                          Uz tekst: {question.sourceTextCaption}
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  <TableRow>
                     <TableCell
                       component="th"
                       scope="row"
@@ -179,6 +192,7 @@ export function QuizDetails() {
                         : `${question.mostChosenWrongAnswer} (${question.mostChosenWrongCount})`}
                     </TableCell>
                   </TableRow>
+                  </Fragment>
                 ))}
               </TableBody>
             </Table>
@@ -284,32 +298,21 @@ export function QuizDetails() {
                       {open && (
                         <TableRow>
                           <TableCell colSpan={4} className="quiz-details-text">
-                            {quizGame.answers.map((answer, index) => {
-                              const correct =
-                                answer.answerText === answer.correctAnswer;
-                              return (
-                                <Box key={answer.id} className="quiz-details-answer">
-                                  <Typography variant="subtitle2">
-                                    {index + 1}. {answer.questionTitle}
-                                  </Typography>
-                                  <Typography
-                                    variant="body2"
-                                    className={
-                                      correct
-                                        ? "quiz-details-correct"
-                                        : "quiz-details-wrong"
-                                    }
-                                  >
-                                    Odgovor: {answer.answerText}
-                                  </Typography>
-                                  {!correct && (
-                                    <Typography variant="body2">
-                                      Točan odgovor: {answer.correctAnswer}
-                                    </Typography>
-                                  )}
+                            {groupAnswers(quizGame.answers).map(
+                              (answers, index) => (
+                                <Box
+                                  key={answers[0].id}
+                                  className="quiz-details-answer"
+                                >
+                                  <AnswerGroup
+                                    number={index + 1}
+                                    answers={answers}
+                                    answerLabel="Odgovor"
+                                    dense
+                                  />
                                 </Box>
-                              );
-                            })}
+                              )
+                            )}
                           </TableCell>
                         </TableRow>
                       )}

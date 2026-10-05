@@ -14,6 +14,7 @@ namespace Prometej_persistance
         public DbSet<Question> Questions { get; set; }
         public DbSet<Answer> Answers { get; set; }
         public DbSet<QuizGame> QuizGames { get; set; }
+        public DbSet<SourceText> SourceTexts { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -33,6 +34,12 @@ namespace Prometej_persistance
             // A Period has at most one content: the foreign key carries a unique index.
             modelBuilder.Entity<PeriodContent>()
                 .HasOne(c => c.Period).WithOne().HasForeignKey<PeriodContent>(c => c.PeriodId);
+            // Deleting a source text never takes a question or an answer along. One that was
+            // played is retired instead, so an answer loses its link only when its quiz goes.
+            modelBuilder.Entity<Question>()
+                .HasOne(q => q.SourceText).WithMany().HasForeignKey(q => q.SourceTextId).OnDelete(DeleteBehavior.SetNull);
+            modelBuilder.Entity<Answer>()
+                .HasOne<SourceText>().WithMany().HasForeignKey(a => a.SourceTextId).OnDelete(DeleteBehavior.SetNull);
         }
 
     }

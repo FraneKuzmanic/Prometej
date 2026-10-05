@@ -16,6 +16,8 @@ namespace Prometej_core.Models.ViewModels
         // The title as it is today; the counts are over the answers as they were played.
         public required string QuestionTitle { get; set; }
         public bool IsRetired { get; set; }
+        // The caption of the question's source text as it is today, if it has one.
+        public string? SourceTextCaption { get; set; }
         public int AnswerCount { get; set; }
         public int CorrectCount { get; set; }
         // The wrong answer chosen most often, as its text was when played. None if nobody was wrong.

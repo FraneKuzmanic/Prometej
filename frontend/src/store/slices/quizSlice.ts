@@ -2,7 +2,7 @@ import { PayloadAction, createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 
 import QuizService from "../../services/routes/quiz";
-import { AnswerCreateRequest, QuestionCreateRequest, QuestionEditRequest, MyQuizGames, QuizAnalytics, QuizBaseModel, QuizCreateRequest, QuizEditRequest, QuizGameReviewViewModel, QuizGameViewModel, QuizViewModel } from "../../types/models/Quiz";
+import { AnswerCreateRequest, QuestionCreateRequest, QuestionEditRequest, MyQuizGames, QuizAnalytics, QuizBaseModel, QuizCreateRequest, QuizEditRequest, QuizGameReviewViewModel, QuizGameViewModel, QuizViewModel, SourceTextRequest } from "../../types/models/Quiz";
 
 interface QuizState {
     quizzes: QuizBaseModel[] | undefined;
@@ -25,11 +25,14 @@ interface QuizState {
 export interface CreateQuizPayload {
     quiz: QuizCreateRequest;
     questions: QuestionCreateRequest[];
+    sourceTexts?: SourceTextRequest[];
 
 }
 export interface UpdateQuizPayload {
     quiz: QuizEditRequest;
     questions?: QuestionEditRequest[];
+    // read by the server only together with the questions
+    sourceTexts?: SourceTextRequest[];
 
 }
 

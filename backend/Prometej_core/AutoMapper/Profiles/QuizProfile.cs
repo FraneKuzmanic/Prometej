@@ -19,7 +19,8 @@ namespace Prometej_core.AutoMapper.Profiles
             CreateMap<Quiz, QuizCreateRequest>();
             CreateMap<Quiz, QuizEditRequest>();
             CreateMap<Quiz, QuizViewModel>().ForMember(dest => dest.CreatorName, opt => opt.MapFrom(src => src.Creator.FirstName + " " + src.Creator.LastName))
-                                            .ForMember(dest => dest.Questions, opt => opt.MapFrom(src => src.Questions));
+                                            .ForMember(dest => dest.Questions, opt => opt.MapFrom(src => src.Questions))
+                                            .ForMember(dest => dest.SourceTexts, opt => opt.Ignore());
             CreateMap<Quiz, QuizBaseModel>().ForMember(dest => dest.CreatorName, opt => opt.MapFrom(src => src.Creator.FirstName + " " + src.Creator.LastName))
                                             .ForMember(dest => dest.QuestionCount, opt => opt.Ignore());
             CreateMap<Quiz, CreatorQuizViewModel>().IncludeBase<Quiz, QuizBaseModel>()
@@ -29,6 +30,7 @@ namespace Prometej_core.AutoMapper.Profiles
             CreateMap<QuestionCreateRequest, Question>();
             CreateMap<Question, QuestionViewModel>();
             CreateMap<QuestionEditRequest, Question>();
+            CreateMap<SourceText, SourceTextViewModel>();
 
             CreateMap<QuizGame, QuizGameViewModel>();
             CreateMap<QuizGame, QuizGameReviewViewModel>().IncludeBase<QuizGame, QuizGameViewModel>()

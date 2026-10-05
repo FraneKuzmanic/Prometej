@@ -16,6 +16,7 @@ namespace Prometej_core.Models.efModels
         public required User Creator { get; set; }
         public int? EntryCode { get; set; }
         public List<Question> Questions { get; set; }
+        public List<SourceText> SourceTexts { get; set; }
         // The Period the Quiz is about. A Quiz that spans several, or was stored before
         // Quizzes had one, has none.
         public int? PeriodId { get; set; }

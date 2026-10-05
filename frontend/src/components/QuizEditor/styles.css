@@ -23,6 +23,8 @@
     align-items: center;
     padding: 2rem 1rem 2rem 1rem;
     overflow-x: auto;
+    /* above the labels of the fields that scroll under it */
+    z-index: 2;
 }
 
 .MuiPaper-root.question-container-add{
@@ -37,6 +39,14 @@
     margin-left: 1rem;
 }
 
+.question-container-passage.MuiTypography-root{
+    position: absolute;
+    bottom: 0;
+    right: 6px;
+    font-size: 12px;
+    color: rgba(0, 0, 0, 0.6);
+}
+
 .question-nav-container{
     min-width: 200px;
     max-width: 200px;
@@ -49,6 +59,12 @@
 .question-nav-container.selected {
     border: 3px solid #815b0d; /* Example border color */
   }
+
+/* The questions of one source text carry its mark, so a run of them reads as a group. */
+.question-nav-container.with-source-text,
+.question-nav-container.with-source-text.selected{
+    border-top: 4px solid #78C1F3;
+}
 
 .question-container-no{
     position: absolute;

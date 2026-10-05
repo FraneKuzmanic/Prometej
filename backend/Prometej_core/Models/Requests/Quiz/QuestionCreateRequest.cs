@@ -26,5 +26,8 @@ namespace Prometej_core.Models.Requests.Quiz
         public string? HintText { get; set; }
         [StringLength(1000)]
         public string? ExploreMore { get; set; }
+        // The 1-based number of the question's source text in the request's list, if it has one.
+        [Range(1, 100)]
+        public int? SourceTextNo { get; set; }
     }
 }

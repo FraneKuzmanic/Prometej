@@ -8,5 +8,7 @@ namespace Prometej_core.Models.ViewModels
         public string? PeriodName { get; set; }
         // Whether the public list still shows the quiz, so it can be played again from here.
         public bool QuizIsListed { get; set; }
+        // The passages the answers were given beside, as they were then.
+        public List<SourceTextViewModel> SourceTexts { get; set; } = [];
     }
 }
