@@ -16,9 +16,9 @@ periods of the national exam catalogue.
 - reads the material of a period and searches it; the search ignores case and Croatian
   diacritics, so "senoa" finds "Šenoa"
 - plays public quizzes, or a private one with the five-digit entry code a teacher gave the class
-- can open a hint before answering and, where the author wrote one, reads an explanation after it
+- can open a hint before answering and, where the quiz has one, reads an explanation after it
 
-**A student** (anyone who registers)
+**Anyone signed in** (registering creates a student account)
 
 - has every play stored, and sees it again under "Moji rezultati", answer by answer
 - sees their progress per period
@@ -27,13 +27,13 @@ periods of the national exam catalogue.
 
 - writes quizzes of four-option questions, public or private, optionally tied to a period
 - sees how a quiz was played: every play and its answers, each question with how often it was
-  answered right and the wrong answer chosen most often, and each student's attempts, first
-  and best result
+  answered right and the wrong answer chosen most often, and each student's number of plays,
+  first and best result
 
 **An admin**
 
 - writes the material of each period in a rich-text editor
-- can do everything a teacher can, on any quiz
+- can write quizzes like a teacher, and edit, delete or read the results of any teacher's quiz
 
 The interface is in Croatian.
 
@@ -143,4 +143,4 @@ have not been reviewed by a teacher.
 - A teacher account can only be created through configuration; there is no screen for roles.
 - No password change or reset.
 - No automated tests for the client.
-- A private quiz is practice, not an exam: the correct answer is shown after each question.
+- A private quiz is practice, not a test: the correct answer is shown after each question.

@@ -76,7 +76,7 @@ namespace Prometej_core.Services.Implementations
             return quizBaseModels;
         }
 
-        // A Creator's own list: private Quizzes and their Entry Codes included.
+        // A Creator's own list: Private Quizzes and their Entry Codes included.
         public List<CreatorQuizViewModel> GetMyQuizzes(int creatorId)
         {
             var quizes = _quizRepository.ReadAll().Include(q => q.Creator).Include(q => q.Period).Where(q => q.CreatorId == creatorId).OrderBy(q => q.Id).ToList();
