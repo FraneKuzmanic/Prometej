@@ -21,11 +21,14 @@ periods of the national exam catalogue.
 - reads the poem or excerpt a question is asked about beside the question, the form most of
   the national exam's reading and literature tasks take
 - can open a hint before answering and, where the quiz has one, reads an explanation after it
+- reads the discussion of a period: topics, and the replies under each
 
 **Anyone signed in** (registering creates a student account)
 
 - has every play stored, and sees it again under "Moji rezultati", answer by answer
 - sees their progress per period
+- opens a topic in a period's discussion or replies to one; a teacher's and an admin's post
+  is marked as such
 - changes their name and password
 
 **A teacher**
@@ -41,6 +44,7 @@ periods of the national exam catalogue.
 - writes the material of each period in a rich-text editor
 - can write quizzes like a teacher, and edit, delete or read the results of any teacher's quiz
 - makes a student a teacher or an admin, and back, from a list of the accounts
+- removes any topic or reply from a discussion
 
 The interface is in Croatian.
 
@@ -78,6 +82,11 @@ A few things worth knowing before reading the code:
   one handler maps them to status codes. Controllers have no `try/catch`.
 - **A retried submit stores one play.** The client sends a key per play, and a unique index
   is the guarantee.
+- **A post outlives its author's account.** A topic holds what other people answered, so
+  deleting an account leaves its posts in place without a name, and an author can delete a
+  topic only while it has no replies
+  ([0006](docs/adr/0006-a-post-outlives-its-authors-account.md)). Who may delete a post is
+  the server's answer, sent with the post. One account can post five times a minute.
 
 Decisions with a longer story are in [`docs/adr`](docs/adr):
 
@@ -86,6 +95,7 @@ Decisions with a longer story are in [`docs/adr`](docs/adr):
 - [0003](docs/adr/0003-period-ids-are-not-their-order.md): a period's id is not its place in the curriculum order
 - [0004](docs/adr/0004-a-session-is-checked-against-the-stored-account.md): a session is checked against the stored account
 - [0005](docs/adr/0005-one-answer-row-per-point.md): a point is an answer row, whatever the type of question
+- [0006](docs/adr/0006-a-post-outlives-its-authors-account.md): a post in a discussion outlives its author's account
 
 ## Running it locally
 
@@ -145,7 +155,7 @@ dotnet test
 The tests are integration tests: they start the real API against PostgreSQL in a container
 and talk to it over HTTP, so Docker has to be running. They cover authentication and
 authorization per role, quiz validation, the three question types and source texts, plays and
-results, both searches, and the migrations (a migration is run against rows of the older
+results, both searches, the discussion, and the migrations (a migration is run against rows of the older
 schema, to show what it does to them).
 
 The client has no automated tests yet; `npm run lint` and `npm run build` are its gates.
@@ -171,3 +181,5 @@ for this project. It is sample material and **has not been reviewed by a teacher
 - No password reset: a forgotten password cannot be recovered.
 - No automated tests for the client.
 - A private quiz is practice, not a test: the correct answer is shown after each question.
+- A discussion is moderated only by an admin deleting a post: a post cannot be edited or
+  reported, and nothing updates live.
