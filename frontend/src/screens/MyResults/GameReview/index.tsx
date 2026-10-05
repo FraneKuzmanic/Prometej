@@ -4,6 +4,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Box, Button, Paper, Typography } from "@mui/material";
 import { RootState, useAppDispatch } from "../../../store/store";
 import { fetchQuizGame } from "../../../store/slices/quizSlice";
+import { pointsLabel } from "../../../types/points";
 import "../styles.css";
 
 const formatDate = (date: string) =>
@@ -49,7 +50,7 @@ export default function GameReview() {
           </Typography>
           <Typography>
             {formatDate(gameReview.datePlayed)} · {gameReview.score} /{" "}
-            {gameReview.answers.length}
+            {gameReview.answers.length} {pointsLabel(gameReview.answers.length)}
             {gameReview.periodName && ` · ${gameReview.periodName}`}
           </Typography>
           {gameReview.answers.map((answer, index) => {

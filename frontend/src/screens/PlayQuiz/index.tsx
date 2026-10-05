@@ -17,11 +17,11 @@ import {
   Button,
   IconButton,
   LinearProgress,
-  List,
-  ListItemText,
   Paper,
   Typography,
 } from "@mui/material";
+import ChoiceQuestion from "./ChoiceQuestion";
+import { pointsLabel } from "../../types/points";
 import "./styles.css";
 
 export default function PlayQuiz() {
@@ -36,9 +36,9 @@ export default function PlayQuiz() {
   const [currentQuestionAnswered, setQuestionAnswered] = useState(false);
   const [totalQuestionNo, setTotalQuestionNo] = useState(0);
   const [score, setScore] = useState(0);
+  // the points the answered Questions could give
+  const [maxScore, setMaxScore] = useState(0);
   const [showScore, setShowScore] = useState(false);
-  // which of the four answers was clicked, 1 to 4; undefined until the Question is answered
-  const [chosenOption, setChosenOption] = useState<number>();
   // Opening the Hint is the Student's choice; it does not change the Score.
   const [hintShown, setHintShown] = useState(false);
   const [submissionKey, setSubmissionKey] = useState("");
@@ -72,24 +72,18 @@ export default function PlayQuiz() {
     setCurrentQuestion(quizQuestions[currentQuestionNo + 1]);
     setCurrentQuestionNo(currentQuestionNo + 1);
     setQuestionAnswered(false);
-    setChosenOption(undefined);
     setHintShown(false);
   };
 
-  const handleAnswer = (option: number) => {
-    if (currentQuestion) {
-      const isCorrect = option === currentQuestion.correctOption;
-      setScore(score + (isCorrect ? 1 : 0));
-      setChosenOption(option);
-      setQuestionAnswered(true);
-      setQuizAnswers([
-        ...quizAnswers,
-        {
-          questionId: currentQuestion.id,
-          chosenOption: option,
-        },
-      ]);
-    }
+  const handleAnswered = (
+    answer: AnswerCreateRequest,
+    points: number,
+    maxPoints: number
+  ) => {
+    setScore(score + points);
+    setMaxScore(maxScore + maxPoints);
+    setQuestionAnswered(true);
+    setQuizAnswers([...quizAnswers, answer]);
   };
 
   const submit = () => {
@@ -107,6 +101,10 @@ export default function PlayQuiz() {
     setCurrentQuestion(undefined);
     setShowScore(true);
   };
+
+  // The stored Quiz Game is the result once there is one: an Answer row is a point.
+  const savedGame = submitStatus === "saved" ? lastGame : undefined;
+  const finalMaxScore = savedGame ? savedGame.answers.length : maxScore;
 
   // Signed-out comes first: a session that expired during the play ends up there too.
   const resultNote = () => {
@@ -147,36 +145,12 @@ export default function PlayQuiz() {
             <Typography variant="h4" className="quiz-play-question">
               {currentQuestionNo + 1}. {currentQuestion.questionTitle}
             </Typography>
-            <List className="quiz-play-answers">
-              {[
-                currentQuestion.firstAnswer,
-                currentQuestion.secondAnswer,
-                currentQuestion.thirdAnswer,
-                currentQuestion.fourthAnswer,
-              ].map((text, index) => {
-                const option = index + 1;
-                // Once answered, the correct option turns green and a wrong choice red.
-                const mark =
-                  chosenOption === undefined
-                    ? ""
-                    : option === currentQuestion.correctOption
-                    ? "-correct"
-                    : option === chosenOption
-                    ? "-uncorrect"
-                    : "";
-                return (
-                  <ListItemText
-                    key={option}
-                    onClick={() => {
-                      if (chosenOption === undefined) handleAnswer(option);
-                    }}
-                    className={`quiz-play-answer${mark}`}
-                  >
-                    {text}
-                  </ListItemText>
-                );
-              })}
-            </List>
+            {/* The key gives every Question its own component, so no answer carries over. */}
+            <ChoiceQuestion
+              key={currentQuestion.id}
+              question={currentQuestion}
+              onAnswered={handleAnswered}
+            />
             {currentQuestion.hintText && (
               <Box className="quiz-play-hint-row">
                 <IconButton
@@ -193,7 +167,7 @@ export default function PlayQuiz() {
                 )}
               </Box>
             )}
-            {chosenOption !== undefined && currentQuestion.exploreMore && (
+            {currentQuestionAnswered && currentQuestion.exploreMore && (
               <Box className="quiz-play-explore">
                 <Typography variant="subtitle2">Saznaj više</Typography>
                 <Typography>{currentQuestion.exploreMore}</Typography>
@@ -260,8 +234,8 @@ export default function PlayQuiz() {
               Vaš ukupni rezultat :
             </Typography>
             <Typography component="div" sx={{ marginTop: 5 }} variant="h2">
-              {submitStatus === "saved" && lastGame ? lastGame.score : score} /{" "}
-              {totalQuestionNo}
+              {savedGame ? savedGame.score : score} / {finalMaxScore}{" "}
+              {pointsLabel(finalMaxScore)}
             </Typography>
             <Typography component="div" sx={{ marginTop: 3 }}>
               {resultNote()}

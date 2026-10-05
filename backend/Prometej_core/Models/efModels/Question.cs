@@ -23,6 +23,8 @@ namespace Prometej_core.Models.efModels
         // Removed from a quiz that had been played: out of the editor and of new plays,
         // kept for the answers already given to it.
         public bool IsRetired { get; set; }
+        // Its place in the quiz. Questions stored before this have 0 and keep their id order.
+        public int Position { get; set; }
 
     }
 }

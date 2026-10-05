@@ -138,7 +138,7 @@ namespace Prometej_tests
         }
 
         [Fact]
-        public async Task A_question_added_in_an_edit_comes_after_the_ones_that_stay()
+        public async Task A_question_added_in_an_edit_is_where_the_edit_put_it()
         {
             var teacher = await factory.LoginAs(ApiFactory.TeacherEmail);
             var quiz = await CreateQuiz(teacher);
@@ -146,7 +146,7 @@ namespace Prometej_tests
             await Update(teacher, quiz.Id, Question("Treće"), Question("Drugo", quiz.QuestionIds[1]));
 
             var stored = await teacher.GetFromJsonAsync<JsonElement>($"/api/quiz/get/{quiz.Id}");
-            Assert.Equal(["Drugo", "Treće"],
+            Assert.Equal(["Treće", "Drugo"],
                 stored.GetProperty("questions").EnumerateArray().Select(q => q.GetProperty("questionTitle").GetString()));
         }
 

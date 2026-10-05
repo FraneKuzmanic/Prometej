@@ -378,6 +378,55 @@ namespace Prometej_tests
         }
 
         [Fact]
+        public async Task Questions_are_played_in_the_order_the_creator_saved_them()
+        {
+            var teacher = await factory.LoginAs(ApiFactory.TeacherEmail);
+            var quiz = await CreateQuiz(teacher);
+            var ids = quiz.QuestionIds;
+
+            var update = await teacher.PutAsJsonAsync("/api/quiz/update", new
+            {
+                quiz = new { id = quiz.Id, title = "Kviz", isPrivate = false },
+                questions = new[]
+                {
+                    Question("Pitanje 3", id: ids[2]), Question("Pitanje 2", id: ids[1]),
+                    Question("Novo pitanje"), Question("Pitanje 1", id: ids[0]),
+                },
+            });
+
+            Assert.Equal(HttpStatusCode.NoContent, update.StatusCode);
+            var stored = await teacher.GetFromJsonAsync<JsonElement>($"/api/quiz/get/{quiz.Id}");
+            Assert.Equal(["Pitanje 3", "Pitanje 2", "Novo pitanje", "Pitanje 1"],
+                stored.GetProperty("questions").EnumerateArray().Select(q => q.GetProperty("questionTitle").GetString()));
+        }
+
+        [Fact]
+        public async Task A_quiz_games_answers_are_in_the_order_the_questions_were_played()
+        {
+            var teacher = await factory.LoginAs(ApiFactory.TeacherEmail);
+            var student = await factory.LoginAsNewStudent();
+            var quiz = await CreateQuiz(teacher);
+            var ids = quiz.QuestionIds;
+            await teacher.PutAsJsonAsync("/api/quiz/update", new
+            {
+                quiz = new { id = quiz.Id, title = "Kviz", isPrivate = false },
+                questions = new[] { Question("Pitanje 2", id: ids[1]), Question("Pitanje 3", id: ids[2]), Question("Pitanje 1", id: ids[0]) },
+            });
+
+            // The request names the questions in another order than the quiz has them.
+            var response = await Submit(student, new { quizId = quiz.Id, answers = ids.Select(id => Answer(id)) });
+
+            Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+            var gameId = (await response.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("id").GetInt32();
+            var review = await student.GetFromJsonAsync<JsonElement>($"/api/quiz/getGame/{gameId}");
+            Assert.Equal(["Pitanje 2", "Pitanje 3", "Pitanje 1"],
+                review.GetProperty("answers").EnumerateArray().Select(a => a.GetProperty("questionTitle").GetString()));
+            var played = Assert.Single(await Analytics(teacher, quiz.Id));
+            Assert.Equal(["Pitanje 2", "Pitanje 3", "Pitanje 1"],
+                played.GetProperty("answers").EnumerateArray().Select(a => a.GetProperty("questionTitle").GetString()));
+        }
+
+        [Fact]
         public async Task A_quiz_that_has_been_played_can_still_be_deleted()
         {
             var teacher = await factory.LoginAs(ApiFactory.TeacherEmail);

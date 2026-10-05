@@ -22,6 +22,7 @@ import { QuizGameViewModel } from "../../types/models/Quiz";
 import "./styles.css";
 import { stringToColor } from "../../components/QuizContainer/stringToColor";
 import { PieChart } from "@mui/x-charts/PieChart";
+import { pointsLabel } from "../../types/points";
 
 interface SeriesData {
   id: number;
@@ -212,10 +213,12 @@ export function QuizDetails() {
                     <PlayerName name={player.userName} />
                     <TableCell align="right">{player.gameCount}</TableCell>
                     <TableCell align="right">
-                      {player.firstScore} / {player.firstQuestionCount}
+                      {player.firstScore} / {player.firstQuestionCount}{" "}
+                      {pointsLabel(player.firstQuestionCount)}
                     </TableCell>
                     <TableCell align="right">
-                      {player.bestScore} / {player.bestQuestionCount}
+                      {player.bestScore} / {player.bestQuestionCount}{" "}
+                      {pointsLabel(player.bestQuestionCount)}
                     </TableCell>
                     <TableCell align="right">
                       {formatDate(player.lastPlayed)}
@@ -273,7 +276,8 @@ export function QuizDetails() {
                           {formatDate(quizGame.datePlayed)}
                         </TableCell>
                         <TableCell align="right">
-                          {quizGame.score} / {quizGame.answers.length}
+                          {quizGame.score} / {quizGame.answers.length}{" "}
+                          {pointsLabel(quizGame.answers.length)}
                         </TableCell>
                       </TableRow>
                       {/* Rendered only while open, so the table's rows are its plays. */}

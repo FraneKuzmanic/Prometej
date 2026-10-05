@@ -109,7 +109,7 @@ namespace Prometej_core.Services.Implementations
 
         public QuizViewModel GetQuiz(int id, int? code, int? callerId, bool isAdmin)
         {
-            var quiz = _quizRepository.ReadAll().Include(q => q.Creator).Include(q => q.Period).Include(q => q.Questions.Where(x => !x.IsRetired).OrderBy(x => x.Id)).FirstOrDefault(q => q.Id == id);
+            var quiz = _quizRepository.ReadAll().Include(q => q.Creator).Include(q => q.Period).Include(q => q.Questions.Where(x => !x.IsRetired).OrderBy(x => x.Position).ThenBy(x => x.Id)).FirstOrDefault(q => q.Id == id);
 
             // A private quiz opens for its creator, an admin, or whoever has its entry code.
             // Everyone else gets the same answer as for a quiz that does not exist.
@@ -127,7 +127,7 @@ namespace Prometej_core.Services.Implementations
 
         public QuizViewModel GetQuizByCode(int quizCode)
         {
-            var quiz = _quizRepository.ReadAll().Include(q => q.Creator).Include(q => q.Period).Include(q => q.Questions.Where(x => !x.IsRetired).OrderBy(x => x.Id)).FirstOrDefault(q => q.IsPrivate && q.EntryCode == quizCode);
+            var quiz = _quizRepository.ReadAll().Include(q => q.Creator).Include(q => q.Period).Include(q => q.Questions.Where(x => !x.IsRetired).OrderBy(x => x.Position).ThenBy(x => x.Id)).FirstOrDefault(q => q.IsPrivate && q.EntryCode == quizCode);
             if (quiz == null)
             {
                 throw new NotFoundException("Quiz not found");
@@ -148,6 +148,10 @@ namespace Prometej_core.Services.Implementations
             quizEntity.CreatorId = creatorId;
             // Added through the quiz, so one save stores the quiz and its questions or neither.
             quizEntity.Questions = _mapper.Map<List<Question>>(questions);
+            for (var i = 0; i < quizEntity.Questions.Count; i++)
+            {
+                quizEntity.Questions[i].Position = i;
+            }
             _quizRepository.Create(quizEntity);
             SaveWithEntryCode(quizEntity);
 
@@ -172,18 +176,21 @@ namespace Prometej_core.Services.Implementations
                 RemoveQuestionsNotIn(quizEntity, questions);
             }
 
+            // The place in the sent list is the question's place in the quiz.
+            var position = 0;
             foreach (var questionRequest in questions ?? [])
             {
+                Question? questionEntity;
                 if (questionRequest.Id == 0)
                 {
-                    var questionEntity = _mapper.Map<Question>(questionRequest);
+                    questionEntity = _mapper.Map<Question>(questionRequest);
                     questionEntity.QuizId = quizEntity.Id;
                     _questionRepository.Create(questionEntity);
                 }
                 else
                 {
                     // An id from another quiz would otherwise let a caller rewrite another Creator's questions.
-                    var questionEntity = quizEntity.Questions.FirstOrDefault(q => q.Id == questionRequest.Id);
+                    questionEntity = quizEntity.Questions.FirstOrDefault(q => q.Id == questionRequest.Id);
                     if (questionEntity == null)
                     {
                         throw new ForbiddenException("Question does not belong to this quiz");
@@ -191,6 +198,8 @@ namespace Prometej_core.Services.Implementations
 
                     _mapper.Map(questionRequest, questionEntity);
                 }
+
+                questionEntity.Position = position++;
             }
 
             // The repositories share one context, so the quiz and its questions save together or not at all.
@@ -240,11 +249,13 @@ namespace Prometej_core.Services.Implementations
 
             // Only foreign keys are set below. The quiz and its questions were read untracked,
             // so assigning them as navigations would make EF insert them a second time.
+            // The rows follow the quiz's order, whatever order the request names its questions in.
+            var chosen = request.Answers.ToDictionary(a => a.QuestionId);
             var answers = new List<Answer>();
             var score = 0;
-            foreach (var answer in request.Answers)
+            foreach (var question in quiz.Questions.OrderBy(q => q.Position).ThenBy(q => q.Id))
             {
-                var question = questions[answer.QuestionId];
+                var answer = chosen[question.Id];
                 string[] options = [question.FirstAnswer, question.SecondAnswer, question.ThirdAnswer, question.FourthAnswer];
                 if (answer.ChosenOption == question.CorrectOption)
                 {
@@ -259,6 +270,7 @@ namespace Prometej_core.Services.Implementations
                     ExploreMore = question.ExploreMore,
                     AnswerText = options[answer.ChosenOption - 1],
                     CorrectAnswer = options[question.CorrectOption - 1],
+                    Position = answers.Count,
                 });
             }
 
@@ -370,7 +382,7 @@ namespace Prometej_core.Services.Implementations
             // A game is its player's alone. Someone else's gets the same answer as one that
             // does not exist. The answers come in the order the questions were played in.
             var quizGame = _quizGameRepository.ReadAll()
-                .Include(g => g.Answers.OrderBy(a => a.QuestionId))
+                .Include(g => g.Answers.OrderBy(a => a.Position).ThenBy(a => a.QuestionId).ThenBy(a => a.Id))
                 .Include(g => g.Quiz).ThenInclude(q => q.Period)
                 .FirstOrDefault(g => g.Id == id && g.UserId == callerId);
             if (quizGame == null)
@@ -390,7 +402,7 @@ namespace Prometej_core.Services.Implementations
             EnsureCreatorOrAdmin(quiz, callerId, isAdmin);
 
             var quizGames = _quizGameRepository.ReadAll()
-                .Include(g => g.Answers.OrderBy(a => a.QuestionId))
+                .Include(g => g.Answers.OrderBy(a => a.Position).ThenBy(a => a.QuestionId).ThenBy(a => a.Id))
                 .Where(g => g.QuizId == quizId)
                 .OrderByDescending(g => g.DatePlayed).ThenByDescending(g => g.Id)
                 .ToList();
@@ -410,7 +422,7 @@ namespace Prometej_core.Services.Implementations
         private List<QuestionReportViewModel> QuestionReport(int quizId, List<QuizGame> quizGames)
         {
             var answers = quizGames.SelectMany(g => g.Answers).ToLookup(a => a.QuestionId);
-            var questions = _questionRepository.ReadAll().Where(q => q.QuizId == quizId).OrderBy(q => q.Id)
+            var questions = _questionRepository.ReadAll().Where(q => q.QuizId == quizId).OrderBy(q => q.Position).ThenBy(q => q.Id)
                 .Select(q => new { q.Id, q.QuestionTitle, q.IsRetired })
                 .ToList();
 

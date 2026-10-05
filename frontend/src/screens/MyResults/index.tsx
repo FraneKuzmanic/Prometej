@@ -16,6 +16,7 @@ import {
 } from "@mui/material";
 import { RootState, useAppDispatch } from "../../store/store";
 import { fetchMyGames } from "../../store/slices/quizSlice";
+import { pointsLabel } from "../../types/points";
 import "./styles.css";
 
 const formatDate = (date: string) =>
@@ -139,7 +140,8 @@ export default function MyResults() {
                       {formatDate(game.datePlayed)}
                     </TableCell>
                     <TableCell align="right">
-                      {game.score} / {game.questionCount}
+                      {game.score} / {game.questionCount}{" "}
+                      {pointsLabel(game.questionCount)}
                     </TableCell>
                   </TableRow>
                 ))}
