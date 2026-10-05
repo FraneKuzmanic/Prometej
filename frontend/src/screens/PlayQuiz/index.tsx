@@ -21,6 +21,7 @@ import {
   Typography,
 } from "@mui/material";
 import ChoiceQuestion from "./ChoiceQuestion";
+import MatchingQuestion from "./MatchingQuestion";
 import SourceTextPanel from "./SourceTextPanel";
 import { pointsLabel } from "../../types/points";
 import "./styles.css";
@@ -163,11 +164,20 @@ export default function PlayQuiz() {
               {currentQuestionNo + 1}. {currentQuestion.questionTitle}
             </Typography>
             {/* The key gives every Question its own component, so no answer carries over. */}
-            <ChoiceQuestion
-              key={currentQuestion.id}
-              question={currentQuestion}
-              onAnswered={handleAnswered}
-            />
+            {currentQuestion.type === "choice" && (
+              <ChoiceQuestion
+                key={currentQuestion.id}
+                question={currentQuestion}
+                onAnswered={handleAnswered}
+              />
+            )}
+            {currentQuestion.type === "matching" && (
+              <MatchingQuestion
+                key={currentQuestion.id}
+                question={currentQuestion}
+                onAnswered={handleAnswered}
+              />
+            )}
             {currentQuestion.hintText && (
               <Box className="quiz-play-hint-row">
                 <IconButton

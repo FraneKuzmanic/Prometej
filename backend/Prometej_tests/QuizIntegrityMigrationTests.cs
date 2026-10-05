@@ -28,7 +28,7 @@ namespace Prometej_tests
             context.Quizzes.AsNoTracking().OrderBy(q => q.Id)
                 .Select(q => new QuizRow(q.Id, q.IsPrivate, q.EntryCode)).ToList();
 
-        private static Dictionary<string, int> ReadCorrectOptions(DataContext context) =>
+        private static Dictionary<string, int?> ReadCorrectOptions(DataContext context) =>
             context.Questions.AsNoTracking().Select(q => new { q.QuestionTitle, q.CorrectOption })
                 .ToDictionary(q => q.QuestionTitle, q => q.CorrectOption);
 

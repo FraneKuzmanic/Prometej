@@ -15,7 +15,8 @@ interface AnswerGroupProps {
 }
 
 // One Question of a Quiz Game as it was played: what was asked, what was answered and, where
-// that was wrong, what was right. It reads only the Answers, never the Question of today.
+// that was wrong, what was right. It reads only the Answers, never the Question of today, and
+// tells the Question's kind from them: a row with an item is a pair of a matching Question.
 export default function AnswerGroup({
   number,
   answers,
@@ -23,30 +24,38 @@ export default function AnswerGroup({
   dense,
   showExploreMore,
 }: AnswerGroupProps) {
-  const [answer] = answers;
-  const correct = answer.answerText === answer.correctAnswer;
+  const [first] = answers;
   const body = dense ? "body2" : "body1";
 
   return (
     <>
       <Typography variant={dense ? "subtitle2" : "h6"}>
-        {number}. {answer.questionTitle}
+        {number}. {first.questionTitle}
       </Typography>
-      <Typography
-        variant={body}
-        className={correct ? "answer-group-correct" : "answer-group-wrong"}
-      >
-        {answerLabel}: {answer.answerText}
-      </Typography>
-      {!correct && (
-        <Typography variant={body}>
-          Točan odgovor: {answer.correctAnswer}
-        </Typography>
-      )}
-      {showExploreMore && answer.exploreMore && (
+      {answers.map((answer) => {
+        const correct = answer.answerText === answer.correctAnswer;
+        return (
+          <Box key={answer.id}>
+            <Typography
+              variant={body}
+              className={correct ? "answer-group-correct" : "answer-group-wrong"}
+            >
+              {answer.item !== null
+                ? `${answer.item} → ${answer.answerText}`
+                : `${answerLabel}: ${answer.answerText}`}
+            </Typography>
+            {!correct && (
+              <Typography variant={body}>
+                Točan odgovor: {answer.correctAnswer}
+              </Typography>
+            )}
+          </Box>
+        );
+      })}
+      {showExploreMore && first.exploreMore && (
         <Box className="answer-group-explore">
           <Typography variant="subtitle2">Saznaj više</Typography>
-          <Typography>{answer.exploreMore}</Typography>
+          <Typography>{first.exploreMore}</Typography>
         </Box>
       )}
     </>

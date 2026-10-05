@@ -6,6 +6,7 @@ import { getQuizAnalytics } from "../../store/slices/quizSlice";
 import {
   Avatar,
   Box,
+  Button,
   IconButton,
   Paper,
   Table,
@@ -39,6 +40,21 @@ const formatDate = (date: string) =>
     day: "numeric",
   });
 
+const share = (correctCount: number, answerCount: number) =>
+  answerCount === 0
+    ? "—"
+    : `${correctCount} od ${answerCount} (${Math.round(
+        (correctCount / answerCount) * 100
+      )} %)`;
+
+const mostChosenWrong = (row: {
+  mostChosenWrongAnswer: string | null;
+  mostChosenWrongCount: number;
+}) =>
+  row.mostChosenWrongAnswer === null
+    ? "—"
+    : `${row.mostChosenWrongAnswer} (${row.mostChosenWrongCount})`;
+
 function PlayerName({ name }: { name: string }) {
   return (
     <TableCell component="th" scope="row">
@@ -68,6 +84,8 @@ export function QuizDetails() {
   const dispatch = useAppDispatch();
   // The play whose answers are shown under its row; one at a time.
   const [openGameId, setOpenGameId] = useState<number>();
+  // The matching or ordering Question whose lines are shown under its row.
+  const [openQuestionId, setOpenQuestionId] = useState<number>();
 
   // How many plays fall in each tenth of the percentage scale; empty tenths are left out.
   const seriesData = useMemo<SeriesData[]>(() => {
@@ -176,22 +194,49 @@ export function QuizDetails() {
                           Uklonjeno iz kviza
                         </Typography>
                       )}
+                      {question.lines.length > 0 && (
+                        <Button
+                          size="small"
+                          sx={{ display: "block", padding: 0 }}
+                          aria-expanded={openQuestionId === question.questionId}
+                          onClick={() =>
+                            setOpenQuestionId(
+                              openQuestionId === question.questionId
+                                ? undefined
+                                : question.questionId
+                            )
+                          }
+                        >
+                          {openQuestionId === question.questionId
+                            ? "Sakrij pojmove"
+                            : "Prikaži pojmove"}
+                        </Button>
+                      )}
                     </TableCell>
                     <TableCell align="right">
-                      {question.answerCount === 0
-                        ? "—"
-                        : `${question.correctCount} od ${
-                            question.answerCount
-                          } (${Math.round(
-                            (question.correctCount / question.answerCount) * 100
-                          )} %)`}
+                      {share(question.correctCount, question.answerCount)}
                     </TableCell>
                     <TableCell className="quiz-details-text">
-                      {question.mostChosenWrongAnswer === null
-                        ? "—"
-                        : `${question.mostChosenWrongAnswer} (${question.mostChosenWrongCount})`}
+                      {mostChosenWrong(question)}
                     </TableCell>
                   </TableRow>
+                  {/* A Question of several points, pair by pair or place by place. */}
+                  {openQuestionId === question.questionId &&
+                    question.lines.map((line) => (
+                      <TableRow key={line.label} className="quiz-details-line">
+                        <TableCell className="quiz-details-text">
+                          {question.type === "ordering"
+                            ? `${line.label}. mjesto`
+                            : line.label}
+                        </TableCell>
+                        <TableCell align="right">
+                          {share(line.correctCount, line.answerCount)}
+                        </TableCell>
+                        <TableCell className="quiz-details-text">
+                          {mostChosenWrong(line)}
+                        </TableCell>
+                      </TableRow>
+                    ))}
                   </Fragment>
                 ))}
               </TableBody>
@@ -227,12 +272,12 @@ export function QuizDetails() {
                     <PlayerName name={player.userName} />
                     <TableCell align="right">{player.gameCount}</TableCell>
                     <TableCell align="right">
-                      {player.firstScore} / {player.firstQuestionCount}{" "}
-                      {pointsLabel(player.firstQuestionCount)}
+                      {player.firstScore} / {player.firstMaxScore}{" "}
+                      {pointsLabel(player.firstMaxScore)}
                     </TableCell>
                     <TableCell align="right">
-                      {player.bestScore} / {player.bestQuestionCount}{" "}
-                      {pointsLabel(player.bestQuestionCount)}
+                      {player.bestScore} / {player.bestMaxScore}{" "}
+                      {pointsLabel(player.bestMaxScore)}
                     </TableCell>
                     <TableCell align="right">
                       {formatDate(player.lastPlayed)}

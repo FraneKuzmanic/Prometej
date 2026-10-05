@@ -79,8 +79,8 @@ namespace Prometej_tests
             Assert.Equal(userId, row.GetProperty("userId").GetInt32());
             Assert.Equal("Sara Student", row.GetProperty("userName").GetString());
             Assert.Equal(gameCount, row.GetProperty("gameCount").GetInt32());
-            Assert.Equal(first, (row.GetProperty("firstScore").GetInt32(), row.GetProperty("firstQuestionCount").GetInt32()));
-            Assert.Equal(best, (row.GetProperty("bestScore").GetInt32(), row.GetProperty("bestQuestionCount").GetInt32()));
+            Assert.Equal(first, (row.GetProperty("firstScore").GetInt32(), row.GetProperty("firstMaxScore").GetInt32()));
+            Assert.Equal(best, (row.GetProperty("bestScore").GetInt32(), row.GetProperty("bestMaxScore").GetInt32()));
         }
 
         [Fact]

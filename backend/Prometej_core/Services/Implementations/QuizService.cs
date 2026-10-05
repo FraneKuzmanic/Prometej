@@ -163,6 +163,7 @@ namespace Prometej_core.Services.Implementations
             for (var i = 0; i < quizEntity.Questions.Count; i++)
             {
                 quizEntity.Questions[i].Position = i;
+                quizEntity.Questions[i].Content = ContentOf(questions[i]);
                 quizEntity.Questions[i].SourceText = SourceTextOf(questions[i], quizEntity.SourceTexts);
             }
             _quizRepository.Create(quizEntity);
@@ -217,10 +218,17 @@ namespace Prometej_core.Services.Implementations
                         throw new ForbiddenException("Question does not belong to this quiz");
                     }
 
+                    // Its stored answers have the rows of the type it was played as.
+                    if (questionEntity.Type != questionRequest.Type)
+                    {
+                        throw new BadRequestException("A question's type cannot be changed");
+                    }
+
                     _mapper.Map(questionRequest, questionEntity);
                 }
 
                 questionEntity.Position = position++;
+                questionEntity.Content = ContentOf(questionRequest);
                 questionEntity.SourceText = SourceTextOf(questionRequest, sourceTextEntities);
                 if (questionEntity.SourceText == null)
                 {
@@ -282,23 +290,28 @@ namespace Prometej_core.Services.Implementations
             foreach (var question in quiz.Questions.OrderBy(q => q.Position).ThenBy(q => q.Id))
             {
                 var answer = chosen[question.Id];
-                string[] options = [question.FirstAnswer, question.SecondAnswer, question.ThirdAnswer, question.FourthAnswer];
-                if (answer.ChosenOption == question.CorrectOption)
+                var rows = question.Type switch
                 {
-                    score++;
-                }
+                    QuestionTypes.Matching => MatchingRows(question, answer),
+                    QuestionTypes.Ordering => OrderingRows(question, answer),
+                    _ => ChoiceRows(question, answer),
+                };
 
-                // All four are kept as text, so the play still reads right after the question is edited.
-                answers.Add(new Answer
+                // A row is a point to win. The title, the explanation and both answers are kept
+                // as text, so the play still reads right after the question is edited.
+                foreach (var (row, isCorrect) in rows)
                 {
-                    QuestionId = question.Id,
-                    QuestionTitle = question.QuestionTitle,
-                    ExploreMore = question.ExploreMore,
-                    AnswerText = options[answer.ChosenOption - 1],
-                    CorrectAnswer = options[question.CorrectOption - 1],
-                    Position = answers.Count,
-                    SourceTextId = question.SourceTextId,
-                });
+                    row.QuestionId = question.Id;
+                    row.QuestionTitle = question.QuestionTitle;
+                    row.ExploreMore = question.ExploreMore;
+                    row.SourceTextId = question.SourceTextId;
+                    row.Position = answers.Count;
+                    answers.Add(row);
+                    if (isCorrect)
+                    {
+                        score++;
+                    }
+                }
             }
 
             var user = _userRepository.ReadAll().FirstOrDefault(u => u.Id == userId);
@@ -332,10 +345,63 @@ namespace Prometej_core.Services.Implementations
             return _mapper.Map<QuizGameViewModel>(quizGame);
         }
 
+        // Right and wrong are decided here by comparing numbers. The texts stored next to each
+        // other say the same afterwards, because the texts a number can stand for all differ.
+        private static List<(Answer Row, bool IsCorrect)> ChoiceRows(Question question, AnswerSubmitRequest answer)
+        {
+            if (answer.ChosenOption == null)
+            {
+                throw new BadRequestException("A choice question is answered with ChosenOption");
+            }
+
+            string[] options = [question.FirstAnswer!, question.SecondAnswer!, question.ThirdAnswer!, question.FourthAnswer!];
+            var row = new Answer
+            {
+                AnswerText = options[answer.ChosenOption.Value - 1],
+                CorrectAnswer = options[question.CorrectOption!.Value - 1],
+            };
+
+            return [(row, answer.ChosenOption == question.CorrectOption)];
+        }
+
+        // A row for each pair: its left item, the right-hand option chosen for it and the one
+        // that belongs to it.
+        private static List<(Answer Row, bool IsCorrect)> MatchingRows(Question question, AnswerSubmitRequest answer)
+        {
+            var pairs = question.Content!.Pairs!;
+            var rightOptions = pairs.Select(pair => pair.Right).Concat(question.Content.Extras ?? []).ToList();
+            var matches = answer.Matches;
+            if (matches == null || matches.Count != pairs.Count || matches.Distinct().Count() != matches.Count
+                || matches.Any(number => number < 1 || number > rightOptions.Count))
+            {
+                throw new BadRequestException("A matching question is answered with Matches: a different option number for each of its pairs");
+            }
+
+            return pairs.Select((pair, i) => (
+                new Answer { Item = pair.Left, AnswerText = rightOptions[matches[i] - 1], CorrectAnswer = pair.Right },
+                matches[i] == i + 1)).ToList();
+        }
+
+        // A row for each place: the item put there and the item that belongs there.
+        private static List<(Answer Row, bool IsCorrect)> OrderingRows(Question question, AnswerSubmitRequest answer)
+        {
+            var items = question.Content!.Items!;
+            var order = answer.Order;
+            if (order == null || !order.Order().SequenceEqual(Enumerable.Range(1, items.Count)))
+            {
+                throw new BadRequestException("An ordering question is answered with Order: the number of each of its items, once");
+            }
+
+            return items.Select((item, i) => (
+                new Answer { Place = i + 1, AnswerText = items[order[i] - 1], CorrectAnswer = item },
+                order[i] == i + 1)).ToList();
+        }
+
         // The quiz game the caller already stored with this request's key, if there is one.
         private QuizGameViewModel? FindSubmitted(QuizSubmitRequest request, int userId)
         {
-            var quizGame = _quizGameRepository.ReadAll().Include(g => g.Answers)
+            var quizGame = _quizGameRepository.ReadAll()
+                .Include(g => g.Answers.OrderBy(a => a.Position).ThenBy(a => a.QuestionId).ThenBy(a => a.Id))
                 .FirstOrDefault(g => g.UserId == userId && g.SubmissionKey == request.SubmissionKey);
             if (quizGame == null)
             {
@@ -363,7 +429,7 @@ namespace Prometej_core.Services.Implementations
                     QuizTitle = g.Quiz.Title,
                     PeriodName = g.Quiz.Period!.Name,
                     Score = g.Score,
-                    QuestionCount = g.Answers.Count,
+                    MaxScore = g.Answers.Count,
                     DatePlayed = g.DatePlayed,
                 })
                 .ToList();
@@ -376,8 +442,8 @@ namespace Prometej_core.Services.Implementations
         // of each played quiz, so practising a quiz again never lowers it.
         private List<PeriodProgressViewModel> ProgressByPeriod(List<PlayedQuizGameViewModel> games)
         {
-            var bestByQuiz = games.Where(g => g.QuestionCount > 0).GroupBy(g => g.QuizId)
-                .ToDictionary(g => g.Key, g => g.Max(game => (double)game.Score / game.QuestionCount));
+            var bestByQuiz = games.Where(g => g.MaxScore > 0).GroupBy(g => g.QuizId)
+                .ToDictionary(g => g.Key, g => g.Max(game => (double)game.Score / game.MaxScore));
             var listedByPeriod = _quizRepository.ReadAll().Where(Quiz.IsListed).Where(q => q.PeriodId != null)
                 .Select(q => new { q.Id, PeriodId = q.PeriodId!.Value })
                 .ToLookup(q => q.PeriodId, q => q.Id);
@@ -457,33 +523,54 @@ namespace Prometej_core.Services.Implementations
         {
             var answers = quizGames.SelectMany(g => g.Answers).ToLookup(a => a.QuestionId);
             var questions = _questionRepository.ReadAll().Where(q => q.QuizId == quizId).OrderBy(q => q.Position).ThenBy(q => q.Id)
-                .Select(q => new { q.Id, q.QuestionTitle, q.IsRetired, SourceTextCaption = q.SourceText!.Caption })
+                .Select(q => new { q.Id, q.QuestionTitle, q.Type, q.IsRetired, SourceTextCaption = q.SourceText!.Caption })
                 .ToList();
 
             var report = new List<QuestionReportViewModel>();
             foreach (var question in questions)
             {
-                // Of two wrong answers chosen equally often, the one that sorts first.
-                var mostChosenWrong = answers[question.Id].Where(a => a.AnswerText != a.CorrectAnswer)
-                    .GroupBy(a => a.AnswerText)
-                    .OrderByDescending(g => g.Count()).ThenBy(g => g.Key, StringComparer.Ordinal)
-                    .FirstOrDefault();
+                // The rows of a matching or an ordering question, by the item or the place they
+                // were played for, in the order those first come up. Grouping a list keeps it.
+                var lines = answers[question.Id].Where(a => a.Item != null || a.Place != null)
+                    .GroupBy(a => a.Item ?? a.Place.ToString()!)
+                    .Select(line =>
+                    {
+                        var wrong = MostChosenWrong(line);
+                        return new QuestionLineViewModel
+                        {
+                            Label = line.Key,
+                            AnswerCount = line.Count(),
+                            CorrectCount = line.Count(a => a.AnswerText == a.CorrectAnswer),
+                            MostChosenWrongAnswer = wrong?.Key,
+                            MostChosenWrongCount = wrong?.Count() ?? 0,
+                        };
+                    }).ToList();
+                var mostChosenWrong = lines.Count > 0 ? null : MostChosenWrong(answers[question.Id]);
 
                 report.Add(new QuestionReportViewModel
                 {
                     QuestionId = question.Id,
                     QuestionTitle = question.QuestionTitle,
+                    Type = question.Type,
                     IsRetired = question.IsRetired,
                     SourceTextCaption = question.SourceTextCaption,
                     AnswerCount = answers[question.Id].Count(),
                     CorrectCount = answers[question.Id].Count(a => a.AnswerText == a.CorrectAnswer),
                     MostChosenWrongAnswer = mostChosenWrong?.Key,
                     MostChosenWrongCount = mostChosenWrong?.Count() ?? 0,
+                    Lines = lines,
                 });
             }
 
             return report;
         }
+
+        // Of two wrong answers chosen equally often, the one that sorts first.
+        private static IGrouping<string, Answer>? MostChosenWrong(IEnumerable<Answer> answers) =>
+            answers.Where(a => a.AnswerText != a.CorrectAnswer)
+                .GroupBy(a => a.AnswerText)
+                .OrderByDescending(g => g.Count()).ThenBy(g => g.Key, StringComparer.Ordinal)
+                .FirstOrDefault();
 
         // One row per player. Their best game is the one with the highest share of correct
         // answers, not the highest score: two plays of an edited quiz may differ in length.
@@ -507,9 +594,9 @@ namespace Prometej_core.Services.Implementations
                     UserName = last.UserName,
                     GameCount = games.Count,
                     FirstScore = first.Score,
-                    FirstQuestionCount = first.Answers.Count,
+                    FirstMaxScore = first.Answers.Count,
                     BestScore = best.Score,
-                    BestQuestionCount = best.Answers.Count,
+                    BestMaxScore = best.Answers.Count,
                     LastPlayed = last.DatePlayed,
                 };
             }).ToList();
@@ -540,29 +627,84 @@ namespace Prometej_core.Services.Implementations
             }
         }
 
-        // The shape of a question (nothing empty, nothing too long, a correct option of 1 to 4) is
-        // checked on the request models. What is stored is the trimmed text, so two options that
-        // differ only by spaces around them are the same option, and a hint or an explore more
-        // text of nothing but spaces is none.
+        // The shape of a question (what its type carries, how many, how long) is checked on the
+        // request models. What is stored is the trimmed text, so two options that differ only by
+        // spaces around them are the same option, and a hint or an explore more text of nothing
+        // but spaces is none. A seeded quiz does not pass the request models' checks, so a text
+        // that is missing here is refused and not assumed.
         private static void TrimAndCheck(IEnumerable<QuestionCreateRequest> questions)
         {
             foreach (var question in questions)
             {
                 question.QuestionTitle = question.QuestionTitle.Trim();
-                question.FirstAnswer = question.FirstAnswer.Trim();
-                question.SecondAnswer = question.SecondAnswer.Trim();
-                question.ThirdAnswer = question.ThirdAnswer.Trim();
-                question.FourthAnswer = question.FourthAnswer.Trim();
                 question.HintText = TrimOrNull(question.HintText);
                 question.ExploreMore = TrimOrNull(question.ExploreMore);
 
-                string[] options = [question.FirstAnswer, question.SecondAnswer, question.ThirdAnswer, question.FourthAnswer];
-                if (options.Distinct().Count() != options.Length)
+                switch (question.Type)
                 {
-                    throw new BadRequestException("A question's four options must all differ");
+                    case QuestionTypes.Choice:
+                        question.FirstAnswer = TrimOrNull(question.FirstAnswer);
+                        question.SecondAnswer = TrimOrNull(question.SecondAnswer);
+                        question.ThirdAnswer = TrimOrNull(question.ThirdAnswer);
+                        question.FourthAnswer = TrimOrNull(question.FourthAnswer);
+                        if (question.CorrectOption is not (>= 1 and <= 4))
+                        {
+                            throw new BadRequestException("A choice question needs a correct option");
+                        }
+
+                        EnsureAllDiffer(
+                            [question.FirstAnswer, question.SecondAnswer, question.ThirdAnswer, question.FourthAnswer],
+                            "A question's four options must all differ");
+                        break;
+
+                    case QuestionTypes.Matching:
+                        var pairs = question.Content?.Pairs ?? [];
+                        foreach (var pair in pairs)
+                        {
+                            pair.Left = pair.Left?.Trim()!;
+                            pair.Right = pair.Right?.Trim()!;
+                        }
+
+                        var extras = (question.Content?.Extras ?? []).Select(extra => extra?.Trim() ?? "").ToList();
+                        EnsureAllDiffer(pairs.Select(pair => pair.Left), "A matching question's left items must all differ");
+                        // An extra equal to a pair's right-hand text would make two options read the same.
+                        EnsureAllDiffer(pairs.Select(pair => pair.Right).Concat(extras), "A matching question's right-hand options must all differ");
+                        question.Content!.Extras = extras.Count > 0 ? extras : null;
+                        break;
+
+                    case QuestionTypes.Ordering:
+                        var items = (question.Content?.Items ?? []).Select(item => item?.Trim() ?? "").ToList();
+                        EnsureAllDiffer(items, "An ordering question's items must all differ");
+                        question.Content!.Items = items;
+                        break;
+
+                    default:
+                        throw new BadRequestException("The question type is not known");
                 }
             }
         }
+
+        // Also refuses a list with nothing in it and a text that is missing or empty.
+        private static void EnsureAllDiffer(IEnumerable<string?> texts, string message)
+        {
+            var list = texts.ToList();
+            if (list.Count == 0 || list.Any(string.IsNullOrEmpty) || list.Distinct().Count() != list.Count)
+            {
+                throw new BadRequestException(message);
+            }
+        }
+
+        // A new object each time: the column is compared by reference.
+        private static QuestionContent? ContentOf(QuestionCreateRequest question) => question.Type switch
+        {
+            QuestionTypes.Matching => new QuestionContent
+            {
+                Pairs = question.Content!.Pairs!.Select(pair => new MatchPair { Left = pair.Left, Right = pair.Right }).ToList(),
+                Extras = question.Content.Extras,
+            },
+            QuestionTypes.Ordering => new QuestionContent { Items = question.Content!.Items },
+            _ => null,
+        };
 
         private static string? TrimOrNull(string? text) =>
             string.IsNullOrWhiteSpace(text) ? null : text.Trim();

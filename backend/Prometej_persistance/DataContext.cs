@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Text.Json;
+using Microsoft.EntityFrameworkCore;
 using Prometej_core.Models.efModels;
 
 namespace Prometej_persistance
@@ -38,6 +39,12 @@ namespace Prometej_persistance
             // played is retired instead, so an answer loses its link only when its quiz goes.
             modelBuilder.Entity<Question>()
                 .HasOne(q => q.SourceText).WithMany().HasForeignKey(q => q.SourceTextId).OnDelete(DeleteBehavior.SetNull);
+            // Questions stored before there were types are choice questions.
+            modelBuilder.Entity<Question>().Property(q => q.Type).HasMaxLength(20).HasDefaultValue(QuestionTypes.Choice);
+            // Replaced whole on every edit and compared by reference, so it is never changed in place.
+            modelBuilder.Entity<Question>().Property(q => q.Content).HasColumnType("jsonb").HasConversion(
+                content => content == null ? null : JsonSerializer.Serialize(content, QuestionContent.Json),
+                json => json == null ? null : JsonSerializer.Deserialize<QuestionContent>(json, QuestionContent.Json));
             modelBuilder.Entity<Answer>()
                 .HasOne<SourceText>().WithMany().HasForeignKey(a => a.SourceTextId).OnDelete(DeleteBehavior.SetNull);
         }

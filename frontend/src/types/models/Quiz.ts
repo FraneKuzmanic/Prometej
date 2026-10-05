@@ -12,14 +12,36 @@ export interface QuizBaseModel {
     quizGameCount?: number;
 }
 
+// "choice": four options, one correct. "matching": pairs to connect. "ordering": items to
+// put in order. The last two give a point for each right pair or place.
+export type QuestionType = "choice" | "matching" | "ordering";
+
+export interface MatchPair {
+    left: string;
+    right: string;
+}
+
+// What a matching or an ordering Question asks. A play names these by number, from 1, in
+// the order they are stored in: the pairs' right-hand texts first, then the extras.
+export interface QuestionContent {
+    pairs?: MatchPair[];
+    // right-hand options that go with nothing
+    extras?: string[];
+    // in their right order
+    items?: string[];
+}
+
 export interface QuestionCreateRequest {
     questionTitle:string
-    firstAnswer:string
-    secondAnswer:string
-    thirdAnswer:string
-    fourthAnswer:string
-    // which of the four answers is correct, 1 to 4; 0 while none is marked in the editor
-    correctOption:number
+    type:QuestionType
+    // the four answers and the correct one, 1 to 4: a choice Question only
+    firstAnswer?:string
+    secondAnswer?:string
+    thirdAnswer?:string
+    fourthAnswer?:string
+    correctOption?:number
+    // a matching or an ordering Question only
+    content?:QuestionContent
     hintText:string
     exploreMore:string
     // the 1-based number of the Question's Source Text in the request's list, if it has one
@@ -76,19 +98,29 @@ export interface QuizViewModel {
 export interface QuestionViewModel {
     id: number;
     questionTitle:string
-    firstAnswer:string
-    secondAnswer:string
-    thirdAnswer:string
-    fourthAnswer:string
-    correctOption:number
+    type:QuestionType
+    // null unless the Question is a choice Question
+    firstAnswer:string | null
+    secondAnswer:string | null
+    thirdAnswer:string | null
+    fourthAnswer:string | null
+    correctOption:number | null
+    // null for a choice Question
+    content:QuestionContent | null
     hintText:string | null
     exploreMore:string | null
     sourceTextId:number | null
 }
 
+// One Question's answer as numbers; which of the three depends on the Question's type.
 export interface AnswerCreateRequest{
     questionId:number;
-    chosenOption:number;
+    // choice: the option chosen, 1 to 4
+    chosenOption?:number;
+    // matching: for each pair in order, the number of the right-hand option chosen
+    matches?:number[];
+    // ordering: for each place in order, the number of the item put there
+    order?:number[];
 }
 
 export interface AnswerViewModel {
@@ -100,6 +132,10 @@ export interface AnswerViewModel {
     exploreMore:string | null;
     answerText:string;
     correctAnswer:string;
+    // A Question of several points has a row for each: a matching Question's row names its
+    // left-hand item, an ordering Question's its place. A choice Question's row has neither.
+    item:string | null;
+    place:number | null;
     // its ordinal in the Quiz Game
     position:number;
     // the Source Text the Question was played beside, in the version shown then
@@ -120,12 +156,26 @@ export interface QuestionReport {
     questionId: number;
     // the title as it is today; the counts are over the Answers as they were played
     questionTitle: string;
+    type: QuestionType;
     isRetired: boolean;
     // the caption of the Question's Source Text as it is today; null without one
     sourceTextCaption: string | null;
+    // points possible and points won, over every play
     answerCount: number;
     correctCount: number;
-    // the wrong answer chosen most often, as its text was when played; null if nobody was wrong
+    // the wrong answer chosen most often, as its text was when played; null if nobody was
+    // wrong, and for a Question of several points, whose lines say it for each
+    mostChosenWrongAnswer: string | null;
+    mostChosenWrongCount: number;
+    // one for each left-hand item of a matching Question or place of an ordering one
+    lines: QuestionLine[];
+}
+
+export interface QuestionLine {
+    // the left-hand item, or the number of the place
+    label: string;
+    answerCount: number;
+    correctCount: number;
     mostChosenWrongAnswer: string | null;
     mostChosenWrongCount: number;
 }
@@ -134,12 +184,12 @@ export interface PlayerSummary {
     userId: number;
     userName: string;
     gameCount: number;
-    // a Score goes with the number of Questions its game was played with
+    // a Score goes with the points its game could give
     firstScore: number;
-    firstQuestionCount: number;
-    // the game with the highest share of correct answers
+    firstMaxScore: number;
+    // the game with the highest share of points won
     bestScore: number;
-    bestQuestionCount: number;
+    bestMaxScore: number;
     lastPlayed: string;
 }
 
@@ -169,8 +219,8 @@ export interface PlayedQuizGame {
     quizTitle: string;
     periodName: string | null;
     score: number;
-    // how many Questions the game was played with, not how many the Quiz has now
-    questionCount: number;
+    // the points the game could give when it was played
+    maxScore: number;
     datePlayed: string;
 }
 

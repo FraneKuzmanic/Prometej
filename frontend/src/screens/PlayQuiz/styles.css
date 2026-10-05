@@ -71,6 +71,118 @@
     pointer-events: none;
 }
 
+.quiz-play-matching{
+    margin: 15px 0;
+}
+
+/* Side by side on every width: a link across two stacked lists could not be followed. */
+.quiz-play-matching-columns{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.quiz-play-matching-column{
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.quiz-play-item{
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 8px 10px;
+    font: inherit;
+    font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+    text-align: left;
+    color: inherit;
+    background-color: #daf5ff71;
+    border: 1px solid #78C1F3;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.quiz-play-item:hover:enabled{
+    background-color: #a3d9fd;
+}
+
+.quiz-play-item:focus-visible{
+    outline: 2px solid #553b08;
+    outline-offset: 2px;
+}
+
+.quiz-play-item:disabled{
+    cursor: default;
+}
+
+.quiz-play-item.active{
+    border-width: 2px;
+    border-color: #553b08;
+}
+
+.quiz-play-item-text{
+    flex: 1;
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+/* The number is what says which two belong together; the colour only repeats it. */
+.quiz-play-item-badge{
+    flex-shrink: 0;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    font-size: 13px;
+    line-height: 22px;
+    text-align: center;
+    font-weight: bold;
+}
+
+.quiz-play-item.linked .quiz-play-item-badge{
+    color: white;
+    background-color: #553b08;
+}
+
+.quiz-play-item.link-1{ background-color: #fff3c4; border-color: #c9a227; }
+.quiz-play-item.link-2{ background-color: #e3d7ff; border-color: #7e57c2; }
+.quiz-play-item.link-3{ background-color: #ffe0cc; border-color: #e07b39; }
+.quiz-play-item.link-4{ background-color: #d6f0f0; border-color: #2a9d8f; }
+.quiz-play-item.link-5{ background-color: #f8d7e3; border-color: #c2185b; }
+
+.quiz-play-item.correct{
+    background-color: rgba(222, 255, 218, 0.614);
+    border-color: #4F6F52;
+    color: #4F6F52;
+}
+
+.quiz-play-item.wrong{
+    background-color: #fcaeaebd;
+    border-color: #ff6666d7;
+    color: #c62828;
+}
+
+.quiz-play-item.correct .quiz-play-item-badge{
+    color: white;
+    background-color: #4F6F52;
+}
+
+.quiz-play-item.wrong .quiz-play-item-badge{
+    color: white;
+    background-color: #c62828;
+}
+
+.quiz-play-item-right.MuiTypography-root{
+    margin: 4px 0 0 10px;
+    overflow-wrap: anywhere;
+}
+
+.MuiButton-root.quiz-play-check{
+    margin-top: 15px;
+}
+
 .quiz-play-hint-row{
     display: flex;
     align-items: flex-start;

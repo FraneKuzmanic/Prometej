@@ -65,6 +65,66 @@
     min-width: 0;
 }
 
+.matching-fields{
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 0 10%;
+}
+
+.matching-pair{
+    display: flex;
+    align-items: stretch;
+    gap: 12px;
+}
+
+.matching-pair .letter{
+    height: auto;
+    border-radius: 5px;
+}
+
+.matching-pair .matching-no-letter{
+    visibility: hidden;
+}
+
+.matching-input{
+    flex: 1;
+    min-width: 0;
+}
+
+.matching-input.MuiTextField-root{
+    background-color: white;
+    border-radius: 5px;
+}
+
+.matching-input .MuiInputBase-input{
+    color: rgba(0, 0, 0, 0.6);
+}
+
+.matching-remove{
+    width: 40px;
+    flex-shrink: 0;
+}
+
+.MuiIconButton-root.matching-remove{
+    color: white;
+    background-color: #553b08;
+    border-radius: 5px;
+}
+
+.matching-buttons{
+    display: flex;
+    gap: 12px;
+}
+
+.matching-buttons .MuiButton-root{
+    background-color: #553b08;
+}
+
+.matching-buttons .MuiButton-root:hover{
+    background-color: #815b0d;
+}
+
 .source-text-fields{
     display: flex;
     flex-direction: column;

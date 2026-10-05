@@ -19,6 +19,11 @@ namespace Prometej_core.Models.efModels
         public string? ExploreMore { get; set; }
         public string AnswerText { get; set; }
         public string CorrectAnswer { get; set; }
+        // A question worth several points has a row for each. A row of a matching question
+        // names the left-hand item it is about, a row of an ordering question the place
+        // (from 1); a row with neither is the one row of a choice question.
+        public string? Item { get; set; }
+        public int? Place { get; set; }
         // Its ordinal in the quiz game: the questions in the order they were played, and a
         // question's rows in order.
         public int Position { get; set; }

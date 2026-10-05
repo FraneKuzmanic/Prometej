@@ -140,8 +140,8 @@ export default function MyResults() {
                       {formatDate(game.datePlayed)}
                     </TableCell>
                     <TableCell align="right">
-                      {game.score} / {game.questionCount}{" "}
-                      {pointsLabel(game.questionCount)}
+                      {game.score} / {game.maxScore}{" "}
+                      {pointsLabel(game.maxScore)}
                     </TableCell>
                   </TableRow>
                 ))}

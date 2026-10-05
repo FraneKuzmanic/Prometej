@@ -20,16 +20,13 @@ import { useEffect, useRef, useState } from "react";
 import "./styles.css";
 import QuestionContainer from "../QuestionContainer";
 import SourceTextFields from "../QuestionContainer/SourceTextFields";
-import {
-  QuestionCreateRequest,
-  SourceTextRequest,
-} from "../../types/models/Quiz";
+import { QuestionType, SourceTextRequest } from "../../types/models/Quiz";
 import {
   EditorPassages,
   EditorQuestion,
-  emptyQuestion,
   isComplete,
   isPassageComplete,
+  newQuestion,
 } from "./questions";
 import AddIcon from "@mui/icons-material/Add";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
@@ -59,6 +56,13 @@ interface QuizEditorProps {
 // The server's limit of Questions for one Source Text.
 const MAX_PASSAGE_QUESTIONS = 10;
 
+// What a Question of each type still needs, said after "Pitanje {n} nije potpuno: ".
+const missing: Record<QuestionType, string> = {
+  choice: "unesite pitanje, četiri različita odgovora i označite točan.",
+  matching: "unesite pitanje i tri do pet različitih parova.",
+  ordering: "unesite pitanje i tri do šest različitih pojmova.",
+};
+
 export default function QuizEditor({
   initialTitle,
   initialIsPrivate,
@@ -78,7 +82,7 @@ export default function QuizEditor({
 
   // A new Quiz, and an old one stored without Questions, start with one to fill in.
   const [quizQuestions, setQuizQuestions] = useState<EditorQuestion[]>(
-    initialQuestions.length > 0 ? initialQuestions : [emptyQuestion]
+    initialQuestions.length > 0 ? initialQuestions : [newQuestion("choice")]
   );
   // The Source Texts by key; a Question names the key of the one it is asked about.
   const [passages, setPassages] = useState<EditorPassages>(initialPassages);
@@ -89,10 +93,11 @@ export default function QuizEditor({
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [saveFailed, setSaveFailed] = useState<boolean>(false);
   const [inputDrawer, setInputDrawer] = useState<boolean>(false);
-  // The first Question that kept the Quiz from being saved, and whether it was its
-  // Source Text that is not filled in.
+  // The first Question that kept the Quiz from being saved, its type, and whether it was
+  // its Source Text that is not filled in.
   const [incomplete, setIncomplete] = useState<{
     no: number;
+    type: QuestionType;
     passage: boolean;
   } | null>(null);
   // One menu for the whole strip; it remembers which Question it was opened for.
@@ -115,6 +120,7 @@ export default function QuizEditor({
       setSelected(index);
       setIncomplete({
         no: index + 1,
+        type: quizQuestions[index].type,
         passage: !!passage && !isPassageComplete(passage),
       });
       return;
@@ -145,13 +151,15 @@ export default function QuizEditor({
     setAddMenuAnchor(null);
   };
 
-  const addQuestion = () => insertQuestion(quizQuestions.length, emptyQuestion);
+  // The type is chosen here and stays: the fields of one type say nothing in another.
+  const addQuestion = (type: QuestionType) =>
+    insertQuestion(quizQuestions.length, newQuestion(type));
 
   // A new Source Text comes with its first Question.
   const addPassage = () => {
     const passageKey = `new-${newPassageNo.current++}`;
     setPassages({ ...passages, [passageKey]: { id: 0, caption: "", body: "" } });
-    insertQuestion(quizQuestions.length, { ...emptyQuestion, passageKey });
+    insertQuestion(quizQuestions.length, { ...newQuestion("choice"), passageKey });
   };
 
   // The Questions of one Source Text stay together: a new one goes after the last of them.
@@ -161,7 +169,7 @@ export default function QuizEditor({
         question.passageKey === passageKey ? index : found,
       -1
     );
-    insertQuestion(last + 1, { ...emptyQuestion, passageKey });
+    insertQuestion(last + 1, { ...newQuestion("choice"), passageKey });
   };
 
   const updatePassage = (
@@ -221,7 +229,7 @@ export default function QuizEditor({
 
   const updateQuestion = (
     questionNo: number,
-    updates: Partial<QuestionCreateRequest>
+    updates: Partial<EditorQuestion>
   ) => {
     setQuizQuestions((prevQuestions) =>
       prevQuestions.map((question, index) =>
@@ -237,7 +245,7 @@ export default function QuizEditor({
         <Alert severity="warning" className="quiz-editor-message">
           {incomplete.passage
             ? `Polazni tekst uz pitanje ${incomplete.no} nije potpun: unesite autora i naslov te tekst.`
-            : `Pitanje ${incomplete.no} nije potpuno: unesite pitanje, četiri različita odgovora i označite točan.`}
+            : `Pitanje ${incomplete.no} nije potpuno: ${missing[incomplete.type]}`}
         </Alert>
       )}
       <QuestionContainer
@@ -324,9 +332,10 @@ export default function QuizEditor({
           open={addMenuAnchor !== null}
           onClose={() => setAddMenuAnchor(null)}
         >
-          <MenuItem onClick={() => addQuestion()}>
+          <MenuItem onClick={() => addQuestion("choice")}>
             Pitanje s četiri odgovora
           </MenuItem>
+          <MenuItem onClick={() => addQuestion("matching")}>Povezivanje</MenuItem>
           <MenuItem onClick={() => addPassage()}>
             Polazni tekst s pitanjima
           </MenuItem>

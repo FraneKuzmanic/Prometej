@@ -28,6 +28,14 @@
     margin: 0.5rem 0 1rem 0;
 }
 
+.quiz-details-line .MuiTableCell-root{
+    background-color: #fbfaf5;
+}
+
+.quiz-details-line .MuiTableCell-root:first-of-type{
+    padding-left: 2.5rem;
+}
+
 .quiz-details-source.MuiTableCell-root{
     font-weight: bold;
     background-color: #f7f4ea;

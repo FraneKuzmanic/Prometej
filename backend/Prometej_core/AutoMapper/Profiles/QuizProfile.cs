@@ -27,9 +27,11 @@ namespace Prometej_core.AutoMapper.Profiles
                                                    .ForMember(dest => dest.QuizGameCount, opt => opt.Ignore());
 
             CreateMap<Question, QuestionCreateRequest>();
-            CreateMap<QuestionCreateRequest, Question>();
+            // The content is set by the service, as a new object each time: the column is
+            // compared by reference, so one filled in place would not be saved.
+            CreateMap<QuestionCreateRequest, Question>().ForMember(dest => dest.Content, opt => opt.Ignore());
             CreateMap<Question, QuestionViewModel>();
-            CreateMap<QuestionEditRequest, Question>();
+            CreateMap<QuestionEditRequest, Question>().ForMember(dest => dest.Content, opt => opt.Ignore());
             CreateMap<SourceText, SourceTextViewModel>();
 
             CreateMap<QuizGame, QuizGameViewModel>();

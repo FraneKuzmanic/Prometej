@@ -15,8 +15,8 @@ namespace Prometej_core.Models.ViewModels
         public required string QuizTitle { get; set; }
         public string? PeriodName { get; set; }
         public int Score { get; set; }
-        // How many questions the game was played with, not how many the quiz has now.
-        public int QuestionCount { get; set; }
+        // The points the game could give when it was played, not what the quiz gives now.
+        public int MaxScore { get; set; }
         public DateTime DatePlayed { get; set; }
     }
 

@@ -189,7 +189,7 @@ namespace Prometej_tests
                 Assert.Equal(quiz.Id, game.GetProperty("quizId").GetInt32());
                 Assert.StartsWith("Kviz ", game.GetProperty("quizTitle").GetString());
                 Assert.Equal("Realizam", game.GetProperty("periodName").GetString());
-                Assert.Equal(2, game.GetProperty("questionCount").GetInt32());
+                Assert.Equal(2, game.GetProperty("maxScore").GetInt32());
             });
             Assert.Equal(otherId, Assert.Single(await Games(other)).GetProperty("id").GetInt32());
         }
