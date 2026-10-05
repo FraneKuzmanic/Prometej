@@ -11,6 +11,7 @@ import AssignmentIcon from "@mui/icons-material/Assignment";
 import NoteAddIcon from "@mui/icons-material/NoteAdd";
 import PersonIcon from "@mui/icons-material/Person";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
+import GroupIcon from "@mui/icons-material/Group";
 import "./styles.css";
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -200,6 +201,39 @@ export default function Sidebar({
             </ListItemButton>
           </ListItem>
         )}
+      {authenticated && user?.role === ROLE.Admin && (
+        <ListItem
+          key={"users"}
+          sx={{ display: "block" }}
+          className={`sidebar-item${
+            selectedItem === "users" ? "-selected" : ""
+          }`}
+        >
+          <ListItemButton
+            onClick={() => handleItemClick("users")}
+            sx={{
+              minHeight: 48,
+              justifyContent: toggle ? "initial" : "center",
+              px: 2.5,
+            }}
+          >
+            <ListItemIcon
+              sx={{
+                minWidth: 0,
+                mr: toggle ? 3 : "auto",
+                justifyContent: "center",
+                color: selectedItem === "users" ? "black" : "white",
+              }}
+            >
+              <GroupIcon />
+            </ListItemIcon>
+            <ListItemText
+              primary={"Korisnici"}
+              sx={{ opacity: toggle ? 1 : 0 }}
+            />
+          </ListItemButton>
+        </ListItem>
+      )}
       <ListItem
         key={"exam"}
         sx={{ display: "block" }}

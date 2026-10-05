@@ -1,0 +1,25 @@
+.account-wrapper{
+    padding: 1rem 2.5rem 2rem 2.5rem;
+}
+
+.account-title.MuiTypography-root{
+    margin: 20px 0px 20px 0px;
+    color: #553b08;
+}
+
+.account-section{
+    margin-top: 1.5rem;
+    padding: 20px 24px;
+    max-width: 32rem;
+}
+
+.account-heading.MuiTypography-root{
+    margin-bottom: 1rem;
+    color: #553b08;
+}
+
+.account-form{
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}

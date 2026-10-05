@@ -14,11 +14,14 @@ import PlayQuiz from "./PlayQuiz";
 import { QuizDetails } from "./QuizDetails";
 import MyResults from "./MyResults";
 import GameReview from "./MyResults/GameReview";
+import Account from "./Account";
+import Users from "./Users";
 import ROLE from "../types/enums/Role";
 
 const quizCreatorRoles = [ROLE.Teacher, ROLE.Admin];
 // Signed in is enough: anyone who plays has results.
 const anyRole = [ROLE.Student, ROLE.Teacher, ROLE.Admin];
+const adminOnly = [ROLE.Admin];
 
 export const appRouter = createBrowserRouter([
   {
@@ -62,6 +65,22 @@ export const appRouter = createBrowserRouter([
         element: (
           <RequireRole roles={anyRole}>
             <GameReview />
+          </RequireRole>
+        ),
+      },
+      {
+        path: "account",
+        element: (
+          <RequireRole roles={anyRole}>
+            <Account />
+          </RequireRole>
+        ),
+      },
+      {
+        path: "users",
+        element: (
+          <RequireRole roles={adminOnly}>
+            <Users />
           </RequireRole>
         ),
       },

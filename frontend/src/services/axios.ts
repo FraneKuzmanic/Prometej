@@ -1,6 +1,6 @@
 import axios from "axios"
 import {store} from "../store/store";
-import { clearUser } from "../store/slices/userSlice";
+import { clearUser, fetchCurrentUser } from "../store/slices/userSlice";
 import { endpoints } from "./endpoints";
 
 const { user } = endpoints;
@@ -19,6 +19,11 @@ const configureAxios = () => {
       // error.response is undefined when the request never reached the server.
       if (error.response?.status === 401 && !handledByThunk) {
         store.dispatch(clearUser());
+      }
+      // The server refused something this client offered: the Role in the store may be
+      // older than the one in the database.
+      if (error.response?.status === 403) {
+        store.dispatch(fetchCurrentUser());
       }
       return Promise.reject(error);
     }

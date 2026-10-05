@@ -1,0 +1,17 @@
+.users-wrapper{
+    padding: 1rem 2.5rem 2rem 2.5rem;
+}
+
+.users-title.MuiTypography-root{
+    margin: 20px 0px 20px 0px;
+    color: #553b08;
+}
+
+.users-filter{
+    margin-bottom: 1rem !important;
+}
+
+.users-column{
+    font-weight: bold !important;
+    color: #553b08 !important;
+}

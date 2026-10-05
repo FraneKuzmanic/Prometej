@@ -27,3 +27,22 @@ export interface UserViewModel{
     email: string;
     role: ROLE;
 }
+
+export interface UserNameEditRequest{
+    firstName: string;
+    lastName: string;
+}
+
+export interface UserPasswordEditRequest{
+    currentPassword: string;
+    newPassword: string;
+}
+
+export interface PasswordInput extends UserPasswordEditRequest{
+    repeatedPassword: string;
+}
+
+// a row of the Admin's list of Users
+export interface UserAccount extends UserViewModel{
+    quizCount: number;
+}

@@ -1,11 +1,5 @@
 import {
   Box,
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
   IconButton,
   Menu,
   MenuItem,
@@ -24,10 +18,7 @@ import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import React from "react";
 import { RootState, useAppDispatch } from "../../../store/store";
-import {
-  attemptLogout,
-  deleteCurrentUser,
-} from "../../../store/slices/userSlice";
+import { attemptLogout } from "../../../store/slices/userSlice";
 import { useLocation } from "react-router-dom";
 
 interface HeaderProps {
@@ -39,11 +30,6 @@ export default function Header({ toggle, toggleSidebar }: HeaderProps) {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const { authenticated } = useSelector((state: RootState) => state.user);
   const [search, setSearch] = React.useState<string>("");
-  const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
-  // "conflict": the server refuses to delete an account that still has Quizzes.
-  const [deleteError, setDeleteError] = React.useState<
-    "conflict" | "other" | undefined
-  >();
   const navigate = useNavigate();
   const location = useLocation();
   const pathname = location.pathname;
@@ -105,20 +91,19 @@ export default function Header({ toggle, toggleSidebar }: HeaderProps) {
         ""
       )}
       {authenticated ? (
-        <MenuItem onClick={handleLogout}>Odjavi se</MenuItem>
+        <MenuItem
+          onClick={() => {
+            handleCloseUserMenu();
+            navigate("/account");
+          }}
+        >
+          Moj račun
+        </MenuItem>
       ) : (
         ""
       )}
       {authenticated ? (
-        <MenuItem
-          onClick={() => {
-            handleCloseUserMenu();
-            setDeleteError(undefined);
-            setDeleteDialogOpen(true);
-          }}
-        >
-          Obriši račun
-        </MenuItem>
+        <MenuItem onClick={handleLogout}>Odjavi se</MenuItem>
       ) : (
         ""
       )}
@@ -128,17 +113,6 @@ export default function Header({ toggle, toggleSidebar }: HeaderProps) {
   const handleLogout = (): void => {
     handleCloseUserMenu();
     dispatch(attemptLogout()).then(() => navigate("/learning"));
-  };
-
-  const handleDeleteAccount = (): void => {
-    dispatch(deleteCurrentUser()).then((result) => {
-      if (deleteCurrentUser.fulfilled.match(result)) {
-        setDeleteDialogOpen(false);
-        navigate("/learning");
-      } else {
-        setDeleteError(result.payload === 409 ? "conflict" : "other");
-      }
-    });
   };
 
   return (
@@ -181,33 +155,6 @@ export default function Header({ toggle, toggleSidebar }: HeaderProps) {
             <AccountCircle />
           </IconButton>
           {anchorEl && userMenu()}
-          <Dialog
-            open={deleteDialogOpen}
-            onClose={() => setDeleteDialogOpen(false)}
-          >
-            <DialogTitle>Obriši račun</DialogTitle>
-            <DialogContent>
-              <DialogContentText>
-                Jeste li sigurni? Vaš račun i vaši rezultati bit će trajno
-                obrisani.
-              </DialogContentText>
-              {deleteError && (
-                <DialogContentText color="error" sx={{ marginTop: 2 }}>
-                  {deleteError === "conflict"
-                    ? "Račun se ne može obrisati dok imate kvizove. Prvo obrišite svoje kvizove u „Moji kvizovi”."
-                    : "Račun nije obrisan. Pokušajte ponovno."}
-                </DialogContentText>
-              )}
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={() => setDeleteDialogOpen(false)}>
-                Odustani
-              </Button>
-              <Button color="error" onClick={handleDeleteAccount}>
-                Obriši
-              </Button>
-            </DialogActions>
-          </Dialog>
         </Box>
       </Toolbar>
     </AppBar>
