@@ -1,7 +1,7 @@
 import { useNavigate, useParams } from "react-router-dom";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { RootState, useAppDispatch } from "../../store/store";
 import {
   fetchPeriods,
@@ -25,6 +25,8 @@ import "./styles.css";
 import "react-quill/dist/quill.snow.css";
 import { PeriodContentEditRequest } from "../../types/models/Period";
 import ROLE from "../../types/enums/Role";
+import ContentsList from "../../components/ContentsList";
+import { withHeadingIds } from "../../components/ContentsList/headings";
 
 const toolbarOptions = [
   ["bold", "italic", "underline", "strike"], // toggled buttons
@@ -80,6 +82,7 @@ export default function Period() {
   const [value, setValue] = useState("");
   const [text, setText] = useState("");
   const [isEdit, setIsEdit] = useState(false);
+  const { html, entries } = useMemo(() => withHeadingIds(text), [text]);
 
   // Fetched whenever the screen opens, not only once: the number of a Period's Quizzes can
   // have changed. One answer holds every Period, so going from one to another needs no more.
@@ -203,12 +206,15 @@ export default function Period() {
           {periodContent === null && text === "" ? (
             <Typography>Za ovo razdoblje još nema gradiva.</Typography>
           ) : (
-            <Box
-              className="content"
-              dangerouslySetInnerHTML={{
-                __html: text,
-              }}
-            />
+            <Box className={entries.length > 1 ? "period-layout" : undefined}>
+              <ContentsList entries={entries} />
+              <Box
+                className="content"
+                dangerouslySetInnerHTML={{
+                  __html: html,
+                }}
+              />
+            </Box>
           )}
           {period.quizCount > 0 && (
             <Box className="period-quizzes">

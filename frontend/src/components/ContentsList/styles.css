@@ -1,0 +1,65 @@
+.contents-list{
+    font-family: "Montserrat", sans-serif;
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+}
+
+.contents-list-title,
+.contents-list summary{
+    font-weight: 600;
+    margin: 0 0 0.5rem 0;
+}
+
+.contents-list summary{
+    cursor: pointer;
+    padding: 0.5rem 0;
+}
+
+.contents-list ol{
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.contents-list ol ol{
+    font-size: 0.85rem;
+}
+
+.contents-list a{
+    display: block;
+    padding: 0.3rem 0.75rem;
+    border-left: 3px solid #e9e5cd;
+    color: #444;
+    text-decoration: none;
+    overflow-wrap: anywhere;
+}
+
+.contents-list ol ol a{
+    padding-left: 1.5rem;
+}
+
+.contents-list a:hover,
+.contents-list a:focus-visible{
+    text-decoration: underline;
+}
+
+.contents-list a:focus-visible{
+    outline: 2px solid #553b08;
+    outline-offset: -2px;
+}
+
+.contents-list a[aria-current]{
+    border-left-color: #553b08;
+    color: #553b08;
+    font-weight: 600;
+}
+
+@media (min-width: 1200px){
+    .contents-list{
+        position: sticky;
+        top: 5.5rem;
+        max-height: calc(100vh - 7rem);
+        overflow-y: auto;
+        margin-bottom: 0;
+    }
+}

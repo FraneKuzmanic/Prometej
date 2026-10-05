@@ -19,6 +19,53 @@
     margin-top: 3rem;
 }
 
+.content h3{
+    margin-top: 2.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.content h4{
+    margin: 1.5rem 0 0.25rem 0;
+}
+
+.content h2,
+.content h3{
+    scroll-margin-top: 5rem;
+}
+
+.content p,
+.content li{
+    line-height: 1.6;
+}
+
+.content p + p{
+    margin-top: 0.75rem;
+}
+
+.content ul,
+.content ol{
+    margin: 0.5rem 0;
+}
+
+@media (min-width: 1200px){
+    .period-layout{
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 15rem;
+        gap: 3rem;
+        align-items: start;
+    }
+
+    .period-layout .content{
+        grid-column: 1;
+        grid-row: 1;
+    }
+
+    .period-layout .contents-list{
+        grid-column: 2;
+        grid-row: 1;
+    }
+}
+
 .period-quizzes{
     display: flex;
     align-items: center;
