@@ -25,21 +25,6 @@ builder.Services.AddDbContext<DataContext>(options =>
     options.UseNpgsql(connectionString);
 });
 
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("client-app",
-           policyBuilder =>
-           {
-               policyBuilder.WithOrigins("http://localhost:5173")
-                      .AllowAnyMethod()
-                      .AllowAnyHeader()
-                      .AllowCredentials();
-           }
-             );
-});
-
-builder.Services.AddAutoMapper(typeof(UserService).Assembly);
-builder.Services.AddAutoMapper(typeof(PeriodService).Assembly);
 builder.Services.AddAutoMapper(typeof(QuizService).Assembly);
 
 #region Repo DI
@@ -147,8 +132,6 @@ if (!app.Environment.IsDevelopment())
 app.UseStaticFiles();
 
 app.UseRouting();
-
-app.UseCors("client-app");
 
 app.UseHttpsRedirection();
 
