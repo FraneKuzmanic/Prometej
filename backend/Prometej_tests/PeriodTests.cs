@@ -22,11 +22,12 @@ namespace Prometej_tests
             Assert.Equal([1, 2, 7, 3, 8, 9, 10, 5, 4, 6, 11, 12], periods.Select(p => p.GetProperty("id").GetInt32()));
 
             var antika = periods[0];
-            Assert.Equal("antika.png", antika.GetProperty("image").GetString());
+            Assert.Equal("antika.webp", antika.GetProperty("image").GetString());
             Assert.NotEqual("", antika.GetProperty("timeFrame").GetString());
             Assert.NotEqual("", antika.GetProperty("description").GetString());
             var barok = periods.Single(p => p.GetProperty("name").GetString() == "Barok");
-            Assert.Equal(JsonValueKind.Null, barok.GetProperty("image").ValueKind);
+            Assert.Equal("barok.webp", barok.GetProperty("image").GetString());
+            Assert.All(periods, p => Assert.EndsWith(".webp", p.GetProperty("image").GetString()));
         }
 
         [Fact]

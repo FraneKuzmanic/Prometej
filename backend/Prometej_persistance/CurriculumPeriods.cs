@@ -15,8 +15,8 @@ namespace Prometej_persistance
                 SortOrder = 1,
                 Name = "Antika",
                 TimeFrame = "8. st. pr. Kr. – 5. st.",
-                Image = "antika.png",
-                Description = "Zaplovite u svijet davnina književnosti, od drevnih civilizacija antičke Grčke, drevnog Rima te najpoznatijih tragedija, komedija te epova",
+                Image = "antika.webp",
+                Description = "Zaplovite u književnost stare Grčke i Rima: od Homerovih epova i Sofoklovih tragedija do Plautovih komedija i Vergilijeve Eneide.",
             },
             new()
             {
@@ -24,8 +24,8 @@ namespace Prometej_persistance
                 SortOrder = 2,
                 Name = "Srednji vijek",
                 TimeFrame = "5. – 15. st.",
-                Image = "srednji_vijek.png",
-                Description = "Naučite više o mračnom i najduljem razdoblju književnosti, viteškim romanima, utjecaju crkve na književnost te najpoznatijim piscima tog doba",
+                Image = "srednji-vijek.webp",
+                Description = "Upoznajte najdulje razdoblje europske književnosti: junačke epove i viteške romane, crkvena prikazanja i prve hrvatske spomenike pisane glagoljicom.",
             },
             new()
             {
@@ -33,6 +33,7 @@ namespace Prometej_persistance
                 SortOrder = 3,
                 Name = "Humanizam i predrenesansa",
                 TimeFrame = "14. – 15. st.",
+                Image = "humanizam-i-predrenesansa.webp",
                 Description = "Upoznajte Dantea, Petrarcu i Boccaccia te humaniste koji su, vraćajući se antici, čovjeka ponovno stavili u središte zanimanja.",
             },
             new()
@@ -41,8 +42,8 @@ namespace Prometej_persistance
                 SortOrder = 4,
                 Name = "Renesansa",
                 TimeFrame = "15. – 16. st.",
-                Image = "renesansa.png",
-                Description = "Otkrijte svijet renesansne književnosti, motiv čovjeka u središtu svemira, humanizam, te začeće romana kao književnog žanra",
+                Image = "renesansa.webp",
+                Description = "Otkrijte književnost koja u središte stavlja čovjeka: Marulićevu Juditu, Držićeve komedije, Shakespeareova Hamleta i Cervantesova Don Quijotea.",
             },
             new()
             {
@@ -50,6 +51,7 @@ namespace Prometej_persistance
                 SortOrder = 5,
                 Name = "Barok",
                 TimeFrame = "17. st.",
+                Image = "barok.webp",
                 Description = "Zavirite u književnost kićenoga stila, kontrasta i prolaznosti: od Gundulićeva Osmana i Dubravke do Calderónova kazališta.",
             },
             new()
@@ -58,6 +60,7 @@ namespace Prometej_persistance
                 SortOrder = 6,
                 Name = "Klasicizam",
                 TimeFrame = "17. – 18. st.",
+                Image = "klasicizam.webp",
                 Description = "Otkrijte doba razuma, reda i strogih pravila, Molièreovih komedija i prosvjetiteljskih ideja koje su mijenjale Europu.",
             },
             new()
@@ -66,6 +69,7 @@ namespace Prometej_persistance
                 SortOrder = 7,
                 Name = "Predromantizam",
                 TimeFrame = "druga polovica 18. st.",
+                Image = "predromantizam.webp",
                 Description = "Pratite kako osjećaji potiskuju razum: Goetheov Werther, Sturm und Drang i prvi nagovještaji romantizma.",
             },
             new()
@@ -74,7 +78,7 @@ namespace Prometej_persistance
                 SortOrder = 8,
                 Name = "Romantizam",
                 TimeFrame = "kraj 18. – sredina 19. st.",
-                Image = "romantizam.png",
+                Image = "romantizam.webp",
                 Description = "Osjetite romantizam, razdoblje koje obilježava osjećajnost, maštu, prirodu, fokus na pojedinca, njegovu impresiju i ekspresiju.",
             },
             new()
@@ -83,7 +87,7 @@ namespace Prometej_persistance
                 SortOrder = 9,
                 Name = "Realizam",
                 TimeFrame = "druga polovica 19. st.",
-                Image = "realizam.png",
+                Image = "realizam.webp",
                 Description = "Realizam obilježava realan opis svijeta. Fokus je na dugačkom i detaljnom opisu likova i prostora što donosi brojne zanimljivosti iz tog vremena.",
             },
             new()
@@ -92,7 +96,7 @@ namespace Prometej_persistance
                 SortOrder = 10,
                 Name = "Modernizam",
                 TimeFrame = "sredina 19. – početak 20. st.",
-                Image = "modernizam.png",
+                Image = "modernizam.webp",
                 Description = "Modernizam obilježava razdoblje estetike u književnosti, umjetnost radi same sebe. Zavirite u čari modernizma, njegove teme, motive i najpoznatije autore.",
             },
             new()
@@ -101,6 +105,7 @@ namespace Prometej_persistance
                 SortOrder = 11,
                 Name = "Ekspresionizam",
                 TimeFrame = "1910. – 1925.",
+                Image = "ekspresionizam.webp",
                 Description = "Uđite u književnost krika, pobune i slobodnoga stiha, uz A. B. Šimića, Kafku i ranoga Krležu.",
             },
             new()
@@ -109,6 +114,7 @@ namespace Prometej_persistance
                 SortOrder = 12,
                 Name = "Suvremena književnost",
                 TimeFrame = "od kraja 1920-ih do danas",
+                Image = "suvremena-knjizevnost.webp",
                 Description = "Istražite književnost nakon ekspresionizma: Krležine Glembajeve, egzistencijalizam i Camusova Stranca, Marinkovićeva Kiklopa i postmodernizam.",
             },
         ];
