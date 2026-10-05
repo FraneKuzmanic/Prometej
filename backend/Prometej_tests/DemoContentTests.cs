@@ -50,7 +50,7 @@ namespace Prometej_tests
     {
         private const string DemoCreatorName = "Uredništvo Prometeja";
         private static readonly int[] FullPeriods = [3, 4, 6];
-        private static readonly string[] PlainElements = ["h1", "h2", "h3", "p", "ul", "ol", "li", "blockquote", "strong", "em"];
+        private static readonly string[] PlainElements = ["h1", "h2", "h3", "h4", "p", "ul", "ol", "li", "blockquote", "strong", "em"];
 
         private static int WordCount(string html) =>
             Regex.Replace(html, "<[^>]+>", " ").Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries).Length;
