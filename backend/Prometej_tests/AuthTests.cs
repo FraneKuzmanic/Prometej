@@ -25,18 +25,26 @@ namespace Prometej_tests
         }
 
         // User 1 is the seeded admin: the seeder runs first on a fresh database.
-        private static string CreateToken(string key, DateTime expires, string userId = "1") =>
-            new JsonWebTokenHandler().CreateToken(new SecurityTokenDescriptor
+        private static string CreateToken(string key, DateTime expires, string userId = "1", string? stamp = null)
+        {
+            var claims = new Dictionary<string, object> { ["sub"] = userId };
+            if (stamp != null)
+            {
+                claims["stamp"] = stamp;
+            }
+
+            return new JsonWebTokenHandler().CreateToken(new SecurityTokenDescriptor
             {
                 Issuer = "prometej",
                 Audience = "prometej",
                 NotBefore = expires.AddHours(-2),
                 IssuedAt = expires.AddHours(-2),
                 Expires = expires,
-                Claims = new Dictionary<string, object> { ["sub"] = userId, ["role"] = "admin" },
+                Claims = claims,
                 SigningCredentials = new SigningCredentials(
                     new SymmetricSecurityKey(Convert.FromBase64String(key)), SecurityAlgorithms.HmacSha256),
             });
+        }
 
         private async Task<HttpStatusCode> SendWithToken(HttpRequestMessage request, string token)
         {
@@ -165,16 +173,6 @@ namespace Prometej_tests
         }
 
         [Fact]
-        public async Task The_endpoint_that_listed_every_user_is_gone()
-        {
-            var client = await factory.LoginAs(ApiFactory.AdminEmail);
-
-            var response = await client.GetAsync("/api/user");
-
-            Assert.Contains(response.StatusCode, new[] { HttpStatusCode.NotFound, HttpStatusCode.MethodNotAllowed });
-        }
-
-        [Fact]
         public async Task Deleting_the_account_ends_every_session_and_the_login()
         {
             var email = await RegisterStudent();
@@ -222,8 +220,35 @@ namespace Prometej_tests
         public async Task A_correctly_signed_token_is_accepted()
         {
             // The control for the tests above: the same forged token passes authentication
-            // once the key, the lifetime and the account are right.
-            Assert.Equal(HttpStatusCode.OK, await GetMeWithToken(CreateToken(ApiFactory.JwtKey, DateTime.UtcNow.AddHours(1))));
+            // once the key, the lifetime, the account and its stamp are right.
+            var stamp = factory.SessionStampOf(1).ToString();
+
+            Assert.Equal(HttpStatusCode.OK, await GetMeWithToken(CreateToken(ApiFactory.JwtKey, DateTime.UtcNow.AddHours(1), stamp: stamp)));
+        }
+
+        [Fact]
+        public async Task A_token_without_the_accounts_current_stamp_is_rejected()
+        {
+            var noStamp = CreateToken(ApiFactory.JwtKey, DateTime.UtcNow.AddHours(1));
+            var otherStamp = CreateToken(ApiFactory.JwtKey, DateTime.UtcNow.AddHours(1), stamp: Guid.NewGuid().ToString());
+
+            Assert.Equal(HttpStatusCode.Unauthorized, await GetMeWithToken(noStamp));
+            Assert.Equal(HttpStatusCode.Unauthorized, await GetMeWithToken(otherStamp));
+        }
+
+        [Fact]
+        public async Task Register_trims_the_name()
+        {
+            var email = NewEmail();
+            var body = new { firstName = "  Sara ", lastName = " Student  ", email, password = StudentPassword };
+
+            var response = await factory.CreateHttpsClient().PostAsJsonAsync("/api/user/register", body);
+
+            Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+            var client = await factory.LoginAs(email, StudentPassword);
+            var me = await client.GetFromJsonAsync<JsonElement>("/api/user/me");
+            Assert.Equal("Sara", me.GetProperty("firstName").GetString());
+            Assert.Equal("Student", me.GetProperty("lastName").GetString());
         }
     }
 }

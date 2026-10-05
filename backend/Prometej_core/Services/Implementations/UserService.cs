@@ -17,10 +17,12 @@ namespace Prometej_core.Services.Implementations
         private readonly IMapper _mapper;
         private readonly IRepository<User> _userRepository;
         private readonly IRepository<Quiz> _quizRepository;
-        public UserService(IMapper mapper, IRepository<User> userRepository, IRepository<Quiz> quizRepository) {
+        private readonly IRepository<QuizGame> _quizGameRepository;
+        public UserService(IMapper mapper, IRepository<User> userRepository, IRepository<Quiz> quizRepository, IRepository<QuizGame> quizGameRepository) {
             _mapper = mapper;
             _userRepository = userRepository;
             _quizRepository = quizRepository;
+            _quizGameRepository = quizGameRepository;
         }
 
         public static string NormalizeEmail(string email) => email.Trim().ToLowerInvariant();
@@ -38,9 +40,11 @@ namespace Prometej_core.Services.Implementations
             return userViewModel;
         }
 
-        public bool Exists(int id)
+        public UserSession? FindSession(int id)
         {
-            return _userRepository.ReadAll().Any(u => u.Id == id);
+            return _userRepository.ReadAll().Where(u => u.Id == id)
+                .Select(u => new UserSession(u.Id, u.Email, u.Role, u.SessionStamp))
+                .FirstOrDefault();
         }
 
         public int Register(UserCreateRequest user)
@@ -53,8 +57,8 @@ namespace Prometej_core.Services.Implementations
 
             var userEntity = new User
             {
-                FirstName = user.FirstName,
-                LastName = user.LastName,
+                FirstName = user.FirstName.Trim(),
+                LastName = user.LastName.Trim(),
                 Email = email,
                 PasswordHash = PasswordHasher.Hash(user.Password),
                 Role = Roles.Student,
@@ -87,6 +91,88 @@ namespace Prometej_core.Services.Implementations
             UserViewModel userViewModel = _mapper.Map<UserViewModel>(userEntity);
 
             return userViewModel;
+        }
+
+        public void UpdateName(int id, UserNameEditRequest name)
+        {
+            var user = _userRepository.Get(id);
+            user.FirstName = name.FirstName.Trim();
+            user.LastName = name.LastName.Trim();
+
+            // A quiz game keeps a copy of its player's name for the creator's analytics.
+            var userName = user.FirstName + " " + user.LastName;
+            foreach (var quizGame in _quizGameRepository.GetAll().Where(g => g.UserId == id))
+            {
+                quizGame.UserName = userName;
+            }
+
+            _userRepository.Save();
+        }
+
+        public void ChangePassword(int id, UserPasswordEditRequest passwords)
+        {
+            var user = _userRepository.Get(id);
+            if (!PasswordHasher.Verify(passwords.CurrentPassword, user.PasswordHash))
+            {
+                throw new BadRequestException("Current password is incorrect");
+            }
+
+            user.PasswordHash = PasswordHasher.Hash(passwords.NewPassword);
+            // Every token issued before now carries the old stamp and stops working.
+            user.SessionStamp = Guid.NewGuid();
+            _userRepository.Save();
+        }
+
+        // Every account an admin can manage, in the order they were created.
+        public List<UserAccountViewModel> GetUsers()
+        {
+            var users = _userRepository.ReadAll().Where(u => u.Email != DemoCreator.Email).OrderBy(u => u.Id).ToList();
+            var quizCounts = _quizRepository.ReadAll()
+                .GroupBy(q => q.CreatorId).Select(g => new { CreatorId = g.Key, Count = g.Count() })
+                .ToDictionary(g => g.CreatorId, g => g.Count);
+
+            var accounts = _mapper.Map<List<UserAccountViewModel>>(users);
+            foreach (var account in accounts)
+            {
+                account.QuizCount = quizCounts.GetValueOrDefault(account.Id);
+            }
+
+            return accounts;
+        }
+
+        public void SetRole(int id, string role, int callerId)
+        {
+            if (!Roles.All.Contains(role))
+            {
+                throw new BadRequestException("Unknown role");
+            }
+
+            // An admin cannot take their own role away by a slip; another admin has to.
+            if (id == callerId)
+            {
+                throw new ForbiddenException("An admin cannot change their own role");
+            }
+
+            var user = _userRepository.GetAll().FirstOrDefault(u => u.Id == id && u.Email != DemoCreator.Email);
+            if (user == null)
+            {
+                throw new NotFoundException("User not found");
+            }
+
+            if (user.Role == role)
+            {
+                return;
+            }
+
+            // A student cannot edit or delete quizzes, so theirs would be left with no creator
+            // who can. The quizzes go first, as when an account is deleted.
+            if (role == Roles.Student && _quizRepository.ReadAll().Any(q => q.CreatorId == id))
+            {
+                throw new ConflictException("Delete the user's quizzes before making them a student");
+            }
+
+            user.Role = role;
+            _userRepository.Save();
         }
 
         public void Delete(int id)

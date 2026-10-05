@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Prometej_api.Auth;
+using Prometej_core.Auth;
 using Prometej_core.Models.Requests.User;
 using Prometej_core.Services.Contracts;
 
@@ -31,8 +32,7 @@ namespace Prometej_api.Controllers
         public IActionResult LoginUser(UserLoginRequest model)
         {
             var user = _userService.Login(model);
-            var (token, expires) = _tokenService.Create(user);
-            AuthCookie.Append(Response, token, expires);
+            StartSession(user.Id);
 
             return Ok(user);
         }
@@ -47,11 +47,38 @@ namespace Prometej_api.Controllers
             return NoContent();
         }
 
+        [Authorize(Roles = Roles.Admin)]
+        [HttpGet]
+        public IActionResult GetUsers()
+        {
+            return Ok(_userService.GetUsers());
+        }
+
         [Authorize]
         [HttpGet("me")]
         public IActionResult GetCurrentUser()
         {
             return Ok(_userService.GetCurrentUser(User.GetUserId()));
+        }
+
+        [Authorize]
+        [HttpPut("me")]
+        public IActionResult UpdateName(UserNameEditRequest model)
+        {
+            _userService.UpdateName(User.GetUserId(), model);
+
+            return NoContent();
+        }
+
+        [Authorize]
+        [HttpPut("me/password")]
+        public IActionResult ChangePassword(UserPasswordEditRequest model)
+        {
+            _userService.ChangePassword(User.GetUserId(), model);
+            // The old cookie carries the stamp that was just replaced.
+            StartSession(User.GetUserId());
+
+            return NoContent();
         }
 
         [Authorize]
@@ -62,6 +89,21 @@ namespace Prometej_api.Controllers
             AuthCookie.Delete(Response);
 
             return NoContent();
+        }
+
+        [Authorize(Roles = Roles.Admin)]
+        [HttpPut("{id}/role")]
+        public IActionResult SetRole(int id, UserRoleEditRequest model)
+        {
+            _userService.SetRole(id, model.Role, User.GetUserId());
+
+            return NoContent();
+        }
+
+        private void StartSession(int userId)
+        {
+            var (token, expires) = _tokenService.Create(_userService.FindSession(userId)!);
+            AuthCookie.Append(Response, token, expires);
         }
     }
 }

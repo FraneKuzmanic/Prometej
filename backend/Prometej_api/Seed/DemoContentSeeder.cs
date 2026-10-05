@@ -13,8 +13,6 @@ namespace Prometej_api.Seed
     // unless "Seed:DemoContent" is set.
     public static class DemoContentSeeder
     {
-        public const string CreatorEmail = "urednistvo@prometej.local";
-
         private const string PeriodFiles = "Prometej_api.Seed.Content.periods.";
         private const string QuizFiles = "Prometej_api.Seed.Content.quizzes.";
 
@@ -37,14 +35,14 @@ namespace Prometej_api.Seed
 
             db.SaveChanges();
 
-            var creator = db.Users.FirstOrDefault(u => u.Email == CreatorEmail);
+            var creator = db.Users.FirstOrDefault(u => u.Email == DemoCreator.Email);
             if (creator == null)
             {
                 creator = new User
                 {
                     FirstName = "Uredništvo",
                     LastName = "Prometeja",
-                    Email = CreatorEmail,
+                    Email = DemoCreator.Email,
                     // Not a bcrypt hash, so no password matches it: nobody signs in as this account.
                     PasswordHash = "!",
                     Role = Roles.Teacher,

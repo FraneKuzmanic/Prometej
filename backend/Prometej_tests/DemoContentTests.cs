@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Prometej_api.Seed;
+using Prometej_core.Auth;
 using Prometej_persistance;
 
 namespace Prometej_tests
@@ -215,9 +216,26 @@ namespace Prometej_tests
         public async Task Nobody_can_sign_in_as_the_demo_creator(string password)
         {
             var response = await factory.CreateHttpsClient().PostAsJsonAsync("/api/user/login",
-                new { email = DemoContentSeeder.CreatorEmail, password });
+                new { email = DemoCreator.Email, password });
 
             Assert.Contains(response.StatusCode, new[] { HttpStatusCode.BadRequest, HttpStatusCode.Unauthorized });
+        }
+
+        [Fact]
+        public async Task The_demo_creator_is_not_an_account_an_admin_manages()
+        {
+            var admin = await factory.LoginAs(ApiFactory.AdminEmail);
+            int creatorId;
+            using (var scope = factory.Services.CreateScope())
+            {
+                creatorId = scope.ServiceProvider.GetRequiredService<DataContext>().Users.Single(u => u.Email == DemoCreator.Email).Id;
+            }
+
+            var users = await admin.GetFromJsonAsync<JsonElement>("/api/user");
+            var roleChange = await admin.PutAsJsonAsync($"/api/user/{creatorId}/role", new { role = "student" });
+
+            Assert.DoesNotContain(users.EnumerateArray(), u => u.GetProperty("email").GetString() == DemoCreator.Email);
+            Assert.Equal(HttpStatusCode.NotFound, roleChange.StatusCode);
         }
     }
 
@@ -268,7 +286,7 @@ namespace Prometej_tests
             Assert.Equal(HttpStatusCode.NotFound, content.StatusCode);
             Assert.DoesNotContain(quizzes.EnumerateArray(), q => q.GetProperty("creatorName").GetString() == "Uredništvo Prometeja");
             using var scope = factory.Services.CreateScope();
-            Assert.False(scope.ServiceProvider.GetRequiredService<DataContext>().Users.Any(u => u.Email == DemoContentSeeder.CreatorEmail));
+            Assert.False(scope.ServiceProvider.GetRequiredService<DataContext>().Users.Any(u => u.Email == DemoCreator.Email));
         }
     }
 }

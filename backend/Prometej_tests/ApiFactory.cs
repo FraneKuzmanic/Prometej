@@ -82,6 +82,14 @@ namespace Prometej_tests
             return await LoginAs(email);
         }
 
+        // A token forged by a test has to carry the stamp its account has now.
+        public Guid SessionStampOf(int userId)
+        {
+            using var scope = Services.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<DataContext>();
+            return context.Users.Where(u => u.Id == userId).Select(u => u.SessionStamp).Single();
+        }
+
         // A quiz from before the server validated them: no questions, and whatever entry code
         // it is given. The API can no longer create one, but older databases still hold some.
         public int AddLegacyQuiz(int creatorId, bool isPrivate = false, int? entryCode = null)

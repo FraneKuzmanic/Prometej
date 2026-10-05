@@ -14,5 +14,8 @@ namespace Prometej_core.Models.efModels
         public  required string Email { get; set; }
         public required string PasswordHash { get; set; }
         public required string Role { get; set; }
+        // Written into each session token and compared on every request. A password change
+        // replaces it, which ends every session opened before the change.
+        public Guid SessionStamp { get; set; } = Guid.NewGuid();
     }
 }

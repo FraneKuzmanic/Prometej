@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -86,17 +87,22 @@ builder.Services
                 context.Token = context.Request.Cookies[AuthCookie.Name];
                 return Task.CompletedTask;
             },
-            // A token stays validly signed after its account is deleted. Without this check
-            // it would keep working, with its old role, until it expires.
+            // A token stays validly signed after its account is deleted, its password changed or
+            // its role changed. So the token only says who is calling; whether the session still
+            // holds, and with which role, is read from the account as it is stored now.
             OnTokenValidated = context =>
             {
                 var userId = context.Principal?.GetUserIdOrNull();
                 var userService = context.HttpContext.RequestServices.GetRequiredService<IUserService>();
-                if (userId is null || !userService.Exists(userId.Value))
+                var session = userId is null ? null : userService.FindSession(userId.Value);
+                if (session is null || context.Principal!.FindFirstValue("stamp") != session.Stamp.ToString())
                 {
                     AuthCookie.Delete(context.Response);
-                    context.Fail("The account no longer exists.");
+                    context.Fail("The session is no longer valid.");
+                    return Task.CompletedTask;
                 }
+
+                ((ClaimsIdentity)context.Principal!.Identity!).AddClaim(new Claim("role", session.Role));
                 return Task.CompletedTask;
             },
         };
