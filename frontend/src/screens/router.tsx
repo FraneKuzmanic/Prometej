@@ -12,9 +12,13 @@ import { Navigate, createBrowserRouter } from "react-router-dom";
 import EditQuiz from "./MakeQuiz/EditQuiz";
 import PlayQuiz from "./PlayQuiz";
 import { QuizDetails } from "./QuizDetails";
+import MyResults from "./MyResults";
+import GameReview from "./MyResults/GameReview";
 import ROLE from "../types/enums/Role";
 
 const quizCreatorRoles = [ROLE.Teacher, ROLE.Admin];
+// Signed in is enough: anyone who plays has results.
+const anyRole = [ROLE.Student, ROLE.Teacher, ROLE.Admin];
 
 export const appRouter = createBrowserRouter([
   {
@@ -42,6 +46,22 @@ export const appRouter = createBrowserRouter([
         element: (
           <RequireRole roles={quizCreatorRoles}>
             <QuizDetails />
+          </RequireRole>
+        ),
+      },
+      {
+        path: "my-results",
+        element: (
+          <RequireRole roles={anyRole}>
+            <MyResults />
+          </RequireRole>
+        ),
+      },
+      {
+        path: "my-results/:id",
+        element: (
+          <RequireRole roles={anyRole}>
+            <GameReview />
           </RequireRole>
         ),
       },

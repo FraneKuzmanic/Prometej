@@ -2,13 +2,19 @@ import { PayloadAction, createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 
 import QuizService from "../../services/routes/quiz";
-import { AnswerCreateRequest, QuestionCreateRequest, QuestionEditRequest, QuizBaseModel, QuizCreateRequest, QuizEditRequest, QuizGameViewModel, QuizViewModel } from "../../types/models/Quiz";
+import { AnswerCreateRequest, QuestionCreateRequest, QuestionEditRequest, MyQuizGames, QuizBaseModel, QuizCreateRequest, QuizEditRequest, QuizGameReviewViewModel, QuizGameViewModel, QuizViewModel } from "../../types/models/Quiz";
 
 interface QuizState {
     quizzes: QuizBaseModel[] | undefined;
     quiz: QuizViewModel | undefined;
     quizGames: QuizGameViewModel[] | undefined;
     analyticsFailed: boolean;
+    // the signed-in User's own Quiz Games and their progress per Period
+    myGames: MyQuizGames | undefined;
+    myGamesFailed: boolean;
+    // one of those Quiz Games, opened for review
+    gameReview: QuizGameReviewViewModel | undefined;
+    gameReviewFailed: boolean;
     // the Quiz Game the server stored for the play just finished
     lastGame: QuizGameViewModel | undefined;
     // "rejected": the server refused the submission, so sending it again cannot help.
@@ -30,6 +36,8 @@ export interface UpdateQuizPayload {
 export interface SubmitQuizPayload {
     quizId: number;
     answers: AnswerCreateRequest[];
+    // One per play: the server stores a play once, however often its submit is sent.
+    submissionKey: string;
 }
 
 const initialState: QuizState = {
@@ -37,6 +45,10 @@ const initialState: QuizState = {
     quiz: undefined,
     quizGames: undefined,
     analyticsFailed: false,
+    myGames: undefined,
+    myGamesFailed: false,
+    gameReview: undefined,
+    gameReviewFailed: false,
     lastGame: undefined,
     submitStatus: "idle",
 };
@@ -119,6 +131,22 @@ const getQuizAnalytics = createAsyncThunk(
     }
 );
 
+const fetchMyGames = createAsyncThunk(
+    'quiz/getMyGames',
+    async () => {
+        const response = await QuizService.getMyGames();
+        return response.data;
+    }
+);
+
+const fetchQuizGame = createAsyncThunk(
+    'quiz/getGame',
+    async (gameId: number) => {
+        const response = await QuizService.getGame(gameId);
+        return response.data;
+    }
+);
+
 const quizSlice = createSlice({
   name: "quiz",
   initialState,
@@ -160,6 +188,31 @@ const quizSlice = createSlice({
             state.analyticsFailed = true;
         }
     });
+    builder.addCase(fetchMyGames.pending, (state) => {
+        state.myGames = undefined;
+        state.myGamesFailed = false;
+    });
+    builder.addCase(fetchMyGames.fulfilled, (state, action: PayloadAction<MyQuizGames>) => {
+        state.myGames = action.payload;
+    });
+    builder.addCase(fetchMyGames.rejected, (state, action) => {
+        if (!action.meta.aborted) {
+            state.myGamesFailed = true;
+        }
+    });
+    // Cleared first, so one play's review never shows under another's address.
+    builder.addCase(fetchQuizGame.pending, (state) => {
+        state.gameReview = undefined;
+        state.gameReviewFailed = false;
+    });
+    builder.addCase(fetchQuizGame.fulfilled, (state, action: PayloadAction<QuizGameReviewViewModel>) => {
+        state.gameReview = action.payload;
+    });
+    builder.addCase(fetchQuizGame.rejected, (state, action) => {
+        if (!action.meta.aborted) {
+            state.gameReviewFailed = true;
+        }
+    });
     builder.addCase(submitQuiz.pending, (state) => {
         state.submitStatus = "pending";
     });
@@ -187,6 +240,8 @@ export {
     fetchQuiz,
     submitQuiz,
     getQuizAnalytics,
+    fetchMyGames,
+    fetchQuizGame,
     fetchQuizByCode,
     searchQuizzes,
 };

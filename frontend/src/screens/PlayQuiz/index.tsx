@@ -41,6 +41,7 @@ export default function PlayQuiz() {
   const [chosenOption, setChosenOption] = useState<number>();
   // Opening the Hint is the Student's choice; it does not change the Score.
   const [hintShown, setHintShown] = useState(false);
+  const [submissionKey, setSubmissionKey] = useState("");
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const { id } = useParams();
@@ -53,6 +54,8 @@ export default function PlayQuiz() {
   useEffect(() => {
     // A new play must not start with the result of the one before it.
     dispatch(resetSubmit());
+    // One key per play, so "Pokušaj ponovno" cannot store the play a second time.
+    setSubmissionKey(crypto.randomUUID());
     dispatch(fetchQuiz({ quizId: Number(id), code }));
   }, [dispatch, id, code]);
 
@@ -91,7 +94,9 @@ export default function PlayQuiz() {
 
   const submit = () => {
     if (quiz) {
-      dispatch(submitQuiz({ quizId: quiz.id, answers: quizAnswers }));
+      dispatch(
+        submitQuiz({ quizId: quiz.id, answers: quizAnswers, submissionKey })
+      );
     }
   };
 
@@ -264,6 +269,14 @@ export default function PlayQuiz() {
             {submitStatus === "failed" && (
               <Button sx={{ marginTop: 1 }} onClick={() => submit()}>
                 Pokušaj ponovno
+              </Button>
+            )}
+            {submitStatus === "saved" && lastGame && (
+              <Button
+                sx={{ marginTop: 1 }}
+                onClick={() => navigate(`/my-results/${lastGame.id}`)}
+              >
+                Pregledaj odgovore
               </Button>
             )}
           </Box>

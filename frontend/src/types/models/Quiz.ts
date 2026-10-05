@@ -83,6 +83,9 @@ export interface AnswerViewModel {
     id: number
     quizGameId: number;
     questionId:number;
+    // the Question's title and Explore More and the two answers, as they were when played
+    questionTitle:string;
+    exploreMore:string | null;
     answerText:string;
     correctAnswer:string;
 }
@@ -95,4 +98,40 @@ export interface QuizGameViewModel {
     score: number;
     datePlayed: string;
     answers: AnswerViewModel[];
+}
+
+// A Quiz Game as its player reads it again, with its Quiz as it is today.
+export interface QuizGameReviewViewModel extends QuizGameViewModel {
+    quizTitle: string;
+    periodId: number | null;
+    periodName: string | null;
+    // whether the public list still shows the Quiz, so it can be played again
+    quizIsListed: boolean;
+}
+
+export interface PlayedQuizGame {
+    id: number;
+    quizId: number;
+    quizTitle: string;
+    periodName: string | null;
+    score: number;
+    // how many Questions the game was played with, not how many the Quiz has now
+    questionCount: number;
+    datePlayed: string;
+}
+
+export interface PeriodProgress {
+    periodId: number;
+    periodName: string;
+    // how many Quizzes the public list shows for the Period
+    quizCount: number;
+    // how many of those the player has played
+    playedCount: number;
+    // the player's best play of each played Quiz, averaged
+    averageBestPercent: number;
+}
+
+export interface MyQuizGames {
+    progress: PeriodProgress[];
+    games: PlayedQuizGame[];
 }

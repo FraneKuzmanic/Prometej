@@ -10,6 +10,7 @@ import QuizIcon from "@mui/icons-material/Quiz";
 import AssignmentIcon from "@mui/icons-material/Assignment";
 import NoteAddIcon from "@mui/icons-material/NoteAdd";
 import PersonIcon from "@mui/icons-material/Person";
+import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import "./styles.css";
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -98,6 +99,39 @@ export default function Sidebar({
           <ListItemText primary={"Kvizovi"} sx={{ opacity: toggle ? 1 : 0 }} />
         </ListItemButton>
       </ListItem>
+      {authenticated && (
+        <ListItem
+          key={"my-results"}
+          sx={{ display: "block" }}
+          className={`sidebar-item${
+            selectedItem === "my-results" ? "-selected" : ""
+          }`}
+        >
+          <ListItemButton
+            onClick={() => handleItemClick("my-results")}
+            sx={{
+              minHeight: 48,
+              justifyContent: toggle ? "initial" : "center",
+              px: 2.5,
+            }}
+          >
+            <ListItemIcon
+              sx={{
+                minWidth: 0,
+                mr: toggle ? 3 : "auto",
+                justifyContent: "center",
+                color: selectedItem === "my-results" ? "black" : "white",
+              }}
+            >
+              <EmojiEventsIcon />
+            </ListItemIcon>
+            <ListItemText
+              primary={"Moji rezultati"}
+              sx={{ opacity: toggle ? 1 : 0 }}
+            />
+          </ListItemButton>
+        </ListItem>
+      )}
       {authenticated &&
         (user?.role == ROLE.Teacher || user?.role === ROLE.Admin) && (
           <ListItem
