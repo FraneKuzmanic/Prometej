@@ -18,7 +18,11 @@ builder.Services.AddControllers();
 
 builder.Services.AddDbContext<DataContext>(options =>
 {
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
+    // Read when the context is first built, not above: the tests supply the connection
+    // string after this file has started running.
+    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+        ?? throw new InvalidOperationException("ConnectionStrings:DefaultConnection is not set.");
+    options.UseNpgsql(connectionString);
 });
 
 builder.Services.AddCors(options =>
