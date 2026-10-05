@@ -66,6 +66,12 @@
     }
 }
 
+.period-actions{
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 1rem;
+}
+
 .period-quizzes{
     display: flex;
     align-items: center;

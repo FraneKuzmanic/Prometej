@@ -7,6 +7,8 @@ export interface Period{
     image: string | null;
     // the Public Quizzes about this Period that have Questions
     quizCount: number;
+    // the Topics in this Period's Discussion
+    topicCount: number;
 }
 
 export interface PeriodContentCreateRequest{

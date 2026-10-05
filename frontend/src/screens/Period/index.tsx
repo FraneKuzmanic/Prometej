@@ -203,6 +203,15 @@ export default function Period() {
               />
             </SpeedDial>
           )}
+          <Box className="period-actions">
+            <Button
+              variant="outlined"
+              sx={{ color: "#553b08", borderColor: "#553b08" }}
+              onClick={() => navigate(`/learning/${period.id}/discussion`)}
+            >
+              Rasprava ({period.topicCount})
+            </Button>
+          </Box>
           {periodContent === null && text === "" ? (
             <Typography>Za ovo razdoblje još nema gradiva.</Typography>
           ) : (

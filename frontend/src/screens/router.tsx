@@ -16,6 +16,8 @@ import MyResults from "./MyResults";
 import GameReview from "./MyResults/GameReview";
 import Account from "./Account";
 import Users from "./Users";
+import Discussion from "./Discussion";
+import Topic from "./Discussion/Topic";
 import ROLE from "../types/enums/Role";
 
 const quizCreatorRoles = [ROLE.Teacher, ROLE.Admin];
@@ -35,6 +37,9 @@ export const appRouter = createBrowserRouter([
       { path: "learning", element: <Learning /> },
       { path: "search", element: <Search /> },
       { path: "learning/:id", element: <Period /> },
+      // Anyone reads a Discussion; the screens ask for a sign-in only where one writes.
+      { path: "learning/:id/discussion", element: <Discussion /> },
+      { path: "learning/:id/discussion/:topicId", element: <Topic /> },
       { path: "quizzes", element: <Quizzes /> },
       {
         path: "my-quizzes",
