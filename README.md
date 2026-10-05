@@ -22,6 +22,7 @@ periods of the national exam catalogue.
 
 - has every play stored, and sees it again under "Moji rezultati", answer by answer
 - sees their progress per period
+- changes their name and password
 
 **A teacher**
 
@@ -34,6 +35,7 @@ periods of the national exam catalogue.
 
 - writes the material of each period in a rich-text editor
 - can write quizzes like a teacher, and edit, delete or read the results of any teacher's quiz
+- makes a student a teacher or an admin, and back, from a list of the accounts
 
 The interface is in Croatian.
 
@@ -52,10 +54,12 @@ A few things worth knowing before reading the code:
 
 - **The session is a JWT in an `HttpOnly`, `Secure`, `SameSite=Lax` cookie.** The page's script
   never sees it. The client calls a relative `/api`, which the dev server proxies to the API,
-  so the browser sees one origin.
-- **The server trusts nothing it can compute.** Who is calling and their role come from the
-  token. A play is submitted as option numbers; the server builds the result from the stored
-  questions and ignores a score in the request.
+  so the browser sees one origin. The token only says who is calling: their role, and whether
+  the session still holds, are read from the account on every request
+  ([0004](docs/adr/0004-a-session-is-checked-against-the-stored-account.md)).
+- **The server trusts nothing it can compute.** Who is calling comes from the token and their
+  role from the database. A play is submitted as option numbers; the server builds the result
+  from the stored questions and ignores a score in the request.
 - **Old results never change.** An answer keeps the texts it was played with, and a question
   removed from a played quiz is retired instead of deleted, so editing a quiz does not rescore
   the plays before the edit.
@@ -69,6 +73,7 @@ Decisions with a longer story are in [`docs/adr`](docs/adr):
 - [0001](docs/adr/0001-retire-played-questions.md): a question removed from a played quiz is retired, not deleted
 - [0002](docs/adr/0002-correct-answer-as-option-number.md): the correct answer is stored as an option number
 - [0003](docs/adr/0003-period-ids-are-not-their-order.md): a period's id is not its place in the curriculum order
+- [0004](docs/adr/0004-a-session-is-checked-against-the-stored-account.md): a session is checked against the stored account
 
 ## Running it locally
 
@@ -91,8 +96,9 @@ dotnet user-secrets set "Seed:Users:0:LastName" "Prometej" --project Prometej_ap
 dotnet user-secrets set "Seed:Users:0:Role" "admin" --project Prometej_api
 ```
 
-Registration only creates students. Repeat the five `Seed:Users` lines with index `1` and role
-`teacher` for a teacher account.
+Registration only creates students. An admin can make any of them a teacher under "Korisnici";
+a seeded teacher account is a shortcut: repeat the five `Seed:Users` lines with index `1` and
+role `teacher`.
 
 ### 2. The server
 
@@ -140,7 +146,6 @@ have not been reviewed by a teacher.
 ## Not done yet
 
 - The application is not deployed.
-- A teacher account can only be created through configuration; there is no screen for roles.
-- No password change or reset.
+- No password reset: a forgotten password cannot be recovered.
 - No automated tests for the client.
 - A private quiz is practice, not a test: the correct answer is shown after each question.
