@@ -14,6 +14,10 @@ namespace Prometej_core.Models.efModels
         public QuizGame QuizGame { get; set; }
         public int QuestionId { get; set; }
         public Question Question { get; set; }
+        // The question's title and explore more text and the two answers, all as they were
+        // when the quiz was played.
+        public string QuestionTitle { get; set; }
+        public string? ExploreMore { get; set; }
         public string AnswerText { get; set; }
         public string CorrectAnswer { get; set; }
     }

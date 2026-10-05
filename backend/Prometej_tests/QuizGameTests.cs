@@ -51,6 +51,13 @@ namespace Prometej_tests
             answers = quiz.QuestionIds.Select((id, i) => Answer(id, i < chosenOptions.Length ? chosenOptions[i] : Correct)),
         };
 
+        private static object Submission(CreatedQuiz quiz, Guid submissionKey, params int[] chosenOptions) => new
+        {
+            quizId = quiz.Id,
+            submissionKey,
+            answers = quiz.QuestionIds.Select((id, i) => Answer(id, i < chosenOptions.Length ? chosenOptions[i] : Correct)),
+        };
+
         private static Task<HttpResponseMessage> Submit(HttpClient client, object body) =>
             client.PostAsJsonAsync("/api/quiz/submit", body);
 
@@ -87,6 +94,9 @@ namespace Prometej_tests
             Assert.Equal("Sara Student", game.GetProperty("userName").GetString());
             Assert.Equal(await GetOwnId(student), game.GetProperty("userId").GetInt32());
             Assert.Equal(3, game.GetProperty("answers").GetArrayLength());
+            Assert.Equal(["Pitanje 1", "Pitanje 2", "Pitanje 3"],
+                game.GetProperty("answers").EnumerateArray().OrderBy(a => a.GetProperty("questionId").GetInt32())
+                    .Select(a => a.GetProperty("questionTitle").GetString()));
         }
 
         [Fact]
@@ -239,6 +249,79 @@ namespace Prometej_tests
                 games.Select(g => g.GetProperty("id").GetInt32()));
             Assert.Equal([3, 0], games.Select(g => g.GetProperty("score").GetInt32()));
             Assert.All(games, g => Assert.Equal(3, g.GetProperty("answers").GetArrayLength()));
+        }
+
+        [Fact]
+        public async Task A_submission_sent_again_with_its_key_stores_one_quiz_game()
+        {
+            var teacher = await factory.LoginAs(ApiFactory.TeacherEmail);
+            var student = await factory.LoginAsNewStudent();
+            var quiz = await CreateQuiz(teacher);
+            var key = Guid.NewGuid();
+
+            var first = await Submit(student, Submission(quiz, key, Wrong));
+            var again = await Submit(student, Submission(quiz, key));
+
+            Assert.Equal(HttpStatusCode.Created, first.StatusCode);
+            Assert.Equal(HttpStatusCode.Created, again.StatusCode);
+            var stored = await first.Content.ReadFromJsonAsync<JsonElement>();
+            var repeated = await again.Content.ReadFromJsonAsync<JsonElement>();
+            Assert.Equal(stored.GetProperty("id").GetInt32(), repeated.GetProperty("id").GetInt32());
+            Assert.Equal(2, repeated.GetProperty("score").GetInt32());
+            Assert.Single(await Analytics(teacher, quiz.Id));
+
+            // The answer is the first one's even when the quiz no longer takes this submission.
+            var update = await teacher.PutAsJsonAsync("/api/quiz/update", new
+            {
+                quiz = new { id = quiz.Id, title = "Kviz", isPrivate = false },
+                questions = new[] { Question("Pitanje 1", id: quiz.QuestionIds[0]), Question("Pitanje 2", id: quiz.QuestionIds[1]) },
+            });
+            var afterEdit = await Submit(student, Submission(quiz, key));
+
+            Assert.Equal(HttpStatusCode.NoContent, update.StatusCode);
+            Assert.Equal(HttpStatusCode.Created, afterEdit.StatusCode);
+            Assert.Equal(stored.GetProperty("id").GetInt32(), (await afterEdit.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("id").GetInt32());
+            Assert.Single(await Analytics(teacher, quiz.Id));
+            Assert.Equal(HttpStatusCode.BadRequest, (await Submit(student, Submission(quiz))).StatusCode);
+        }
+
+        [Fact]
+        public async Task The_same_key_from_another_player_is_another_quiz_game()
+        {
+            var teacher = await factory.LoginAs(ApiFactory.TeacherEmail);
+            var quiz = await CreateQuiz(teacher);
+            var key = Guid.NewGuid();
+
+            var first = await Submit(await factory.LoginAsNewStudent(), Submission(quiz, key));
+            var second = await Submit(await factory.LoginAsNewStudent(), Submission(quiz, key));
+
+            Assert.Equal(HttpStatusCode.Created, first.StatusCode);
+            Assert.Equal(HttpStatusCode.Created, second.StatusCode);
+            Assert.Equal(2, (await Analytics(teacher, quiz.Id)).Length);
+        }
+
+        [Fact]
+        public async Task A_key_used_for_another_quiz_and_a_key_that_is_no_guid_are_refused()
+        {
+            var teacher = await factory.LoginAs(ApiFactory.TeacherEmail);
+            var student = await factory.LoginAsNewStudent();
+            var played = await CreateQuiz(teacher);
+            var other = await CreateQuiz(teacher);
+            var key = Guid.NewGuid();
+            await Submit(student, Submission(played, key));
+
+            var reused = await Submit(student, Submission(other, key));
+            var noGuid = await Submit(student, new
+            {
+                quizId = other.Id,
+                submissionKey = "abc",
+                answers = other.QuestionIds.Select(id => Answer(id)),
+            });
+
+            Assert.Equal(HttpStatusCode.Conflict, reused.StatusCode);
+            Assert.Equal(HttpStatusCode.BadRequest, noGuid.StatusCode);
+            Assert.Empty(await Analytics(teacher, other.Id));
+            Assert.Single(await Analytics(teacher, played.Id));
         }
 
         [Fact]

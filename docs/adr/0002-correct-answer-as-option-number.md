@@ -12,6 +12,10 @@ can be edited after it was played; the number says what is right now, the texts 
 student saw then, so an old play never has to be re-read against a question that has since
 changed.
 
+Since players can read their own plays again, an answer also keeps the question's title and its
+explanation as they were, for the same reason. Answers stored before that were given the title
+and explanation their question had on the day of the migration, the only wording still known.
+
 ## Considered options
 
 - **Keep the text and update the copy whenever an option is edited.** Fixes the editor, not the

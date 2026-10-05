@@ -89,5 +89,19 @@ namespace Prometej_api.Controllers
         {
             return Ok(_quizService.GetQuizAnalytics(id, User.GetUserId(), User.IsAdmin()));
         }
+
+        [Authorize]
+        [HttpGet("getMyGames")]
+        public IActionResult GetMyGames()
+        {
+            return Ok(_quizService.GetMyGames(User.GetUserId()));
+        }
+
+        [Authorize]
+        [HttpGet("getGame/{id}")]
+        public IActionResult GetQuizGame(int id)
+        {
+            return Ok(_quizService.GetQuizGame(id, User.GetUserId()));
+        }
     }
 }

@@ -31,6 +31,10 @@ namespace Prometej_core.AutoMapper.Profiles
             CreateMap<QuestionEditRequest, Question>();
 
             CreateMap<QuizGame, QuizGameViewModel>();
+            CreateMap<QuizGame, QuizGameReviewViewModel>().IncludeBase<QuizGame, QuizGameViewModel>()
+                                                          .ForMember(dest => dest.PeriodId, opt => opt.MapFrom(src => src.Quiz.PeriodId))
+                                                          .ForMember(dest => dest.PeriodName, opt => opt.MapFrom(src => src.Quiz.Period!.Name))
+                                                          .ForMember(dest => dest.QuizIsListed, opt => opt.Ignore());
             CreateMap<Answer, AnswerViewModel>();
 
         }

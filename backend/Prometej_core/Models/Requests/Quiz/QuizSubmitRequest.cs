@@ -9,6 +9,8 @@ namespace Prometej_core.Models.Requests.Quiz
         public int QuizId { get; set; }
         [Required, MinLength(1), NoNullItems]
         public required List<AnswerSubmitRequest> Answers { get; set; }
+        // Made by the client for one play. A submit that repeats it gets the stored quiz game back.
+        public Guid? SubmissionKey { get; set; }
     }
 
     public class AnswerSubmitRequest

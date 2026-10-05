@@ -17,5 +17,8 @@ namespace Prometej_core.Models.efModels
         public int Score { get; set; }
         public DateTime DatePlayed { get; set; }
         public List<Answer> Answers { get; set; }
+        // Made by the client once per play, so a submit that is sent again is recognised.
+        // The games stored before it have none.
+        public Guid? SubmissionKey { get; set; }
     }
 }

@@ -22,6 +22,8 @@ namespace Prometej_persistance
             modelBuilder.Entity<User>().HasIndex(u => u.Email).IsUnique();
             // Only a private quiz has an entry code; PostgreSQL lets any number of rows hold NULL.
             modelBuilder.Entity<Quiz>().HasIndex(q => q.EntryCode).IsUnique();
+            // One quiz game per player and submission key; PostgreSQL lets any number of rows hold no key.
+            modelBuilder.Entity<QuizGame>().HasIndex(g => new { g.UserId, g.SubmissionKey }).IsUnique();
             // The Periods are a fixed list the code depends on, so the migrations insert them.
             modelBuilder.Entity<Period>(period =>
             {

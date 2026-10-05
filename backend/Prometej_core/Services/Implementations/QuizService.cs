@@ -207,6 +207,17 @@ namespace Prometej_core.Services.Implementations
 
         public QuizGameViewModel SubmitQuiz(QuizSubmitRequest request, int userId)
         {
+            // A submit that repeats its key is the same play sent again. It gets the answer the
+            // first one got, whatever has happened to the quiz since, so this comes first.
+            if (request.SubmissionKey != null)
+            {
+                var submitted = FindSubmitted(request, userId);
+                if (submitted != null)
+                {
+                    return submitted;
+                }
+            }
+
             var quiz = _quizRepository.ReadAll().Include(q => q.Questions.Where(x => !x.IsRetired)).FirstOrDefault(q => q.Id == request.QuizId);
             if (quiz == null)
             {
@@ -239,10 +250,12 @@ namespace Prometej_core.Services.Implementations
                     score++;
                 }
 
-                // Both are kept as text, so the play still reads right after the question is edited.
+                // All four are kept as text, so the play still reads right after the question is edited.
                 answers.Add(new Answer
                 {
                     QuestionId = question.Id,
+                    QuestionTitle = question.QuestionTitle,
+                    ExploreMore = question.ExploreMore,
                     AnswerText = options[answer.ChosenOption - 1],
                     CorrectAnswer = options[question.CorrectOption - 1],
                 });
@@ -262,11 +275,112 @@ namespace Prometej_core.Services.Implementations
                 Score = score,
                 DatePlayed = DateTime.UtcNow,
                 Answers = answers,
+                SubmissionKey = request.SubmissionKey,
             };
             _quizGameRepository.Create(quizGame);
-            _quizGameRepository.Save();
+            try
+            {
+                _quizGameRepository.Save();
+            }
+            catch (DbUpdateException ex) when (request.SubmissionKey != null
+                && ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
+            {
+                // The same play arrived twice at once and the other request stored it.
+                return FindSubmitted(request, userId)!;
+            }
 
             return _mapper.Map<QuizGameViewModel>(quizGame);
+        }
+
+        // The quiz game the caller already stored with this request's key, if there is one.
+        private QuizGameViewModel? FindSubmitted(QuizSubmitRequest request, int userId)
+        {
+            var quizGame = _quizGameRepository.ReadAll().Include(g => g.Answers)
+                .FirstOrDefault(g => g.UserId == userId && g.SubmissionKey == request.SubmissionKey);
+            if (quizGame == null)
+            {
+                return null;
+            }
+
+            // Answering with another quiz's game would show its score as this play's result.
+            if (quizGame.QuizId != request.QuizId)
+            {
+                throw new ConflictException("This submission key was used for another quiz");
+            }
+
+            return _mapper.Map<QuizGameViewModel>(quizGame);
+        }
+
+        public MyQuizGamesViewModel GetMyGames(int userId)
+        {
+            // Every game the caller played, also of a quiz that is private or no longer listed.
+            var games = _quizGameRepository.ReadAll().Where(g => g.UserId == userId)
+                .OrderByDescending(g => g.DatePlayed).ThenByDescending(g => g.Id)
+                .Select(g => new PlayedQuizGameViewModel
+                {
+                    Id = g.Id,
+                    QuizId = g.QuizId,
+                    QuizTitle = g.Quiz.Title,
+                    PeriodName = g.Quiz.Period!.Name,
+                    Score = g.Score,
+                    QuestionCount = g.Answers.Count,
+                    DatePlayed = g.DatePlayed,
+                })
+                .ToList();
+
+            return new MyQuizGamesViewModel { Progress = ProgressByPeriod(games), Games = games };
+        }
+
+        // A Period's progress counts the quizzes the public list shows for it, and how many of
+        // those the player has played. The percentage is the average of the player's best play
+        // of each played quiz, so practising a quiz again never lowers it.
+        private List<PeriodProgressViewModel> ProgressByPeriod(List<PlayedQuizGameViewModel> games)
+        {
+            var bestByQuiz = games.Where(g => g.QuestionCount > 0).GroupBy(g => g.QuizId)
+                .ToDictionary(g => g.Key, g => g.Max(game => (double)game.Score / game.QuestionCount));
+            var listedByPeriod = _quizRepository.ReadAll().Where(Quiz.IsListed).Where(q => q.PeriodId != null)
+                .Select(q => new { q.Id, PeriodId = q.PeriodId!.Value })
+                .ToLookup(q => q.PeriodId, q => q.Id);
+
+            var progress = new List<PeriodProgressViewModel>();
+            foreach (var period in _periodRepository.ReadAll().OrderBy(p => p.SortOrder))
+            {
+                var best = listedByPeriod[period.Id].Where(bestByQuiz.ContainsKey).Select(quizId => bestByQuiz[quizId]).ToList();
+                if (best.Count == 0)
+                {
+                    continue;
+                }
+
+                progress.Add(new PeriodProgressViewModel
+                {
+                    PeriodId = period.Id,
+                    PeriodName = period.Name,
+                    QuizCount = listedByPeriod[period.Id].Count(),
+                    PlayedCount = best.Count,
+                    AverageBestPercent = (int)Math.Round(best.Average() * 100, MidpointRounding.AwayFromZero),
+                });
+            }
+
+            return progress;
+        }
+
+        public QuizGameReviewViewModel GetQuizGame(int id, int callerId)
+        {
+            // A game is its player's alone. Someone else's gets the same answer as one that
+            // does not exist. The answers come in the order the questions were played in.
+            var quizGame = _quizGameRepository.ReadAll()
+                .Include(g => g.Answers.OrderBy(a => a.QuestionId))
+                .Include(g => g.Quiz).ThenInclude(q => q.Period)
+                .FirstOrDefault(g => g.Id == id && g.UserId == callerId);
+            if (quizGame == null)
+            {
+                throw new NotFoundException("Quiz game not found");
+            }
+
+            var review = _mapper.Map<QuizGameReviewViewModel>(quizGame);
+            review.QuizIsListed = _quizRepository.ReadAll().Where(Quiz.IsListed).Any(q => q.Id == quizGame.QuizId);
+
+            return review;
         }
 
         public List<QuizGameViewModel> GetQuizAnalytics(int quizId, int callerId, bool isAdmin)
