@@ -7,3 +7,13 @@ export const shuffled = (count: number) => {
   }
   return order;
 };
+
+// The same, but never 0, 1, 2…: items shown in their stored order would give the answer of
+// an ordering Question away.
+export const shuffledOutOfOrder = (count: number) => {
+  let order = shuffled(count);
+  while (count > 1 && order.every((value, i) => value === i)) {
+    order = shuffled(count);
+  }
+  return order;
+};

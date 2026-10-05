@@ -22,6 +22,8 @@ export interface EditorQuestion {
   pairs: MatchPair[];
   // right-hand options that go with nothing; an empty one is not sent
   extras: string[];
+  // an ordering Question's items, in their right order
+  items: string[];
   hintText: string;
   exploreMore: string;
   passageKey?: string;
@@ -29,10 +31,12 @@ export interface EditorQuestion {
 
 export type EditorPassages = Record<string, SourceTextRequest>;
 
-// The server's limits for a matching Question.
+// The server's limits for a matching and for an ordering Question.
 export const MIN_PAIRS = 3;
 export const MAX_PAIRS = 5;
 export const MAX_EXTRAS = 2;
+export const MIN_ITEMS = 3;
+export const MAX_ITEMS = 6;
 
 export const newQuestion = (type: QuestionType): EditorQuestion => ({
   type,
@@ -47,6 +51,7 @@ export const newQuestion = (type: QuestionType): EditorQuestion => ({
       ? Array.from({ length: MIN_PAIRS }, () => ({ left: "", right: "" }))
       : [],
   extras: [],
+  items: type === "ordering" ? Array.from({ length: MIN_ITEMS }, () => "") : [],
   hintText: "",
   exploreMore: "",
 });
@@ -68,6 +73,13 @@ export const isComplete = (question: EditorQuestion) => {
       question.pairs.length <= MAX_PAIRS &&
       allDiffer(lefts) &&
       allDiffer([...rights, ...filledExtras(question)])
+    );
+  }
+  if (question.type === "ordering") {
+    return (
+      question.items.length >= MIN_ITEMS &&
+      question.items.length <= MAX_ITEMS &&
+      allDiffer(question.items.map((item) => item.trim()))
     );
   }
   const options = [
@@ -111,6 +123,9 @@ export const toRequest = (
         content: { pairs: question.pairs, ...(extras.length > 0 && { extras }) },
       };
     }
+    if (question.type === "ordering") {
+      return { ...shared, content: { items: question.items } };
+    }
     return {
       ...shared,
       firstAnswer: question.firstAnswer,
@@ -144,6 +159,7 @@ export const fromQuiz = (
       correctOption: question.correctOption ?? 0,
       pairs: question.content?.pairs ?? [],
       extras: question.content?.extras ?? [],
+      items: question.content?.items ?? [],
       hintText: question.hintText ?? "",
       exploreMore: question.exploreMore ?? "",
       passageKey:

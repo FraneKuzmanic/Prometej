@@ -16,7 +16,8 @@ interface AnswerGroupProps {
 
 // One Question of a Quiz Game as it was played: what was asked, what was answered and, where
 // that was wrong, what was right. It reads only the Answers, never the Question of today, and
-// tells the Question's kind from them: a row with an item is a pair of a matching Question.
+// tells the Question's kind from them: a row with an item is a pair of a matching Question,
+// a row with a place is a place of an ordering one.
 export default function AnswerGroup({
   number,
   answers,
@@ -42,6 +43,8 @@ export default function AnswerGroup({
             >
               {answer.item !== null
                 ? `${answer.item} → ${answer.answerText}`
+                : answer.place !== null
+                ? `${answer.place}. mjesto: ${answer.answerText}`
                 : `${answerLabel}: ${answer.answerText}`}
             </Typography>
             {!correct && (

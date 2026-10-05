@@ -336,6 +336,7 @@ export default function QuizEditor({
             Pitanje s četiri odgovora
           </MenuItem>
           <MenuItem onClick={() => addQuestion("matching")}>Povezivanje</MenuItem>
+          <MenuItem onClick={() => addQuestion("ordering")}>Redanje</MenuItem>
           <MenuItem onClick={() => addPassage()}>
             Polazni tekst s pitanjima
           </MenuItem>

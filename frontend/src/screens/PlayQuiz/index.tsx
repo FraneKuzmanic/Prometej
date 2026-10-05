@@ -22,6 +22,7 @@ import {
 } from "@mui/material";
 import ChoiceQuestion from "./ChoiceQuestion";
 import MatchingQuestion from "./MatchingQuestion";
+import OrderingQuestion from "./OrderingQuestion";
 import SourceTextPanel from "./SourceTextPanel";
 import { pointsLabel } from "../../types/points";
 import "./styles.css";
@@ -173,6 +174,13 @@ export default function PlayQuiz() {
             )}
             {currentQuestion.type === "matching" && (
               <MatchingQuestion
+                key={currentQuestion.id}
+                question={currentQuestion}
+                onAnswered={handleAnswered}
+              />
+            )}
+            {currentQuestion.type === "ordering" && (
+              <OrderingQuestion
                 key={currentQuestion.id}
                 question={currentQuestion}
                 onAnswered={handleAnswered}

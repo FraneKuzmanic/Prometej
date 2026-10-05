@@ -72,6 +72,15 @@
     padding: 0 10%;
 }
 
+.ordering-note.MuiTypography-root{
+    align-self: flex-start;
+    padding: 2px 10px;
+    font-size: 14px;
+    background-color: #553b08;
+    color: white;
+    border-radius: 5px;
+}
+
 .matching-pair{
     display: flex;
     align-items: stretch;

@@ -4,6 +4,7 @@ import "./styles.css";
 import { EditorQuestion } from "../QuizEditor/questions";
 import ChoiceFields from "./ChoiceFields";
 import MatchingFields from "./MatchingFields";
+import OrderingFields from "./OrderingFields";
 
 interface QuestionContainerProps {
   selected: number;
@@ -59,6 +60,9 @@ export default function QuestionContainer({
       )}
       {currentQuestion?.type === "matching" && (
         <MatchingFields question={currentQuestion} onChange={onChange} />
+      )}
+      {currentQuestion?.type === "ordering" && (
+        <OrderingFields question={currentQuestion} onChange={onChange} />
       )}
       <Box className="explanations">
         {explanations.map(({ field, id, caption }) => (
