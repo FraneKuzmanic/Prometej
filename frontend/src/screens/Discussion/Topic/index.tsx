@@ -23,6 +23,7 @@ import {
   fetchTopic,
 } from "../../../store/slices/discussionSlice";
 import PostAuthor from "../PostAuthor";
+import PostError, { PostErrorKind } from "../PostError";
 import SignInPrompt from "../SignInPrompt";
 import "../styles.css";
 
@@ -37,20 +38,20 @@ export default function Topic() {
   const topicId = Number(topicParam);
   const { periods } = useSelector((state: RootState) => state.period);
   const { authenticated } = useSelector((state: RootState) => state.user);
-  const { topic: storedTopic, topicFailed, topicOf } = useSelector(
+  const { topic: storedTopic, topicFailed, requestedTopicId } = useSelector(
     (state: RootState) => state.discussion
   );
   // The store may still hold the Topic opened before this one until the fetch below starts.
-  const topic = topicOf === topicId ? storedTopic : undefined;
+  const topic = requestedTopicId === topicId ? storedTopic : undefined;
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const [reply, setReply] = useState("");
+  const [replyText, setReplyText] = useState("");
   const [sending, setSending] = useState(false);
-  // "limit": the server lets one User post only so often.
-  const [postError, setPostError] = useState<"limit" | "other" | undefined>();
+  const [postError, setPostError] = useState<PostErrorKind | undefined>();
   // Kept after the dialog closes, so its text does not change while it fades out.
   const [pending, setPending] = useState<PendingDelete | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   // "conflict": the Topic got a Reply after this page was read.
   const [deleteError, setDeleteError] = useState<
     "conflict" | "other" | undefined
@@ -92,10 +93,10 @@ export default function Topic() {
   const handleReply = () => {
     setSending(true);
     setPostError(undefined);
-    dispatch(createReply({ topicId, data: { body: reply } })).then((result) => {
+    dispatch(createReply({ topicId, data: { body: replyText } })).then((result) => {
       setSending(false);
       if (createReply.fulfilled.match(result)) {
-        setReply("");
+        setReplyText("");
         // Read again: the server decides who may delete what, and a Reply changes that.
         dispatch(fetchTopic({ id: topicId, keep: true }));
       } else {
@@ -112,8 +113,10 @@ export default function Topic() {
 
   const handleDelete = () => {
     if (!pending) return;
+    setDeleting(true);
     if (pending.kind === "topic") {
       dispatch(deleteTopic(topicId)).then((result) => {
+        setDeleting(false);
         if (deleteTopic.fulfilled.match(result)) {
           navigate(discussionPath);
         } else {
@@ -123,6 +126,7 @@ export default function Topic() {
       });
     } else {
       dispatch(deleteReply(pending.id)).then((result) => {
+        setDeleting(false);
         if (deleteReply.fulfilled.match(result)) {
           setDialogOpen(false);
         } else {
@@ -172,26 +176,26 @@ export default function Topic() {
             Odgovori ({replyCount})
           </Typography>
           {replyCount === 0 && <Typography>Još nema odgovora.</Typography>}
-          {topic.replies.map((item) => (
-            <Paper key={item.id} className="discussion-post">
+          {topic.replies.map((reply) => (
+            <Paper key={reply.id} className="discussion-post">
               <Box className="discussion-post-header">
                 <PostAuthor
-                  name={item.authorName}
-                  role={item.authorRole}
-                  date={item.createdAt}
+                  name={reply.authorName}
+                  role={reply.authorRole}
+                  date={reply.createdAt}
                 />
-                {item.canDelete && (
+                {reply.canDelete && (
                   <Button
                     size="small"
                     color="error"
                     aria-label="Obriši odgovor"
-                    onClick={() => openDialog({ kind: "reply", id: item.id })}
+                    onClick={() => openDialog({ kind: "reply", id: reply.id })}
                   >
                     Obriši
                   </Button>
                 )}
               </Box>
-              <Typography className="discussion-body">{item.body}</Typography>
+              <Typography className="discussion-body">{reply.body}</Typography>
             </Paper>
           ))}
           {authenticated === false && <SignInPrompt />}
@@ -201,22 +205,16 @@ export default function Topic() {
                 label="Vaš odgovor"
                 multiline
                 minRows={3}
-                value={reply}
-                onChange={(e) => setReply(e.target.value)}
+                value={replyText}
+                onChange={(e) => setReplyText(e.target.value)}
                 inputProps={{ maxLength: 2000 }}
               />
-              {postError && (
-                <Typography color="error" role="alert">
-                  {postError === "limit"
-                    ? "Pričekajte trenutak prije sljedeće objave."
-                    : "Objava nije spremljena. Pokušajte ponovno."}
-                </Typography>
-              )}
+              {postError && <PostError error={postError} />}
               <Box className="discussion-form-buttons">
                 <Button
                   variant="contained"
                   sx={{ backgroundColor: "#553b08" }}
-                  disabled={sending || !reply.trim()}
+                  disabled={sending || !replyText.trim()}
                   onClick={handleReply}
                 >
                   Odgovori
@@ -248,7 +246,7 @@ export default function Topic() {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setDialogOpen(false)}>Odustani</Button>
-          <Button color="error" onClick={handleDelete}>
+          <Button color="error" disabled={deleting} onClick={handleDelete}>
             Obriši
           </Button>
         </DialogActions>

@@ -245,10 +245,11 @@ namespace Prometej_tests
             var replyId = await CreateReply(author, topicId);
 
             var refused = await author.DeleteAsync($"/api/discussion/topic/{topicId}");
-            await author.DeleteAsync($"/api/discussion/reply/{replyId}");
+            var replyDeleted = await author.DeleteAsync($"/api/discussion/reply/{replyId}");
             var allowed = await author.DeleteAsync($"/api/discussion/topic/{topicId}");
 
             Assert.Equal(HttpStatusCode.Conflict, refused.StatusCode);
+            Assert.Equal(HttpStatusCode.NoContent, replyDeleted.StatusCode);
             Assert.Equal(HttpStatusCode.NoContent, allowed.StatusCode);
             Assert.Equal(HttpStatusCode.NotFound, (await author.GetAsync($"/api/discussion/topic/{topicId}")).StatusCode);
         }
@@ -347,9 +348,11 @@ namespace Prometej_tests
             var admin = await factory.LoginAs(ApiFactory.AdminEmail);
             var topicId = await CreateTopic(student);
 
-            await student.PutAsJsonAsync("/api/user/me", new { firstName = "Mara", lastName = "Marić" });
-            await admin.PutAsJsonAsync($"/api/user/{await IdOf(student)}/role", new { role = "teacher" });
+            var renamed = await student.PutAsJsonAsync("/api/user/me", new { firstName = "Mara", lastName = "Marić" });
+            var promoted = await admin.PutAsJsonAsync($"/api/user/{await IdOf(student)}/role", new { role = "teacher" });
 
+            Assert.Equal(HttpStatusCode.NoContent, renamed.StatusCode);
+            Assert.Equal(HttpStatusCode.NoContent, promoted.StatusCode);
             var topic = await Topic(student, topicId);
             Assert.Equal("Mara Marić", topic.GetProperty("authorName").GetString());
             Assert.Equal("teacher", topic.GetProperty("authorRole").GetString());

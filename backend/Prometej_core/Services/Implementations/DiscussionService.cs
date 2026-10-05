@@ -84,7 +84,7 @@ namespace Prometej_core.Services.Implementations
                 AuthorName = topic.AuthorName,
                 AuthorRole = topic.AuthorRole,
                 CreatedAt = topic.CreatedAt,
-                CanDelete = isAdmin || (IsAuthor(topic.AuthorId, callerId) && topic.Replies.Count == 0),
+                CanDelete = MayDeleteTopic(topic.AuthorId, topic.Replies.Count > 0, callerId, isAdmin),
                 Replies = topic.Replies
                     .Select(r => new ReplyViewModel
                     {
@@ -93,7 +93,7 @@ namespace Prometej_core.Services.Implementations
                         AuthorName = r.AuthorName,
                         AuthorRole = r.AuthorRole,
                         CreatedAt = r.CreatedAt,
-                        CanDelete = isAdmin || IsAuthor(r.AuthorId, callerId),
+                        CanDelete = MayDeleteReply(r.AuthorId, callerId, isAdmin),
                     })
                     .ToList(),
             };
@@ -144,18 +144,14 @@ namespace Prometej_core.Services.Implementations
                 .Select(t => new { t.AuthorId, HasReplies = t.Replies.Any() })
                 .FirstOrDefault() ?? throw new NotFoundException("Topic not found");
 
-            if (!isAdmin)
+            if (!MayDeleteTopic(topic.AuthorId, topic.HasReplies, callerId, isAdmin))
             {
-                if (!IsAuthor(topic.AuthorId, callerId))
-                {
-                    throw new ForbiddenException("Only the author or an admin can delete a topic");
-                }
-
-                // Deleting it would delete what other people answered.
-                if (topic.HasReplies)
+                if (IsAuthor(topic.AuthorId, callerId))
                 {
                     throw new ConflictException("A topic with replies can only be deleted by an admin");
                 }
+
+                throw new ForbiddenException("Only the author or an admin can delete a topic");
             }
 
             // Its replies go with it: the database cascades.
@@ -170,7 +166,7 @@ namespace Prometej_core.Services.Implementations
                 .Select(r => new { r.AuthorId })
                 .FirstOrDefault() ?? throw new NotFoundException("Reply not found");
 
-            if (!isAdmin && !IsAuthor(reply.AuthorId, callerId))
+            if (!MayDeleteReply(reply.AuthorId, callerId, isAdmin))
             {
                 throw new ForbiddenException("Only the author or an admin can delete a reply");
             }
@@ -186,6 +182,14 @@ namespace Prometej_core.Services.Implementations
                 throw new NotFoundException("Period not found");
             }
         }
+
+        // An author deletes their topic only while nobody has replied: deleting it would
+        // delete what other people answered. An admin deletes any.
+        private static bool MayDeleteTopic(int? authorId, bool hasReplies, int? callerId, bool isAdmin) =>
+            isAdmin || (IsAuthor(authorId, callerId) && !hasReplies);
+
+        private static bool MayDeleteReply(int? authorId, int? callerId, bool isAdmin) =>
+            isAdmin || IsAuthor(authorId, callerId);
 
         // A post whose author's account was deleted is nobody's.
         private static bool IsAuthor(int? authorId, int? callerId) => authorId != null && authorId == callerId;

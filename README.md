@@ -29,6 +29,7 @@ periods of the national exam catalogue.
 - sees their progress per period
 - opens a topic in a period's discussion or replies to one; a teacher's and an admin's post
   is marked as such
+- deletes their own reply, and their own topic while nobody has replied to it
 - changes their name and password
 
 **A teacher**
@@ -181,5 +182,5 @@ for this project. It is sample material and **has not been reviewed by a teacher
 - No password reset: a forgotten password cannot be recovered.
 - No automated tests for the client.
 - A private quiz is practice, not a test: the correct answer is shown after each question.
-- A discussion is moderated only by an admin deleting a post: a post cannot be edited or
-  reported, and nothing updates live.
+- In a discussion a post cannot be edited or reported; an admin deleting it is the only
+  remedy, and nothing updates live.

@@ -19,6 +19,7 @@ import { RootState, useAppDispatch } from "../../store/store";
 import { fetchPeriods } from "../../store/slices/periodSlice";
 import { createTopic, fetchTopics } from "../../store/slices/discussionSlice";
 import PostAuthor from "./PostAuthor";
+import PostError, { PostErrorKind } from "./PostError";
 import SignInPrompt from "./SignInPrompt";
 import { formatDateTime, repliesLabel } from "./format";
 import "./styles.css";
@@ -30,7 +31,7 @@ export default function Discussion() {
     (state: RootState) => state.period
   );
   const { authenticated } = useSelector((state: RootState) => state.user);
-  const { topicPage: storedPage, topicPageFailed, topicPageOf } = useSelector(
+  const { topicPage: storedPage, topicPageFailed, requestedPage } = useSelector(
     (state: RootState) => state.discussion
   );
   const dispatch = useAppDispatch();
@@ -47,13 +48,12 @@ export default function Discussion() {
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [sending, setSending] = useState(false);
-  // "limit": the server lets one User post only so often.
-  const [postError, setPostError] = useState<"limit" | "other" | undefined>();
+  const [postError, setPostError] = useState<PostErrorKind | undefined>();
 
   const period = periods?.find((period) => period.id === Number(id));
   const periodId = period?.id;
   const topicPage =
-    topicPageOf?.periodId === periodId && topicPageOf?.page === page
+    requestedPage?.periodId === periodId && requestedPage?.page === page
       ? storedPage
       : undefined;
 
@@ -143,13 +143,7 @@ export default function Discussion() {
             onChange={(e) => setBody(e.target.value)}
             inputProps={{ maxLength: 2000 }}
           />
-          {postError && (
-            <Typography color="error" role="alert">
-              {postError === "limit"
-                ? "Pričekajte trenutak prije sljedeće objave."
-                : "Objava nije spremljena. Pokušajte ponovno."}
-            </Typography>
-          )}
+          {postError && <PostError error={postError} />}
           <Box className="discussion-form-buttons">
             <Button
               variant="contained"
@@ -168,6 +162,10 @@ export default function Discussion() {
       )}
       {topicPage && topicPage.total === 0 && (
         <Typography>Još nema tema. Postavite prvo pitanje.</Typography>
+      )}
+      {/* A page past the last one, after a Topic of the last page was deleted. */}
+      {topicPage && topicPage.total > 0 && topicPage.topics.length === 0 && (
+        <Typography>Na ovoj stranici nema tema.</Typography>
       )}
       {topicPage?.topics.map((topic) => (
         <Paper

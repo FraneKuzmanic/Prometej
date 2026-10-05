@@ -10,20 +10,20 @@ interface DiscussionState {
     topicPageFailed: boolean;
     // Which Period and page were asked for last. A screen that opens on another one sees
     // that the stored answer is not its own, before its own request has even started.
-    topicPageOf: { periodId: number; page: number } | undefined;
+    requestedPage: { periodId: number; page: number } | undefined;
     // undefined while it loads, null when there is no such Topic
     topic: Topic | null | undefined;
     topicFailed: boolean;
-    topicOf: number | undefined;
+    requestedTopicId: number | undefined;
 }
 
 const initialState: DiscussionState = {
     topicPage: undefined,
     topicPageFailed: false,
-    topicPageOf: undefined,
+    requestedPage: undefined,
     topic: undefined,
     topicFailed: false,
-    topicOf: undefined,
+    requestedTopicId: undefined,
 };
 
 const statusOf = (error: unknown) => (axios.isAxiosError(error) ? error.response?.status : undefined);
@@ -40,7 +40,7 @@ const fetchTopics = createAsyncThunk(
 // Without it the screen would go blank for a moment on every Reply.
 const fetchTopic = createAsyncThunk(
     'discussion/fetchTopic',
-    async ({ id }: { id: number; keep?: boolean }) => {
+    async ({ id }: { id: number; keep?: boolean }): Promise<Topic | null> => {
         try {
             const response = await discussionService.getTopic(id);
             return response.data;
@@ -109,7 +109,7 @@ const discussionSlice = createSlice({
     builder.addCase(fetchTopics.pending, (state, action) => {
       state.topicPage = undefined;
       state.topicPageFailed = false;
-      state.topicPageOf = action.meta.arg;
+      state.requestedPage = action.meta.arg;
     });
     builder.addCase(fetchTopics.fulfilled, (state, action: PayloadAction<TopicPage>) => {
       state.topicPage = action.payload;
@@ -125,13 +125,18 @@ const discussionSlice = createSlice({
         state.topic = undefined;
       }
       state.topicFailed = false;
-      state.topicOf = action.meta.arg.id;
+      state.requestedTopicId = action.meta.arg.id;
     });
-    builder.addCase(fetchTopic.fulfilled, (state, action: PayloadAction<Topic | null>) => {
-      state.topic = action.payload;
+    // A Topic read again after a Reply is not aborted when the screen moves on, so an answer
+    // for a Topic that is no longer the one asked for is dropped here.
+    builder.addCase(fetchTopic.fulfilled, (state, action) => {
+      if (action.meta.arg.id === state.requestedTopicId) {
+        state.topic = action.payload;
+      }
     });
+    // A Topic that stays on screen while it is read again is still there if that fails.
     builder.addCase(fetchTopic.rejected, (state, action) => {
-      if (!action.meta.aborted) {
+      if (!action.meta.aborted && !action.meta.arg.keep && action.meta.arg.id === state.requestedTopicId) {
         state.topicFailed = true;
       }
     });
