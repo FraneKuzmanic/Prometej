@@ -1,6 +1,43 @@
 {
   "quiz": { "title": "Modernizam: provjera znanja", "isPrivate": false, "periodId": 6 },
+  "sourceTexts": [
+    {
+      "caption": "Antun Gustav Matoš, Jesenje veče",
+      "body": "Olovne i teške snove snivaju\nOblaci nad tamnim gorskim stranama\nMonotone sjene rijekom plivaju,\nŽutom rijekom među golim granama.\n\nIza mokrih njiva magle skrivaju\nKućice i toranj; sunce u ranama\nMre i motri, kako mrke bivaju\nVrbe, crneći se crnim vranama.\n\nSve je mračno, hladno; u prvom sutonu\nTek se slute ceste, dok ne utonu\nU daljine slijepe ljudskih nemira.\n\nSamo gordi jablan lisjem suhijem\nŠapće o životu mrakom gluhijem\nKao da je samac usred svemira."
+    }
+  ],
   "questions": [
+    {
+      "sourceTextNo": 1,
+      "questionTitle": "Koja je pjesnička vrsta ova pjesma, građena od dvaju katrena i dviju tercina?",
+      "firstAnswer": "Elegija",
+      "secondAnswer": "Sonet",
+      "thirdAnswer": "Balada",
+      "fourthAnswer": "Himna",
+      "correctOption": 2,
+      "hintText": "Ima četrnaest stihova.",
+      "exploreMore": "Sonet ima četrnaest stihova raspoređenih u dva katrena i dvije tercine. U lirici moderne, koja traži savršenu formu, to je omiljen oblik."
+    },
+    {
+      "sourceTextNo": 1,
+      "questionTitle": "Koja je stilska figura u stihovima „Olovne i teške snove snivaju / Oblaci nad tamnim gorskim stranama”?",
+      "firstAnswer": "Onomatopeja",
+      "secondAnswer": "Retoričko pitanje",
+      "thirdAnswer": "Hiperbola",
+      "fourthAnswer": "Personifikacija",
+      "correctOption": 4,
+      "exploreMore": "Oblacima je pripisano nešto ljudsko: oni sanjaju. Takvim slikama krajolik u pjesmi izražava stanje duše, što je jedno od obilježja lirike moderne."
+    },
+    {
+      "sourceTextNo": 1,
+      "questionTitle": "Što u posljednjoj strofi jedino „šapće o životu”?",
+      "firstAnswer": "Jablan",
+      "secondAnswer": "Vrbe",
+      "thirdAnswer": "Toranj",
+      "fourthAnswer": "Rijeka",
+      "correctOption": 1,
+      "exploreMore": "Dok sve drugo tone u mrak i hladnoću, „gordi jablan” ostaje sam, „kao da je samac usred svemira”."
+    },
     {
       "questionTitle": "Tko je autor zbirke „Cvjetovi zla”?",
       "firstAnswer": "Charles Baudelaire",
@@ -75,6 +112,49 @@
       "fourthAnswer": "Matoševa smrt i izlazak antologije „Hrvatska mlada lirika”",
       "correctOption": 4,
       "exploreMore": "U antologiji „Hrvatska mlada lirika” objavljene su i pjesme mladoga Tina Ujevića. Šenoa je umro 1881., „Preobraženja” su izišla 1920., a „Krugovi” su pokrenuti 1952. godine."
+    },
+    {
+      "type": "matching",
+      "questionTitle": "Poveži djelo s njegovim autorom.",
+      "content": {
+        "pairs": [
+          {
+            "left": "„Misao na vječnost”",
+            "right": "Janko Leskovar"
+          },
+          {
+            "left": "„Bijeg”",
+            "right": "Milutin Cihlar Nehajev"
+          },
+          {
+            "left": "„Ekvinocij”",
+            "right": "Ivo Vojnović"
+          },
+          {
+            "left": "„Knjiga Boccadoro”",
+            "right": "Milan Begović"
+          }
+        ],
+        "extras": [
+          "Dragutin Domjanić",
+          "Dinko Šimunović"
+        ]
+      },
+      "exploreMore": "Leskovarova „Misao na vječnost” (1891.) jedna je od proza kojima počinje moderna, a Nehajevljev „Bijeg” (1909.) roman je o preosjetljivu i neodlučnu junaku. Vojnovićev „Ekvinocij” praizveden je 1895., a Begovićeva „Knjiga Boccadoro” izišla je 1900. godine."
+    },
+    {
+      "type": "ordering",
+      "questionTitle": "Poredaj djela i događaje po godini, od najranijega.",
+      "content": {
+        "items": [
+          "„Cvjetovi zla”",
+          "spaljivanje mađarske zastave u Zagrebu",
+          "novela „Camao”",
+          "Matošev povratak u Zagreb",
+          "antologija „Hrvatska mlada lirika”"
+        ]
+      },
+      "exploreMore": "Baudelaire je „Cvjetove zla” objavio 1857. Studenti su mađarsku zastavu spalili 1895., novela „Camao” nosi godinu 1900., Matoš se u Zagreb vratio 1908., a antologija „Hrvatska mlada lirika” izišla je 1914., kada završava moderna."
     }
   ]
 }

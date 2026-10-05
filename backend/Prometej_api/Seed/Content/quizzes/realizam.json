@@ -1,6 +1,43 @@
 {
   "quiz": { "title": "Realizam: provjera znanja", "isPrivate": false, "periodId": 4 },
+  "sourceTexts": [
+    {
+      "caption": "Silvije Strahimir Kranjčević, Moj dom (ulomak)",
+      "body": "... Ja domovinu imam; tek u grud sam je skrio\nI bježat moram svijet;\nU vijencu mojih sanja već sve je pogazio,\nAl' ovaj nije cvijet.\n\nOn vreba, vreba, vreba... a ja je grlim mûkom\nNa javi i u snu,\nI preplašen se trzam i skrbno pipam rukom\nO, je li jošte tu?!\n\nSlobode koji nema taj o slobodi sanja,\nAh, ponajljepši san;\nI moja žedna duša tim sankom joj se klanja\nI pozdravlja joj dan.\n\nU osamničkom kutu ja slušam trubu njenu\nI krunidbeni pir,\nI jedro gdje joj bojno nad šumnu strmi pjenu\nU pola mora šir!\n\nSve cvjetno kopno ovo i veliko joj more\nPosvećuje mi grud;\nKo zvijezda sam na kojoj tek njeni dusi zbore,\nI... lutam kojekud.\n\nTe kad mi jednom s dušom po svemiru se krene,\nZaorit ću ko grom\nO, gledajte ju divnu, vi zvijezde udivljene,\nTo moj je, moj je dom!"
+    }
+  ],
   "questions": [
+    {
+      "sourceTextNo": 1,
+      "questionTitle": "Gdje lirski subjekt čuva svoju domovinu?",
+      "firstAnswer": "U rodnome gradu",
+      "secondAnswer": "U tuđini, daleko od svijeta",
+      "thirdAnswer": "U svojim grudima",
+      "fourthAnswer": "U starim knjigama",
+      "correctOption": 3,
+      "hintText": "Pročitajte prvi stih ulomka.",
+      "exploreMore": "Stih „tek u grud sam je skrio” kaže da domovinu pjesnik nosi u sebi, kao bol i kao ponos. Sve su mu snove pogazili, ali taj nisu."
+    },
+    {
+      "sourceTextNo": 1,
+      "questionTitle": "Koja je stilska figura u stihu „Zaorit ću ko grom”?",
+      "firstAnswer": "Usporedba",
+      "secondAnswer": "Personifikacija",
+      "thirdAnswer": "Onomatopeja",
+      "fourthAnswer": "Retoričko pitanje",
+      "correctOption": 1,
+      "exploreMore": "Riječ „ko”, skraćeno od „kao”, uvodi usporedbu: pjesnikov će glas biti snažan poput groma. Snažne slike i uzvišen, patetičan ton obilježja su Kranjčevićeva stila."
+    },
+    {
+      "sourceTextNo": 1,
+      "questionTitle": "Što znače stihovi „Slobode koji nema taj o slobodi sanja, / Ah, ponajljepši san”?",
+      "firstAnswer": "Slobodan čovjek sanja ljepše od neslobodnoga",
+      "secondAnswer": "Čovjeku bez slobode sloboda je najljepši san",
+      "thirdAnswer": "Snovi o slobodi opasni su i varljivi",
+      "fourthAnswer": "Sloboda se može ostvariti samo u snu",
+      "correctOption": 2,
+      "exploreMore": "Lirski subjekt slobodu svoje domovine doživljava kao san: „tim sankom joj se klanja” i unaprijed „pozdravlja joj dan”."
+    },
     {
       "questionTitle": "Tko je autor romana „Zločin i kazna”?",
       "firstAnswer": "Lav Nikolajevič Tolstoj",
@@ -75,6 +112,49 @@
       "fourthAnswer": "Uzor su antička djela i stroga pravila",
       "correctOption": 2,
       "exploreMore": "Realistički likovi imaju podrijetlo, zanimanje i psihologiju, a glavna je vrsta roman. Osjećaji i mašta obilježje su romantizma, simboli simbolizma, a antički uzori klasicizma."
+    },
+    {
+      "type": "matching",
+      "questionTitle": "Poveži pisca hrvatskoga realizma s krajem o kojem piše.",
+      "content": {
+        "pairs": [
+          {
+            "left": "Eugen Kumičić",
+            "right": "Istra i Primorje"
+          },
+          {
+            "left": "Josip Kozarac",
+            "right": "Slavonija"
+          },
+          {
+            "left": "Ante Kovačić",
+            "right": "Zagorje"
+          },
+          {
+            "left": "Vjenceslav Novak",
+            "right": "Senj i Podgorje"
+          }
+        ],
+        "extras": [
+          "Dalmacija",
+          "Lika"
+        ]
+      },
+      "exploreMore": "Većina hrvatskih realista opisuje svoj zavičaj, pa govorimo o regionalizmu. Kumičić je pisac Istre i Primorja, Kozarac Slavonije, Kovačić Zagorja, a Novak Senja i Podgorja."
+    },
+    {
+      "type": "ordering",
+      "questionTitle": "Poredaj romane od najstarijega do najmlađega.",
+      "content": {
+        "items": [
+          "„Gospođa Bovary”",
+          "„Zločin i kazna”",
+          "„Zlatarovo zlato”",
+          "„U registraturi”",
+          "„Posljednji Stipančići”"
+        ]
+      },
+      "exploreMore": "Uz romane stoje ove godine: „Gospođa Bovary” 1857., „Zločin i kazna” 1866., „Zlatarovo zlato” 1871., „U registraturi” 1888. i „Posljednji Stipančići” 1899."
     }
   ]
 }

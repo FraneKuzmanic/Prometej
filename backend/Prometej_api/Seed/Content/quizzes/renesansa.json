@@ -1,6 +1,43 @@
 {
   "quiz": { "title": "Renesansa: provjera znanja", "isPrivate": false, "periodId": 3 },
+  "sourceTexts": [
+    {
+      "caption": "Hanibal Lucić, Jur nijedna na svit vila (ulomak)",
+      "body": "Jur nijedna na svit vila\nLipotom se već ne slavi\nJer je hvale sve skupila\nVila ka mi srce travi.\nNi će biti, ni je bila,\nNjoj takmena ka se pravi.\nLipotom se već ne slavi\nJur nijedna na svit vila.\n\nVrhu njeje vedra čela\nVridna ti se kruna vidi\nOd kosice, ku je splela,\nKojom zlatu ne zavidi;\nSvakomu je radost vela,\nKad ju dobro razuvidi.\nVridna ti se kruna vidi\nVrhu njeje vedra čela.\n\nObrve su tanke i črne\nNad črnima nad očima,\nČrne oči kada svrne,\nČlovik tugu prem da ima,\nTuga mu se sva odvrne\nZa veselje koje prima.\nNad črnima nad očima\nObrve su tanke i črne.\n\n[...]\n\nGrihota bi da se stara\nOva lipost uzorita,\nBože, ki si svim odzgara,\nČin' da bude stanovita,\nNe daj vrime da ju shara\nDo skončanja sega svita.\nOva lipost uzorita\nGrihota bi da se stara."
+    }
+  ],
   "questions": [
+    {
+      "sourceTextNo": 1,
+      "questionTitle": "Što lirski subjekt u posljednjoj strofi moli od Boga?",
+      "firstAnswer": "Da mu vila uzvrati ljubav",
+      "secondAnswer": "Da ga vila zauvijek zaboravi",
+      "thirdAnswer": "Da on sam ostane zauvijek mlad",
+      "fourthAnswer": "Da ljepota njegove vile ostane trajna i da je vrijeme ne naruži",
+      "correctOption": 4,
+      "hintText": "Pročitajte stihove „Čin' da bude stanovita, / Ne daj vrime da ju shara”.",
+      "exploreMore": "Bila bi „grihota” da takva ljepota ostari, pa lirski subjekt moli Boga da je sačuva „do skončanja sega svita”."
+    },
+    {
+      "sourceTextNo": 1,
+      "questionTitle": "Što se u svakoj strofi događa s njezinim prvim dvama stihovima?",
+      "firstAnswer": "Ponavljaju se na kraju strofe, obrnutim redom",
+      "secondAnswer": "Ponavljaju se na početku sljedeće strofe",
+      "thirdAnswer": "Ponavljaju se u sredini strofe",
+      "fourthAnswer": "Ne ponavljaju se nigdje u pjesmi",
+      "correctOption": 1,
+      "exploreMore": "Svaka strofa ima osam stihova i završava onako kako je počela, samo što su prva dva stiha zamijenila mjesta. Tako je svaka strofa zaokružena cjelina."
+    },
+    {
+      "sourceTextNo": 1,
+      "questionTitle": "Čime lirski subjekt naziva spletenu kosu svoje vile?",
+      "firstAnswer": "Zlatnim vijencem",
+      "secondAnswer": "Vrijednom krunom",
+      "thirdAnswer": "Rumenom ružom",
+      "fourthAnswer": "Sitnim biserom",
+      "correctOption": 2,
+      "exploreMore": "U drugoj strofi kosa je „vridna kruna” nad vedrim čelom, toliko lijepa da „zlatu ne zavidi”. Lucić je autor zbirke ljubavnih pjesama, a ljubavno pjesništvo po uzoru na Petrarcu u renesansi se naziva petrarkizam."
+    },
     {
       "questionTitle": "Tko je napisao spjev „Judita”?",
       "firstAnswer": "Marin Držić",
@@ -76,6 +113,49 @@
       "fourthAnswer": "Vjerno opisivanje suvremenoga društva",
       "correctOption": 3,
       "exploreMore": "Renesansa obnavlja zanimanje za antiku i vjeruje u čovjekove sposobnosti. Kićen stil obilježje je baroka, pravilo triju jedinstava klasicizma, a vjeran opis društva realizma."
+    },
+    {
+      "type": "matching",
+      "questionTitle": "Poveži pisca s književnim središtem hrvatske renesanse kojemu pripada.",
+      "content": {
+        "pairs": [
+          {
+            "left": "Marko Marulić",
+            "right": "Split"
+          },
+          {
+            "left": "Hanibal Lucić",
+            "right": "Hvar"
+          },
+          {
+            "left": "Petar Zoranić",
+            "right": "Zadar"
+          },
+          {
+            "left": "Marin Držić",
+            "right": "Dubrovnik"
+          }
+        ],
+        "extras": [
+          "Šibenik",
+          "Trogir"
+        ]
+      },
+      "exploreMore": "Četiri su književna središta hrvatske renesanse: Split s Marulićem, Hvar s Lucićem i Hektorovićem, Zadar sa Zoranićem i Dubrovnik s Marinom Držićem i petrarkistima."
+    },
+    {
+      "type": "ordering",
+      "questionTitle": "Poredaj djela po vremenu nastanka, od najstarijega.",
+      "content": {
+        "items": [
+          "„Judita”",
+          "„Bijesni Orlando”",
+          "„Novela od Stanca”",
+          "„Hekuba”",
+          "„Don Quijote”"
+        ]
+      },
+      "exploreMore": "„Judita” je napisana 1501., prvo izdanje „Bijesnoga Orlanda” izišlo je 1516., „Novela od Stanca” nosi godinu 1550., „Hekuba” 1559., a „Don Quijote” 1605. i 1615. godinu."
     }
   ]
 }

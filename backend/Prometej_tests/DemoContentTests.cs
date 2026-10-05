@@ -45,7 +45,7 @@ namespace Prometej_tests
         }
     }
 
-    // These tests only read what was seeded, or add Quizzes under titles of their own.
+    // These tests only read what was seeded, play it, or add Quizzes under titles of their own.
     public class DemoContentTests(DemoContentFactory factory) : IClassFixture<DemoContentFactory>
     {
         private const string DemoCreatorName = "Uredništvo Prometeja";
@@ -60,10 +60,23 @@ namespace Prometej_tests
         private static int WordCount(string html) =>
             Regex.Replace(html, "<[^>]+>", " ").Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries).Length;
 
+        // A property that a file leaves out and the API answers with null reads the same.
+        private static JsonElement? Value(JsonElement element, string name) =>
+            element.ValueKind == JsonValueKind.Object && element.TryGetProperty(name, out var value) && value.ValueKind != JsonValueKind.Null ? value : null;
+
+        private static string Type(JsonElement question) => Value(question, "type")?.GetString() ?? "choice";
+
+        private static List<JsonElement> Items(JsonElement question, string name) =>
+            Value(question, "content") is { } content && Value(content, name) is { } list ? list.EnumerateArray().ToList() : [];
+
         // What a Question asks, offers and marks correct, in a file and in the API's answer alike.
         private static string Shape(JsonElement question) => string.Join(" | ",
             new[] { "questionTitle", "firstAnswer", "secondAnswer", "thirdAnswer", "fourthAnswer", "correctOption" }
-                .Select(name => question.GetProperty(name).ToString()));
+                .Select(name => Value(question, name)?.ToString())
+                .Append(Type(question))
+                .Concat(Items(question, "pairs").Select(pair => $"{pair.GetProperty("left").GetString()} = {pair.GetProperty("right").GetString()}"))
+                .Concat(Items(question, "extras").Select(extra => $"+ {extra.GetString()}"))
+                .Concat(Items(question, "items").Select(item => $"> {item.GetString()}")));
 
         private async Task<List<JsonElement>> DemoQuizzes()
         {
@@ -71,12 +84,11 @@ namespace Prometej_tests
             return quizzes.EnumerateArray().Where(q => q.GetProperty("creatorName").GetString() == DemoCreatorName).ToList();
         }
 
-        private async Task<List<JsonElement>> QuestionsOf(JsonElement quiz)
-        {
-            var id = quiz.GetProperty("id").GetInt32();
-            var opened = await factory.CreateHttpsClient().GetFromJsonAsync<JsonElement>($"/api/quiz/get/{id}");
-            return opened.GetProperty("questions").EnumerateArray().ToList();
-        }
+        private Task<JsonElement> Open(JsonElement quiz) =>
+            factory.CreateHttpsClient().GetFromJsonAsync<JsonElement>($"/api/quiz/get/{quiz.GetProperty("id").GetInt32()}");
+
+        private async Task<List<JsonElement>> QuestionsOf(JsonElement quiz) =>
+            (await Open(quiz)).GetProperty("questions").EnumerateArray().ToList();
 
         [Fact]
         public async Task Every_period_has_seed_content_that_starts_with_its_name()
@@ -161,14 +173,24 @@ namespace Prometej_tests
                 Assert.Equal(JsonValueKind.Null, quiz.GetProperty("entryCode").ValueKind);
 
                 var file = files.Single(f => f.GetProperty("quiz").GetProperty("title").GetString() == quiz.GetProperty("title").GetString());
+                var opened = await Open(quiz);
+                var fileQuestions = file.GetProperty("questions").EnumerateArray().ToList();
+                var questions = opened.GetProperty("questions").EnumerateArray().ToList();
+                Assert.Equal(fileQuestions.Select(Shape), questions.Select(Shape));
+
+                // The file's one source text, and the same questions asked about it.
+                var fileText = Assert.Single(file.GetProperty("sourceTexts").EnumerateArray());
+                var text = Assert.Single(opened.GetProperty("sourceTexts").EnumerateArray());
+                Assert.Equal(fileText.GetProperty("caption").GetString(), text.GetProperty("caption").GetString());
+                Assert.Equal(fileText.GetProperty("body").GetString(), text.GetProperty("body").GetString());
                 Assert.Equal(
-                    file.GetProperty("questions").EnumerateArray().Select(Shape),
-                    (await QuestionsOf(quiz)).Select(Shape));
+                    fileQuestions.Select(q => Value(q, "sourceTextNo") != null),
+                    questions.Select(q => Value(q, "sourceTextId")?.GetInt32() == text.GetProperty("id").GetInt32()));
             }
         }
 
         [Fact]
-        public async Task The_three_periods_with_a_quiz_each_have_one_of_eight_questions()
+        public async Task The_three_periods_with_a_quiz_each_have_one_of_thirteen_questions_of_every_kind()
         {
             var quizzes = await DemoQuizzes();
 
@@ -179,11 +201,42 @@ namespace Prometej_tests
             {
                 var questions = await QuestionsOf(quiz);
 
-                Assert.Equal(8, questions.Count);
+                Assert.Equal(13, questions.Count);
+                Assert.Equal(13, quiz.GetProperty("questionCount").GetInt32());
+                Assert.Equal(3, questions.Count(q => Value(q, "sourceTextId") != null));
+                Assert.Single(questions, q => Type(q) == "matching");
+                Assert.Single(questions, q => Type(q) == "ordering");
                 Assert.All(questions, q => Assert.False(string.IsNullOrWhiteSpace(q.GetProperty("exploreMore").GetString())));
                 Assert.True(questions.Count(q => q.GetProperty("hintText").ValueKind == JsonValueKind.String) >= 3);
                 // The right answer is not always in the same place.
-                Assert.Equal(4, questions.Select(q => q.GetProperty("correctOption").GetInt32()).Distinct().Count());
+                Assert.Equal(4, questions.Where(q => Type(q) == "choice").Select(q => q.GetProperty("correctOption").GetInt32()).Distinct().Count());
+            }
+        }
+
+        // Every right answer is where the file says it is: a play of nothing but right answers
+        // wins every point, a point for each choice question, pair and place.
+        [Fact]
+        public async Task Every_demo_question_can_be_played()
+        {
+            var student = await factory.LoginAsNewStudent();
+
+            foreach (var quiz in await DemoQuizzes())
+            {
+                var questions = await QuestionsOf(quiz);
+                var answers = questions.Select(q => Type(q) switch
+                {
+                    "matching" => (object)new { questionId = q.GetProperty("id").GetInt32(), matches = Enumerable.Range(1, Items(q, "pairs").Count) },
+                    "ordering" => new { questionId = q.GetProperty("id").GetInt32(), order = Enumerable.Range(1, Items(q, "items").Count) },
+                    _ => new { questionId = q.GetProperty("id").GetInt32(), chosenOption = q.GetProperty("correctOption").GetInt32() },
+                });
+
+                var response = await student.PostAsJsonAsync("/api/quiz/submit", new { quizId = quiz.GetProperty("id").GetInt32(), answers });
+
+                Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+                var game = await response.Content.ReadFromJsonAsync<JsonElement>();
+                var points = questions.Sum(q => Math.Max(1, Items(q, "pairs").Count + Items(q, "items").Count));
+                Assert.Equal(points, game.GetProperty("answers").GetArrayLength());
+                Assert.Equal(points, game.GetProperty("score").GetInt32());
             }
         }
 
@@ -219,6 +272,7 @@ namespace Prometej_tests
                         isPrivate = false,
                         periodId = file.GetProperty("quiz").GetProperty("periodId").GetInt32(),
                     },
+                    sourceTexts = file.GetProperty("sourceTexts"),
                     questions = file.GetProperty("questions"),
                 };
 
