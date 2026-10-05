@@ -49,7 +49,12 @@ namespace Prometej_tests
     public class DemoContentTests(DemoContentFactory factory) : IClassFixture<DemoContentFactory>
     {
         private const string DemoCreatorName = "Uredništvo Prometeja";
-        private static readonly int[] FullPeriods = [3, 4, 6];
+        private static readonly int[] PeriodsWithAQuiz = [3, 4, 6];
+        private static readonly string[] Chapters =
+        [
+            "Naziv i vremenski okvir", "Društveni i povijesni kontekst", "Obilježja razdoblja",
+            "Europska književnost", "Hrvatska književnost", "Djela", "Sažetak",
+        ];
         private static readonly string[] PlainElements = ["h1", "h2", "h3", "h4", "p", "ul", "ol", "li", "blockquote", "strong", "em"];
 
         private static int WordCount(string html) =>
@@ -88,7 +93,7 @@ namespace Prometej_tests
                     .GetProperty("content").GetString()!;
 
                 Assert.StartsWith($"<h1>{name}</h1>", content);
-                Assert.True(WordCount(content) >= (FullPeriods.Contains(id) ? 800 : 200), $"{name}: {WordCount(content)} words");
+                Assert.True(WordCount(content) >= 1000, $"{name}: {WordCount(content)} words");
             }
         }
 
@@ -115,6 +120,21 @@ namespace Prometej_tests
                 {
                     Assert.True(PlainElements.Contains(tag.Groups[1].Value.TrimStart('/')), $"Period {periodId}: {tag.Value}");
                 }
+            }
+        }
+
+        // One outline for every Period, so a student finds the same chapter in the same place.
+        [Fact]
+        public void Every_period_has_the_same_seven_chapters()
+        {
+            foreach (var (periodId, text) in SeedFiles.Periods())
+            {
+                var chapters = Regex.Matches(text, "<h2>(.*?)</h2>").Select(m => m.Groups[1].Value);
+                var works = Regex.Match(text, "<h2>Djela</h2>(.*)<h2>Sažetak</h2>", RegexOptions.Singleline).Groups[1].Value;
+                var workCount = Regex.Matches(works, "<h3>").Count;
+
+                Assert.Equal(Chapters, chapters);
+                Assert.True(workCount is >= 2 and <= 5, $"Period {periodId}: {workCount} works");
             }
         }
 
@@ -148,7 +168,7 @@ namespace Prometej_tests
         }
 
         [Fact]
-        public async Task The_three_full_periods_each_have_a_quiz_of_eight_questions()
+        public async Task The_three_periods_with_a_quiz_each_have_one_of_eight_questions()
         {
             var quizzes = await DemoQuizzes();
 
@@ -177,7 +197,7 @@ namespace Prometej_tests
             Assert.Equal(["Renesansa", "Realizam", "Modernizam"], quizzes.Select(q => q.GetProperty("periodName").GetString()));
             Assert.All(quizzes, q => Assert.Equal(
                 $"{q.GetProperty("periodName").GetString()}: provjera znanja", q.GetProperty("title").GetString()));
-            foreach (var period in periods.EnumerateArray().Where(p => FullPeriods.Contains(p.GetProperty("id").GetInt32())))
+            foreach (var period in periods.EnumerateArray().Where(p => PeriodsWithAQuiz.Contains(p.GetProperty("id").GetInt32())))
             {
                 Assert.True(period.GetProperty("quizCount").GetInt32() >= 1, period.GetProperty("name").GetString());
             }

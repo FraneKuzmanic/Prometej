@@ -13,8 +13,8 @@ periods of the national exam catalogue.
 
 **Anyone**, without an account
 
-- reads the material of a period and searches it; the search ignores case and Croatian
-  diacritics, so "senoa" finds "Šenoa"
+- reads the material of a period, with a contents list that follows the reading, and searches
+  it; the search ignores case and Croatian diacritics, so "senoa" finds "Šenoa"
 - plays public quizzes, or a private one with the five-digit entry code a teacher gave the class
 - can open a hint before answering and, where the quiz has one, reads an explanation after it
 
@@ -139,9 +139,15 @@ The client has no automated tests yet; `npm run lint` and `npm run build` are it
 
 ## Sample content
 
-The overview of each period and the three sample quizzes were written for this project, with
-Hrvatska enciklopedija and the NCVVO exam catalogue as sources. They are sample material and
-have not been reviewed by a teacher.
+Every period has study material in the same seven chapters: the name and time frame, the
+social and historical context, the features of the period, European literature, Croatian
+literature, the works, and a summary. Under "the works", the two to five works a student has to
+know are taken one by one: a note on the writer, the literary elements, a short summary and the
+characters. Three periods also have a sample quiz.
+
+The choice of works follows the NCVVO exam catalogue. The facts were taken from Hrvatska
+enciklopedija, lektire.hr, Croatian Wikipedia and Leksikon Marina Držića; the text was written
+for this project. It is sample material and **has not been reviewed by a teacher**.
 
 ## Not done yet
 
