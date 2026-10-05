@@ -16,6 +16,10 @@ periods of the national exam catalogue.
 - reads the material of a period, with a contents list that follows the reading, and searches
   it; the search ignores case and Croatian diacritics, so "senoa" finds "Šenoa"
 - plays public quizzes, or a private one with the five-digit entry code a teacher gave the class
+- answers three kinds of question: four options, matching pairs, and putting items in order,
+  with a point for every right pair or place
+- reads the poem or excerpt a question is asked about beside the question, the form most of
+  the national exam's reading and literature tasks take
 - can open a hint before answering and, where the quiz has one, reads an explanation after it
 
 **Anyone signed in** (registering creates a student account)
@@ -26,10 +30,11 @@ periods of the national exam catalogue.
 
 **A teacher**
 
-- writes quizzes of four-option questions, public or private, optionally tied to a period
+- writes quizzes, public or private, optionally tied to a period, mixing four-option, matching
+  and ordering questions, and can put a source text above a run of questions
 - sees how a quiz was played: every play and its answers, each question with how often it was
-  answered right and the wrong answer chosen most often, and each student's number of plays,
-  first and best result
+  answered right and the wrong answer chosen most often (pair by pair and place by place for
+  the other two kinds), and each student's number of plays, first and best result
 
 **An admin**
 
@@ -58,11 +63,17 @@ A few things worth knowing before reading the code:
   the session still holds, are read from the account on every request
   ([0004](docs/adr/0004-a-session-is-checked-against-the-stored-account.md)).
 - **The server trusts nothing it can compute.** Who is calling comes from the token and their
-  role from the database. A play is submitted as option numbers; the server builds the result
-  from the stored questions and ignores a score in the request.
+  role from the database. A play is submitted as numbers (the option chosen, the pairs made,
+  the order given); the server builds the result from the stored questions and ignores a score
+  in the request.
 - **Old results never change.** An answer keeps the texts it was played with, and a question
   removed from a played quiz is retired instead of deleted, so editing a quiz does not rescore
-  the plays before the edit.
+  the plays before the edit. A source text that was played is kept the same way: an edit
+  stores a new version, and the review of an old play shows the one that was read.
+- **A point is an answer row.** A play stores a row for each point it could win: one for a
+  four-option question, one for each pair, one for each place. The score is the number of
+  right rows, as it was when every question was worth one, so no stored result was migrated
+  ([0005](docs/adr/0005-one-answer-row-per-point.md)).
 - **Errors are typed.** Services throw `NotFoundException`, `ForbiddenException` and the like;
   one handler maps them to status codes. Controllers have no `try/catch`.
 - **A retried submit stores one play.** The client sends a key per play, and a unique index
@@ -74,6 +85,7 @@ Decisions with a longer story are in [`docs/adr`](docs/adr):
 - [0002](docs/adr/0002-correct-answer-as-option-number.md): the correct answer is stored as an option number
 - [0003](docs/adr/0003-period-ids-are-not-their-order.md): a period's id is not its place in the curriculum order
 - [0004](docs/adr/0004-a-session-is-checked-against-the-stored-account.md): a session is checked against the stored account
+- [0005](docs/adr/0005-one-answer-row-per-point.md): a point is an answer row, whatever the type of question
 
 ## Running it locally
 
@@ -132,8 +144,9 @@ dotnet test
 
 The tests are integration tests: they start the real API against PostgreSQL in a container
 and talk to it over HTTP, so Docker has to be running. They cover authentication and
-authorization per role, quiz validation, plays and results, both searches, and the data
-migrations (a migration that moves data is run against rows of the older schema).
+authorization per role, quiz validation, the three question types and source texts, plays and
+results, both searches, and the migrations (a migration is run against rows of the older
+schema, to show what it does to them).
 
 The client has no automated tests yet; `npm run lint` and `npm run build` are its gates.
 
@@ -143,7 +156,10 @@ Every period has study material in the same seven chapters: the name and time fr
 social and historical context, the features of the period, European literature, Croatian
 literature, the works, and a summary. Under "the works", the two to five works a student has to
 know are taken one by one: a note on the writer, the literary elements, a short summary and the
-characters. Three periods also have a sample quiz.
+characters. Three periods also have a sample quiz of thirteen questions: three on a poem
+shown beside them, eight four-option questions, one matching and one ordering question. The
+poems (by Hanibal Lucić, Silvije Strahimir Kranjčević and Antun Gustav Matoš) are in the
+public domain and are quoted from Croatian Wikisource.
 
 The choice of works follows the NCVVO exam catalogue. The facts were taken from Hrvatska
 enciklopedija, lektire.hr, Croatian Wikipedia and Leksikon Marina Držića; the text was written
