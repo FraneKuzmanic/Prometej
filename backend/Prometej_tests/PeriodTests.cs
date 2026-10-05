@@ -43,5 +43,22 @@ namespace Prometej_tests
             Assert.Equal(HttpStatusCode.NotFound, zero.StatusCode);
             Assert.Equal(HttpStatusCode.NotFound, read.StatusCode);
         }
+
+        [Fact]
+        public async Task A_period_is_listed_with_the_number_of_its_topics()
+        {
+            var client = factory.CreateHttpsClient();
+            async Task<Dictionary<int, int>> TopicCounts() =>
+                (await client.GetFromJsonAsync<JsonElement>("/api/period")).EnumerateArray()
+                    .ToDictionary(p => p.GetProperty("id").GetInt32(), p => p.GetProperty("topicCount").GetInt32());
+
+            var before = await TopicCounts();
+            factory.AddTopics(periodId: 9, count: 2);
+            var after = await TopicCounts();
+
+            Assert.All(before.Values, count => Assert.Equal(0, count));
+            Assert.Equal(2, after[9]);
+            Assert.Equal(0, after[8]);
+        }
     }
 }

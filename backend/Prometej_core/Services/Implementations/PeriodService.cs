@@ -21,12 +21,14 @@ namespace Prometej_core.Services.Implementations
         private readonly IRepository<PeriodContent> _periodRepository;
         private readonly IRepository<Period> _periodListRepository;
         private readonly IRepository<Quiz> _quizRepository;
-        public PeriodService(IMapper mapper, IRepository<PeriodContent> periodRepository, IRepository<Period> periodListRepository, IRepository<Quiz> quizRepository)
+        private readonly IRepository<Topic> _topicRepository;
+        public PeriodService(IMapper mapper, IRepository<PeriodContent> periodRepository, IRepository<Period> periodListRepository, IRepository<Quiz> quizRepository, IRepository<Topic> topicRepository)
         {
             _mapper = mapper;
             _periodRepository = periodRepository;
             _periodListRepository = periodListRepository;
             _quizRepository = quizRepository;
+            _topicRepository = topicRepository;
         }
 
         public List<PeriodViewModel> GetPeriods()
@@ -35,11 +37,15 @@ namespace Prometej_core.Services.Implementations
             var quizCounts = _quizRepository.ReadAll().Where(Quiz.IsListed).Where(q => q.PeriodId != null)
                 .GroupBy(q => q.PeriodId).Select(g => new { PeriodId = g.Key, Count = g.Count() })
                 .ToDictionary(g => g.PeriodId!.Value, g => g.Count);
+            var topicCounts = _topicRepository.ReadAll()
+                .GroupBy(t => t.PeriodId).Select(g => new { PeriodId = g.Key, Count = g.Count() })
+                .ToDictionary(g => g.PeriodId, g => g.Count);
 
             var periodViewModels = _mapper.Map<List<PeriodViewModel>>(periods);
             foreach (var period in periodViewModels)
             {
                 period.QuizCount = quizCounts.GetValueOrDefault(period.Id);
+                period.TopicCount = topicCounts.GetValueOrDefault(period.Id);
             }
 
             return periodViewModels;

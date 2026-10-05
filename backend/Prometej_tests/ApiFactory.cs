@@ -109,5 +109,22 @@ namespace Prometej_tests
             context.SaveChanges();
             return quiz.Id;
         }
+
+        // Topics stored directly: the API lets one account post five times a minute, and a
+        // test about pages needs more than that. Each is a minute newer than the one before.
+        public void AddTopics(int periodId, int count)
+        {
+            using var scope = Services.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<DataContext>();
+            var start = DateTime.UtcNow.AddHours(-1);
+            context.Topics.AddRange(Enumerable.Range(1, count).Select(i => new Topic
+            {
+                PeriodId = periodId,
+                Title = $"Tema {i}",
+                Body = "Tekst",
+                CreatedAt = start.AddMinutes(i),
+            }));
+            context.SaveChanges();
+        }
     }
 }

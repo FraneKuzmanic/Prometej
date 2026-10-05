@@ -9,5 +9,7 @@ namespace Prometej_core.Models.ViewModels
         public string? Image { get; set; }
         // The Public Quizzes about this Period that have Questions.
         public int QuizCount { get; set; }
+        // The topics in this Period's discussion.
+        public int TopicCount { get; set; }
     }
 }

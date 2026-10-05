@@ -1,9 +1,11 @@
 using System.Security.Claims;
+using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Prometej_api.Auth;
+using Prometej_api.Controllers;
 using Prometej_api.ErrorHandling;
 using Prometej_api.Seed;
 using Prometej_core.DataAccessLayer;
@@ -38,6 +40,8 @@ builder.Services.AddTransient<IRepository<Question>, Repository<Question>>();
 builder.Services.AddTransient<IRepository<Answer>, Repository<Answer>>();
 builder.Services.AddTransient<IRepository<QuizGame>, Repository<QuizGame>>();
 builder.Services.AddTransient<IRepository<SourceText>, Repository<SourceText>>();
+builder.Services.AddTransient<IRepository<Topic>, Repository<Topic>>();
+builder.Services.AddTransient<IRepository<Reply>, Repository<Reply>>();
 
 #endregion Repo DI
 
@@ -46,6 +50,7 @@ builder.Services.AddTransient<IRepository<SourceText>, Repository<SourceText>>()
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IPeriodService, PeriodService>();
 builder.Services.AddScoped<IQuizService, QuizService>();
+builder.Services.AddScoped<IDiscussionService, DiscussionService>();
 builder.Services.AddSingleton<TokenService>();
 
 #endregion Service DI
@@ -113,6 +118,19 @@ builder.Services.AddAuthorization();
 
 #endregion Authentication
 
+#region Rate limiting
+
+// One account cannot flood a discussion: five posts a minute, counted per user.
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.AddPolicy(DiscussionController.PostingLimit, httpContext => RateLimitPartition.GetFixedWindowLimiter(
+        httpContext.User.FindFirstValue("sub") ?? "",
+        _ => new FixedWindowRateLimiterOptions { PermitLimit = 5, Window = TimeSpan.FromMinutes(1) }));
+});
+
+#endregion Rate limiting
+
 builder.Services.AddExceptionHandler<DomainExceptionHandler>();
 builder.Services.AddProblemDetails();
 
@@ -145,6 +163,9 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 
 app.UseAuthorization();
+
+// After authorization, so a request without a session is refused before it is counted.
+app.UseRateLimiter();
 
 app.MapControllers();
 

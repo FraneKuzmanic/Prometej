@@ -16,6 +16,8 @@ namespace Prometej_persistance
         public DbSet<Answer> Answers { get; set; }
         public DbSet<QuizGame> QuizGames { get; set; }
         public DbSet<SourceText> SourceTexts { get; set; }
+        public DbSet<Topic> Topics { get; set; }
+        public DbSet<Reply> Replies { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -47,6 +49,11 @@ namespace Prometej_persistance
                 json => json == null ? null : JsonSerializer.Deserialize<QuestionContent>(json, QuestionContent.Json));
             modelBuilder.Entity<Answer>()
                 .HasOne<SourceText>().WithMany().HasForeignKey(a => a.SourceTextId).OnDelete(DeleteBehavior.SetNull);
+            // A post outlives its author's account: the row stays and names nobody.
+            modelBuilder.Entity<Topic>()
+                .HasOne(t => t.Author).WithMany().HasForeignKey(t => t.AuthorId).OnDelete(DeleteBehavior.SetNull);
+            modelBuilder.Entity<Reply>()
+                .HasOne(r => r.Author).WithMany().HasForeignKey(r => r.AuthorId).OnDelete(DeleteBehavior.SetNull);
         }
 
     }
