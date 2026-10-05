@@ -1,54 +1,146 @@
-<h2>Prometej - a web platform that helps students learn Croatian literature</h2>
+# Prometej
 
-<p>This project was developed for my college final work. The idea was to colaborate with my high school professors who would use the platform to write quality learning material for students. It is an interactive learning application designed to help students with learning Croatian literature. It provides written learning materials curated by administrators and allows students to practice their knowledge through quizzes created by teachers. Quizzes can be public or private, enabling tailored assessment for specific classes or groups. The system aims to support teachers in sharing knowledge efficiently while motivating students through a dynamic digital learning environment. </p>
+A web platform for learning Croatian literature. The learning material is organised by
+literary period; quizzes let students check what they read and let teachers see how a class did.
 
-<p>If you want to check out full paper written in Croatian with application screenshots you can see it here <a href="https://drive.google.com/file/d/1dKCoy6_ElFA_kVEj95mHxvKKT-1d5zTl/view?usp=drive_link" target="_blank">Prometej</a></p>
+It started in 2024 as my final paper at university, written with the idea that my high-school
+teachers would author the material. The [paper](https://drive.google.com/file/d/1dKCoy6_ElFA_kVEj95mHxvKKT-1d5zTl/view?usp=drive_link)
+(in Croatian, with screenshots) describes that first version. Since then the project has been
+reworked: real authentication, validated quizzes, stored results, search, and the twelve
+periods of the national exam catalogue.
 
-<p>Technologies used:</p>
-<ul>
-  <li><b>React</b> – front-end library for building user interfaces</li>
-  <li><b>TypeScript</b> – strongly typed language that extends JavaScript</li>
-  <li><b>.NET</b> – back-end framework for building APIs and business logic</li>
-  <li><b>PostgreSQL</b> – relational database for storing and managing data</li>
-</ul>
+## What it does
 
-<h3>Installation:</h3>
+**Anyone**, without an account
 
-<h4>Client-side:</h4>
-<p>1. Check if you have <a href="https://nodejs.org/" target="_blank">Node.js</a>, if not download it</p>
-<p>2. Clone the repository</p>
-<pre lang="markdown"> git clone https://github.com/FraneKuzmanic/Prometej.git
- cd Prometej/frontend  </pre>
- <p>3. Install  dependencies</p>
- <pre lang="markdown"> npm install
- # or
- yarn install </pre>
- <p>4. Start the development server</p>
-  <pre lang="markdown">npm run dev
-# or
-yarn dev </pre>
+- reads the material of a period and searches it; the search ignores case and Croatian
+  diacritics, so "senoa" finds "Šenoa"
+- plays public quizzes, or a private one with the five-digit entry code a teacher gave the class
+- can open a hint before answering and, where the author wrote one, reads an explanation after it
 
-<h4>Server-side:</h4> 
-<p>1. Check if you have <a href="https://dotnet.microsoft.com/en-us/download/dotnet/8.0" target=_blank">.NET 8</a>, if not download it</p>
-<p>2. Navigate to a repository</p>
-<pre lang="markdown">cd backend</pre>
-<p>3. Restore dependencies</p>
-<pre lang="markdown">dotnet restore</pre>
-<p>4. In <b>Prometej_api/appsettings.json</b> configure the connection string for the PostgreSQL database</p>
-<p>5. Set the secrets the server needs: a signing key for the session token (base64 of at least 32 random bytes, for example the output of <code>openssl rand -base64 48</code>) and the first admin account. Registration through the application only creates students, so teacher and admin accounts are created from this configuration when the server starts.</p>
-<pre lang="markdown">dotnet user-secrets set "Jwt:Key" "&lt;base64 key&gt;" --project Prometej_api
+**A student** (anyone who registers)
+
+- has every play stored, and sees it again under "Moji rezultati", answer by answer
+- sees their progress per period
+
+**A teacher**
+
+- writes quizzes of four-option questions, public or private, optionally tied to a period
+- sees how a quiz was played: every play and its answers, each question with how often it was
+  answered right and the wrong answer chosen most often, and each student's attempts, first
+  and best result
+
+**An admin**
+
+- writes the material of each period in a rich-text editor
+- can do everything a teacher can, on any quiz
+
+The interface is in Croatian.
+
+## How it is built
+
+```
+backend/     .NET 8, ASP.NET Core, EF Core, PostgreSQL
+  Prometej_api/            host, controllers, authentication, seed content
+  Prometej_core/           entities, request and view models, services
+  Prometej_persistance/    DbContext, migrations, repository
+  Prometej_tests/          integration tests
+frontend/    React 18, TypeScript, Vite, Redux Toolkit, MUI
+```
+
+A few things worth knowing before reading the code:
+
+- **The session is a JWT in an `HttpOnly`, `Secure`, `SameSite=Lax` cookie.** The page's script
+  never sees it. The client calls a relative `/api`, which the dev server proxies to the API,
+  so the browser sees one origin.
+- **The server trusts nothing it can compute.** Who is calling and their role come from the
+  token. A play is submitted as option numbers; the server builds the result from the stored
+  questions and ignores a score in the request.
+- **Old results never change.** An answer keeps the texts it was played with, and a question
+  removed from a played quiz is retired instead of deleted, so editing a quiz does not rescore
+  the plays before the edit.
+- **Errors are typed.** Services throw `NotFoundException`, `ForbiddenException` and the like;
+  one handler maps them to status codes. Controllers have no `try/catch`.
+- **A retried submit stores one play.** The client sends a key per play, and a unique index
+  is the guarantee.
+
+Decisions with a longer story are in [`docs/adr`](docs/adr):
+
+- [0001](docs/adr/0001-retire-played-questions.md): a question removed from a played quiz is retired, not deleted
+- [0002](docs/adr/0002-correct-answer-as-option-number.md): the correct answer is stored as an option number
+- [0003](docs/adr/0003-period-ids-are-not-their-order.md): a period's id is not its place in the curriculum order
+
+## Running it locally
+
+You need the [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0),
+[Node.js](https://nodejs.org/) and PostgreSQL. Docker is needed only for the tests.
+
+### 1. Configuration
+
+No secret is kept in a tracked file. From `backend/`, set the connection string, a signing key
+for the session token (base64 of at least 32 random bytes, for example the output of
+`openssl rand -base64 48`) and the first admin account:
+
+```
+dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Host=localhost;Port=5432;Username=postgres;Password=<password>;Database=prometej" --project Prometej_api
+dotnet user-secrets set "Jwt:Key" "<base64 key>" --project Prometej_api
 dotnet user-secrets set "Seed:Users:0:Email" "admin@example.com" --project Prometej_api
-dotnet user-secrets set "Seed:Users:0:Password" "&lt;password&gt;" --project Prometej_api
+dotnet user-secrets set "Seed:Users:0:Password" "<password>" --project Prometej_api
 dotnet user-secrets set "Seed:Users:0:FirstName" "Admin" --project Prometej_api
 dotnet user-secrets set "Seed:Users:0:LastName" "Prometej" --project Prometej_api
-dotnet user-secrets set "Seed:Users:0:Role" "admin" --project Prometej_api</pre>
-<p>Repeat with index <code>1</code> and role <code>teacher</code> for a teacher account.</p>
-<p>6. Start the server. In development it applies the database migrations on start and fills the periods with sample content and three quizzes when <code>Seed:DemoContent</code> is enabled. The sample was written for this project, with Hrvatska enciklopedija and the NCVVO exam catalogue as its sources.</p>
-<pre lang="markdown">dotnet run --project Prometej_api --launch-profile https</pre>
-<p>The client development server forwards <code>/api</code> to <code>https://localhost:7041</code>, so start the server before opening the client.</p>
+dotnet user-secrets set "Seed:Users:0:Role" "admin" --project Prometej_api
+```
 
-<h4>Tests:</h4>
-<p>The server has integration tests that run the API against PostgreSQL in a container, so Docker has to be running.</p>
-<pre lang="markdown">cd backend
-dotnet test</pre>
+Registration only creates students. Repeat the five `Seed:Users` lines with index `1` and role
+`teacher` for a teacher account.
 
+### 2. The server
+
+```
+cd backend
+dotnet run --project Prometej_api --launch-profile https
+```
+
+In development the server creates the database if it is missing, applies the migrations,
+creates the seeded accounts and fills the periods with sample content and three quizzes. The
+database user therefore has to be allowed to create a database and the `unaccent` extension.
+The server listens on `https://localhost:7041`.
+
+### 3. The client
+
+```
+cd frontend
+npm install
+npm run dev
+```
+
+It serves `http://localhost:5173` and forwards `/api` to the server, so start the server first.
+`VITE_PROXY_TARGET` in a `.env` file changes the target (see `.env.example`).
+
+## Tests
+
+```
+cd backend
+dotnet test
+```
+
+The tests are integration tests: they start the real API against PostgreSQL in a container
+and talk to it over HTTP, so Docker has to be running. They cover authentication and
+authorization per role, quiz validation, plays and results, both searches, and the data
+migrations (a migration that moves data is run against rows of the older schema).
+
+The client has no automated tests yet; `npm run lint` and `npm run build` are its gates.
+
+## Sample content
+
+The overview of each period and the three sample quizzes were written for this project, with
+Hrvatska enciklopedija and the NCVVO exam catalogue as sources. They are sample material and
+have not been reviewed by a teacher.
+
+## Not done yet
+
+- The application is not deployed.
+- A teacher account can only be created through configuration; there is no screen for roles.
+- No password change or reset.
+- No automated tests for the client.
+- A private quiz is practice, not an exam: the correct answer is shown after each question.
