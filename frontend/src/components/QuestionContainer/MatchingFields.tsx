@@ -27,14 +27,14 @@ export default function MatchingFields({
     });
 
   return (
-    <Box className="matching-fields">
+    <Box className="item-fields">
       {pairs.map((pair, index) => (
-        <Box className="matching-pair" key={index}>
+        <Box className="item-row" key={index}>
           <Typography className="letter" component="span">
             {index + 1}
           </Typography>
           <TextField
-            className="matching-input"
+            className="item-input"
             size="small"
             placeholder="Lijevi pojam"
             inputProps={{
@@ -45,7 +45,7 @@ export default function MatchingFields({
             onChange={(e) => changePair(index, { left: e.target.value })}
           />
           <TextField
-            className="matching-input"
+            className="item-input"
             size="small"
             placeholder="Njegov par"
             inputProps={{
@@ -59,7 +59,7 @@ export default function MatchingFields({
           {pairs.length > MIN_PAIRS ? (
             <IconButton
               aria-label={`Ukloni par ${index + 1}`}
-              className="matching-remove"
+              className="item-remove"
               onClick={() =>
                 onChange({ pairs: pairs.filter((_, i) => i !== index) })
               }
@@ -67,16 +67,16 @@ export default function MatchingFields({
               <CloseIcon />
             </IconButton>
           ) : (
-            <span className="matching-remove" />
+            <span className="item-remove" />
           )}
         </Box>
       ))}
       {extras.map((extra, index) => (
-        <Box className="matching-pair" key={`extra-${index}`}>
-          <span className="letter matching-no-letter" />
-          <span className="matching-input" />
+        <Box className="item-row" key={`extra-${index}`}>
+          <span className="letter item-no-letter" />
+          <span className="item-input" />
           <TextField
-            className="matching-input"
+            className="item-input"
             size="small"
             placeholder="Dodatni odgovor (neobavezno)"
             inputProps={{
@@ -92,10 +92,10 @@ export default function MatchingFields({
               })
             }
           />
-          <span className="matching-remove" />
+          <span className="item-remove" />
         </Box>
       ))}
-      <Box className="matching-buttons">
+      <Box className="item-buttons">
         {pairs.length < MAX_PAIRS && (
           <Button
             variant="contained"

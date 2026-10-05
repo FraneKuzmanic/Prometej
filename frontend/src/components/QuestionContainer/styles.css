@@ -65,7 +65,7 @@
     min-width: 0;
 }
 
-.matching-fields{
+.item-fields{
     display: flex;
     flex-direction: column;
     gap: 12px;
@@ -81,56 +81,56 @@
     border-radius: 5px;
 }
 
-.matching-pair{
+.item-row{
     display: flex;
     align-items: stretch;
     gap: 12px;
 }
 
-.matching-pair .letter{
+.item-row .letter{
     height: auto;
     border-radius: 5px;
 }
 
-.matching-pair .matching-no-letter{
+.item-row .item-no-letter{
     visibility: hidden;
 }
 
-.matching-input{
+.item-input{
     flex: 1;
     min-width: 0;
 }
 
-.matching-input.MuiTextField-root{
+.item-input.MuiTextField-root{
     background-color: white;
     border-radius: 5px;
 }
 
-.matching-input .MuiInputBase-input{
+.item-input .MuiInputBase-input{
     color: rgba(0, 0, 0, 0.6);
 }
 
-.matching-remove{
+.item-remove{
     width: 40px;
     flex-shrink: 0;
 }
 
-.MuiIconButton-root.matching-remove{
+.MuiIconButton-root.item-remove{
     color: white;
     background-color: #553b08;
     border-radius: 5px;
 }
 
-.matching-buttons{
+.item-buttons{
     display: flex;
     gap: 12px;
 }
 
-.matching-buttons .MuiButton-root{
+.item-buttons .MuiButton-root{
     background-color: #553b08;
 }
 
-.matching-buttons .MuiButton-root:hover{
+.item-buttons .MuiButton-root:hover{
     background-color: #815b0d;
 }
 

@@ -15,17 +15,17 @@ export default function OrderingFields({
   const { items } = question;
 
   return (
-    <Box className="matching-fields">
+    <Box className="item-fields">
       <Typography className="ordering-note">
         Unesite pojmove pravim redoslijedom. Učenik će ih dobiti izmiješane.
       </Typography>
       {items.map((item, index) => (
-        <Box className="matching-pair" key={index}>
+        <Box className="item-row" key={index}>
           <Typography className="letter" component="span">
             {index + 1}
           </Typography>
           <TextField
-            className="matching-input"
+            className="item-input"
             size="small"
             placeholder="Pojam"
             inputProps={{ maxLength: 200, "aria-label": `Pojam ${index + 1}` }}
@@ -42,7 +42,7 @@ export default function OrderingFields({
           {items.length > MIN_ITEMS ? (
             <IconButton
               aria-label={`Ukloni pojam ${index + 1}`}
-              className="matching-remove"
+              className="item-remove"
               onClick={() =>
                 onChange({ items: items.filter((_, i) => i !== index) })
               }
@@ -50,12 +50,12 @@ export default function OrderingFields({
               <CloseIcon />
             </IconButton>
           ) : (
-            <span className="matching-remove" />
+            <span className="item-remove" />
           )}
         </Box>
       ))}
       {items.length < MAX_ITEMS && (
-        <Box className="matching-buttons">
+        <Box className="item-buttons">
           <Button
             variant="contained"
             onClick={() => onChange({ items: [...items, ""] })}

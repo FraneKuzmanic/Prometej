@@ -158,7 +158,8 @@ export interface QuestionReport {
     questionTitle: string;
     type: QuestionType;
     isRetired: boolean;
-    // the caption of the Question's Source Text as it is today; null without one
+    // the Question's Source Text as it is today, and its caption; null without one
+    sourceTextId: number | null;
     sourceTextCaption: string | null;
     // points possible and points won, over every play
     answerCount: number;

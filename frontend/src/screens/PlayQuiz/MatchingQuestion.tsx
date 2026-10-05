@@ -6,7 +6,7 @@ import {
   AnswerCreateRequest,
   QuestionViewModel,
 } from "../../types/models/Quiz";
-import { shuffled } from "./shuffle";
+import { shuffledOutOfOrder } from "./shuffle";
 
 interface MatchingQuestionProps {
   question: QuestionViewModel;
@@ -31,7 +31,9 @@ export default function MatchingQuestion({
     ...(question.content?.extras ?? []),
   ];
   // The order they are shown in, made once for this play of the Question.
-  const [shownOrder] = useState(() => shuffled(rightOptions.length));
+  const [shownOrder] = useState(() =>
+    shuffledOutOfOrder(rightOptions.length)
+  );
   // for each left item, the right-hand option linked to it
   const [links, setLinks] = useState<(number | null)[]>(() =>
     pairs.map(() => null)
@@ -88,7 +90,7 @@ export default function MatchingQuestion({
                 className={`quiz-play-item${
                   links[left] !== null ? mark(left) : ""
                 }${activeLeft === left ? " active" : ""}`}
-                aria-pressed={activeLeft === left}
+                aria-pressed={activeLeft === left || links[left] !== null}
                 disabled={checked}
                 onClick={() => handleLeft(left)}
               >

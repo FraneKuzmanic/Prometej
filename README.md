@@ -156,10 +156,10 @@ Every period has study material in the same seven chapters: the name and time fr
 social and historical context, the features of the period, European literature, Croatian
 literature, the works, and a summary. Under "the works", the two to five works a student has to
 know are taken one by one: a note on the writer, the literary elements, a short summary and the
-characters. Three periods also have a sample quiz of thirteen questions: three on a poem
-shown beside them, eight four-option questions, one matching and one ordering question. The
-poems (by Hanibal Lucić, Silvije Strahimir Kranjčević and Antun Gustav Matoš) are in the
-public domain and are quoted from Croatian Wikisource.
+characters. Three periods also have a sample quiz of thirteen questions: three on a poem, or
+an excerpt of one, shown beside them, eight four-option questions, one matching and one
+ordering question. The poems (by Hanibal Lucić, Silvije Strahimir Kranjčević and Antun Gustav
+Matoš) are in the public domain and are quoted from Croatian Wikisource.
 
 The choice of works follows the NCVVO exam catalogue. The facts were taken from Hrvatska
 enciklopedija, lektire.hr, Croatian Wikipedia and Leksikon Marina Držića; the text was written

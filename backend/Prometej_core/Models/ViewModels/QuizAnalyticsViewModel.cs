@@ -17,7 +17,8 @@ namespace Prometej_core.Models.ViewModels
         public required string QuestionTitle { get; set; }
         public required string Type { get; set; }
         public bool IsRetired { get; set; }
-        // The caption of the question's source text as it is today, if it has one.
+        // The question's source text as it is today, if it has one, and its caption.
+        public int? SourceTextId { get; set; }
         public string? SourceTextCaption { get; set; }
         // Points possible and points won: a matching or an ordering question counts a row for
         // each of its pairs or places.

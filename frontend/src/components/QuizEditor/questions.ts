@@ -26,10 +26,10 @@ export interface EditorQuestion {
   items: string[];
   hintText: string;
   exploreMore: string;
-  passageKey?: string;
+  sourceTextKey?: string;
 }
 
-export type EditorPassages = Record<string, SourceTextRequest>;
+export type EditorSourceTexts = Record<string, SourceTextRequest>;
 
 // The server's limits for a matching and for an ordering Question.
 export const MIN_PAIRS = 3;
@@ -95,20 +95,20 @@ export const isComplete = (question: EditorQuestion) => {
   );
 };
 
-export const isPassageComplete = (passage: SourceTextRequest) =>
-  passage.caption.trim() !== "" && passage.body.trim() !== "";
+export const isSourceTextComplete = (sourceText: SourceTextRequest) =>
+  sourceText.caption.trim() !== "" && sourceText.body.trim() !== "";
 
 // What the server takes: each Question with the fields of its type and no others, the
 // Source Texts in the order the Questions first use them, and each Question naming its text
 // by its number in that list.
 export const toRequest = (
   questions: EditorQuestion[],
-  passages: EditorPassages
+  sourceTexts: EditorSourceTexts
 ): { questions: QuestionEditRequest[]; sourceTexts: SourceTextRequest[] } => {
   const keys: string[] = [];
   const sent = questions.map((question): QuestionEditRequest => {
-    const { passageKey } = question;
-    if (passageKey && !keys.includes(passageKey)) keys.push(passageKey);
+    const { sourceTextKey } = question;
+    if (sourceTextKey && !keys.includes(sourceTextKey)) keys.push(sourceTextKey);
     const shared = {
       id: question.id ?? 0,
       type: question.type,
@@ -133,19 +133,19 @@ export const toRequest = (
       thirdAnswer: question.thirdAnswer,
       fourthAnswer: question.fourthAnswer,
       correctOption: question.correctOption,
-      sourceTextNo: passageKey ? keys.indexOf(passageKey) + 1 : undefined,
+      sourceTextNo: sourceTextKey ? keys.indexOf(sourceTextKey) + 1 : undefined,
     };
   });
-  return { questions: sent, sourceTexts: keys.map((key) => passages[key]) };
+  return { questions: sent, sourceTexts: keys.map((key) => sourceTexts[key]) };
 };
 
 // A stored Quiz as the editor holds it.
 export const fromQuiz = (
   quiz: QuizViewModel
-): { questions: EditorQuestion[]; passages: EditorPassages } => {
-  const passages: EditorPassages = {};
+): { questions: EditorQuestion[]; sourceTexts: EditorSourceTexts } => {
+  const sourceTexts: EditorSourceTexts = {};
   quiz.sourceTexts.forEach((sourceText) => {
-    passages[`stored-${sourceText.id}`] = { ...sourceText };
+    sourceTexts[`stored-${sourceText.id}`] = { ...sourceText };
   });
   const questions = quiz.questions.map(
     (question): EditorQuestion => ({
@@ -162,11 +162,11 @@ export const fromQuiz = (
       items: question.content?.items ?? [],
       hintText: question.hintText ?? "",
       exploreMore: question.exploreMore ?? "",
-      passageKey:
+      sourceTextKey:
         question.sourceTextId === null
           ? undefined
           : `stored-${question.sourceTextId}`,
     })
   );
-  return { questions, passages };
+  return { questions, sourceTexts };
 };

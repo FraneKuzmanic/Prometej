@@ -39,7 +39,7 @@
     margin-left: 1rem;
 }
 
-.question-container-passage.MuiTypography-root{
+.question-container-source-text.MuiTypography-root{
     position: absolute;
     bottom: 0;
     right: 6px;

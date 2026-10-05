@@ -150,7 +150,7 @@ namespace Prometej_core.Services.Implementations
         {
             sourceTexts ??= [];
             TrimAndCheck(questions);
-            TrimAndCheck(sourceTexts, questions);
+            TrimAndCheckSourceTexts(sourceTexts, questions);
             EnsurePeriodExists(quiz.PeriodId);
 
             var quizEntity = _mapper.Map<Quiz>(quiz);
@@ -184,7 +184,7 @@ namespace Prometej_core.Services.Implementations
             // Without questions the source texts are left alone too, whatever was sent.
             sourceTexts = questions == null ? [] : sourceTexts ?? [];
             TrimAndCheck(questions ?? []);
-            TrimAndCheck(sourceTexts, questions ?? []);
+            TrimAndCheckSourceTexts(sourceTexts, questions ?? []);
             EnsurePeriodExists(quiz.PeriodId);
 
             quizEntity.Title = quiz.Title.Trim();
@@ -523,7 +523,7 @@ namespace Prometej_core.Services.Implementations
         {
             var answers = quizGames.SelectMany(g => g.Answers).ToLookup(a => a.QuestionId);
             var questions = _questionRepository.ReadAll().Where(q => q.QuizId == quizId).OrderBy(q => q.Position).ThenBy(q => q.Id)
-                .Select(q => new { q.Id, q.QuestionTitle, q.Type, q.IsRetired, SourceTextCaption = q.SourceText!.Caption })
+                .Select(q => new { q.Id, q.QuestionTitle, q.Type, q.IsRetired, q.SourceTextId, SourceTextCaption = q.SourceText!.Caption })
                 .ToList();
 
             var report = new List<QuestionReportViewModel>();
@@ -553,6 +553,7 @@ namespace Prometej_core.Services.Implementations
                     QuestionTitle = question.QuestionTitle,
                     Type = question.Type,
                     IsRetired = question.IsRetired,
+                    SourceTextId = question.SourceTextId,
                     SourceTextCaption = question.SourceTextCaption,
                     AnswerCount = answers[question.Id].Count(),
                     CorrectCount = answers[question.Id].Count(a => a.AnswerText == a.CorrectAnswer),
@@ -711,7 +712,7 @@ namespace Prometej_core.Services.Implementations
 
         // A body keeps its line breaks, stored as "\n" whatever the browser sent. A source text
         // has one to ten questions, and they come one after another in the quiz.
-        private static void TrimAndCheck(List<SourceTextRequest> sourceTexts, IEnumerable<QuestionCreateRequest> questions)
+        private static void TrimAndCheckSourceTexts(List<SourceTextRequest> sourceTexts, IEnumerable<QuestionCreateRequest> questions)
         {
             foreach (var sourceText in sourceTexts)
             {
@@ -774,11 +775,11 @@ namespace Prometej_core.Services.Implementations
             }
 
             var sent = sourceTexts.Where(s => s.Id != 0).ToDictionary(s => s.Id);
-            var changedIds = stored.Values
+            var changedOrRemovedIds = stored.Values
                 .Where(s => !sent.TryGetValue(s.Id, out var request) || request.Caption != s.Caption || request.Body != s.Body)
                 .Select(s => s.Id).ToList();
             var playedIds = _answerRepository.ReadAll()
-                .Where(a => a.SourceTextId != null && changedIds.Contains(a.SourceTextId.Value))
+                .Where(a => a.SourceTextId != null && changedOrRemovedIds.Contains(a.SourceTextId.Value))
                 .Select(a => a.SourceTextId!.Value).Distinct().ToHashSet();
 
             var entities = new List<SourceText>();

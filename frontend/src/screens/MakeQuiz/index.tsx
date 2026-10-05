@@ -1,6 +1,6 @@
 import QuizEditor from "../../components/QuizEditor";
 import {
-  EditorPassages,
+  EditorSourceTexts,
   EditorQuestion,
   toRequest,
 } from "../../components/QuizEditor/questions";
@@ -17,12 +17,12 @@ export default function MakeQuiz() {
     isPrivate: boolean,
     periodId: number | null,
     questions: EditorQuestion[],
-    passages: EditorPassages
+    sourceTexts: EditorSourceTexts
   ) => {
     const result = await dispatch(
       createQuiz({
         quiz: { title, isPrivate, periodId },
-        ...toRequest(questions, passages),
+        ...toRequest(questions, sourceTexts),
       })
     );
     const saved = createQuiz.fulfilled.match(result);
@@ -36,7 +36,7 @@ export default function MakeQuiz() {
       initialIsPrivate={true}
       initialPeriodId={null}
       initialQuestions={[]}
-      initialPassages={{}}
+      initialSourceTexts={{}}
       onSave={saveQuiz}
       onCancel={() => navigate("/learning")}
     />

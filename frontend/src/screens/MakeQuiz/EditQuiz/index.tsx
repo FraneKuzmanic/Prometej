@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import QuizEditor from "../../../components/QuizEditor";
 import {
-  EditorPassages,
+  EditorSourceTexts,
   EditorQuestion,
   fromQuiz,
   toRequest,
@@ -31,13 +31,13 @@ export default function EditQuiz() {
     isPrivate: boolean,
     periodId: number | null,
     questions: EditorQuestion[],
-    passages: EditorPassages
+    sourceTexts: EditorSourceTexts
   ) => {
     const result = await dispatch(
       updateQuiz({
         quiz: { id: quiz.id, title, isPrivate, periodId },
         // The lists are the whole set: a stored Question or Source Text left out is removed.
-        ...toRequest(questions, passages),
+        ...toRequest(questions, sourceTexts),
       })
     );
     const saved = updateQuiz.fulfilled.match(result);
@@ -45,7 +45,7 @@ export default function EditQuiz() {
     return saved;
   };
 
-  const { questions, passages } = fromQuiz(quiz);
+  const { questions, sourceTexts } = fromQuiz(quiz);
 
   return (
     <QuizEditor
@@ -54,7 +54,7 @@ export default function EditQuiz() {
       initialIsPrivate={quiz.isPrivate}
       initialPeriodId={quiz.periodId}
       initialQuestions={questions}
-      initialPassages={passages}
+      initialSourceTexts={sourceTexts}
       onSave={saveQuiz}
       onCancel={() => navigate("/my-quizzes")}
     />

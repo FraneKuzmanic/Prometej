@@ -22,7 +22,7 @@ namespace Prometej_tests
         private DataContext CreateContext() =>
             new(new DbContextOptionsBuilder<DataContext>().UseNpgsql(_db.GetConnectionString()).Options);
 
-        private record QuestionRow(string Title, string Type, int Position, bool HasContent, string? FirstAnswer, int? CorrectOption, int? SourceTextId);
+        private record QuestionRow(string Title, string Type, int Position, bool HasContent, string Options, int? CorrectOption, int? SourceTextId);
 
         private record AnswerRow(int QuestionId, string AnswerText, string CorrectAnswer, int Position, string? Item, int? Place, int? SourceTextId);
 
@@ -41,27 +41,28 @@ namespace Prometej_tests
                   (1, 'Kviz', false, 1);
                 INSERT INTO "Questions" ("Id", "QuizId", "QuestionTitle", "FirstAnswer", "SecondAnswer", "ThirdAnswer", "FourthAnswer", "CorrectOption", "IsRetired") VALUES
                   (1, 1, 'Prvo', 'A', 'B', 'C', 'D', 1, false),
-                  (2, 1, 'Drugo', 'A', 'B', 'C', 'D', 2, false),
-                  (3, 1, 'Treće', 'A', 'B', 'C', 'D', 3, false);
+                  (2, 1, 'Drugo', 'E', 'F', 'G', 'H', 2, false),
+                  (3, 1, 'Treće', 'I', 'J', 'K', 'L', 3, false);
                 INSERT INTO "QuizGames" ("Id", "QuizId", "UserId", "UserName", "Score", "DatePlayed") VALUES
                   (1, 1, 2, 'Sara Student', 2, '2026-10-01T10:00:00Z');
                 INSERT INTO "Answers" ("QuizGameId", "QuestionId", "QuestionTitle", "AnswerText", "CorrectAnswer") VALUES
                   (1, 1, 'Prvo', 'A', 'A'),
-                  (1, 2, 'Drugo', 'B', 'B'),
-                  (1, 3, 'Treće', 'A', 'C');
+                  (1, 2, 'Drugo', 'F', 'F'),
+                  (1, 3, 'Treće', 'I', 'K');
                 """);
 
             await migrator.MigrateAsync();
 
             // In the order the quiz is read in: by position, then by id.
             var questions = context.Questions.AsNoTracking().OrderBy(q => q.Position).ThenBy(q => q.Id)
-                .Select(q => new QuestionRow(q.QuestionTitle, q.Type, q.Position, q.Content != null, q.FirstAnswer, q.CorrectOption, q.SourceTextId))
+                .Select(q => new QuestionRow(q.QuestionTitle, q.Type, q.Position, q.Content != null,
+                    q.FirstAnswer + q.SecondAnswer + q.ThirdAnswer + q.FourthAnswer, q.CorrectOption, q.SourceTextId))
                 .ToList();
             Assert.Equal(
                 [
-                    new QuestionRow("Prvo", "choice", 0, false, "A", 1, null),
-                    new QuestionRow("Drugo", "choice", 0, false, "A", 2, null),
-                    new QuestionRow("Treće", "choice", 0, false, "A", 3, null),
+                    new QuestionRow("Prvo", "choice", 0, false, "ABCD", 1, null),
+                    new QuestionRow("Drugo", "choice", 0, false, "EFGH", 2, null),
+                    new QuestionRow("Treće", "choice", 0, false, "IJKL", 3, null),
                 ],
                 questions);
 
@@ -72,8 +73,8 @@ namespace Prometej_tests
             Assert.Equal(
                 [
                     new AnswerRow(1, "A", "A", 0, null, null, null),
-                    new AnswerRow(2, "B", "B", 0, null, null, null),
-                    new AnswerRow(3, "A", "C", 0, null, null, null),
+                    new AnswerRow(2, "F", "F", 0, null, null, null),
+                    new AnswerRow(3, "I", "K", 0, null, null, null),
                 ],
                 answers);
 

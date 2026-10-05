@@ -395,6 +395,7 @@ namespace Prometej_tests
             var cases = new (string Name, object[] Answers)[]
             {
                 ("matches for a choice question", [Matches(ids[0], 1, 2, 3, 4), matches]),
+                ("an order for a choice question", [new { questionId = ids[0], order = new[] { 1, 2, 3, 4 } }, matches]),
                 ("an option for a matching question", [option, new { questionId = ids[1], chosenOption = 1 }]),
                 ("an order for a matching question", [option, new { questionId = ids[1], order = new[] { 1, 2, 3, 4 } }]),
                 ("an option and matches together", [option, new { questionId = ids[1], chosenOption = 1, matches = new[] { 1, 2, 3, 4 } }]),

@@ -168,75 +168,75 @@ export function QuizDetails() {
               <TableBody>
                 {analytics.questions.map((question, index) => (
                   <Fragment key={question.questionId}>
-                  {/* A heading above the first of the Questions asked about one Source Text. */}
-                  {question.sourceTextCaption !== null &&
-                    question.sourceTextCaption !==
-                      analytics.questions[index - 1]?.sourceTextCaption && (
-                      <TableRow>
-                        <TableCell colSpan={3} className="quiz-details-source">
-                          Uz tekst: {question.sourceTextCaption}
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  <TableRow>
-                    <TableCell
-                      component="th"
-                      scope="row"
-                      className="quiz-details-text"
-                    >
-                      {question.questionTitle}
-                      {question.isRetired && (
-                        <Typography
-                          variant="caption"
-                          color="text.secondary"
-                          display="block"
-                        >
-                          Uklonjeno iz kviza
-                        </Typography>
+                    {/* A heading above the first of the Questions asked about one Source Text. */}
+                    {question.sourceTextId !== null &&
+                      question.sourceTextId !==
+                        analytics.questions[index - 1]?.sourceTextId && (
+                        <TableRow>
+                          <TableCell colSpan={3} className="quiz-details-source">
+                            Uz tekst: {question.sourceTextCaption}
+                          </TableCell>
+                        </TableRow>
                       )}
-                      {question.lines.length > 0 && (
-                        <Button
-                          size="small"
-                          sx={{ display: "block", padding: 0 }}
-                          aria-expanded={openQuestionId === question.questionId}
-                          onClick={() =>
-                            setOpenQuestionId(
-                              openQuestionId === question.questionId
-                                ? undefined
-                                : question.questionId
-                            )
-                          }
-                        >
-                          {openQuestionId === question.questionId
-                            ? "Sakrij pojmove"
-                            : "Prikaži pojmove"}
-                        </Button>
-                      )}
-                    </TableCell>
-                    <TableCell align="right">
-                      {share(question.correctCount, question.answerCount)}
-                    </TableCell>
-                    <TableCell className="quiz-details-text">
-                      {mostChosenWrong(question)}
-                    </TableCell>
-                  </TableRow>
-                  {/* A Question of several points, pair by pair or place by place. */}
-                  {openQuestionId === question.questionId &&
-                    question.lines.map((line) => (
-                      <TableRow key={line.label} className="quiz-details-line">
-                        <TableCell className="quiz-details-text">
-                          {question.type === "ordering"
-                            ? `${line.label}. mjesto`
-                            : line.label}
-                        </TableCell>
-                        <TableCell align="right">
-                          {share(line.correctCount, line.answerCount)}
-                        </TableCell>
-                        <TableCell className="quiz-details-text">
-                          {mostChosenWrong(line)}
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                    <TableRow>
+                      <TableCell
+                        component="th"
+                        scope="row"
+                        className="quiz-details-text"
+                      >
+                        {question.questionTitle}
+                        {question.isRetired && (
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            display="block"
+                          >
+                            Uklonjeno iz kviza
+                          </Typography>
+                        )}
+                        {question.lines.length > 0 && (
+                          <Button
+                            size="small"
+                            sx={{ display: "block", padding: 0 }}
+                            aria-expanded={openQuestionId === question.questionId}
+                            onClick={() =>
+                              setOpenQuestionId(
+                                openQuestionId === question.questionId
+                                  ? undefined
+                                  : question.questionId
+                              )
+                            }
+                          >
+                            {openQuestionId === question.questionId
+                              ? "Sakrij pojmove"
+                              : "Prikaži pojmove"}
+                          </Button>
+                        )}
+                      </TableCell>
+                      <TableCell align="right">
+                        {share(question.correctCount, question.answerCount)}
+                      </TableCell>
+                      <TableCell className="quiz-details-text">
+                        {mostChosenWrong(question)}
+                      </TableCell>
+                    </TableRow>
+                    {/* A Question of several points, pair by pair or place by place. */}
+                    {openQuestionId === question.questionId &&
+                      question.lines.map((line) => (
+                        <TableRow key={line.label} className="quiz-details-line">
+                          <TableCell className="quiz-details-text">
+                            {question.type === "ordering"
+                              ? `${line.label}. mjesto`
+                              : line.label}
+                          </TableCell>
+                          <TableCell align="right">
+                            {share(line.correctCount, line.answerCount)}
+                          </TableCell>
+                          <TableCell className="quiz-details-text">
+                            {mostChosenWrong(line)}
+                          </TableCell>
+                        </TableRow>
+                      ))}
                   </Fragment>
                 ))}
               </TableBody>
