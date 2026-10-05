@@ -53,10 +53,10 @@ const initialState: QuizState = {
     submitStatus: "idle",
 };
 
-const fetchAllUserQuizzes = createAsyncThunk(
-    'quiz/getAllUserQuizzes',
-    async (userId: number) => {
-        const response = await QuizService.getAllUserQuizzes(userId);
+const fetchMyQuizzes = createAsyncThunk(
+    'quiz/getMyQuizzes',
+    async () => {
+        const response = await QuizService.getMyQuizzes();
         return response.data;
     }
 );
@@ -161,7 +161,7 @@ const quizSlice = createSlice({
     builder.addCase(searchQuizzes.pending, (state) => {
       state.quizzes = undefined;
     });
-    builder.addCase(fetchAllUserQuizzes.fulfilled, (state, action: PayloadAction<QuizBaseModel[]>) => {
+    builder.addCase(fetchMyQuizzes.fulfilled, (state, action: PayloadAction<QuizBaseModel[]>) => {
         state.quizzes = action.payload;
     });
     builder.addCase(searchQuizzes.fulfilled, (state, action: PayloadAction<QuizBaseModel[]>) => {
@@ -233,7 +233,7 @@ const quizSlice = createSlice({
 export const { resetSubmit } = quizSlice.actions;
 
 export {
-    fetchAllUserQuizzes,
+    fetchMyQuizzes,
     createQuiz,
     updateQuiz,
     deleteQuiz,

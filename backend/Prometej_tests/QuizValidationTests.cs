@@ -68,7 +68,7 @@ namespace Prometej_tests
             (await client.GetFromJsonAsync<JsonElement>("/api/user/me")).GetProperty("id").GetInt32();
 
         private static async Task<int> CountOwnQuizzes(HttpClient client) =>
-            (await client.GetFromJsonAsync<JsonElement>($"/api/quiz/getAllUserQuizzes/{await GetOwnId(client)}")).GetArrayLength();
+            (await client.GetFromJsonAsync<JsonElement>("/api/quiz/getMyQuizzes")).GetArrayLength();
 
         [Fact]
         public async Task An_invalid_quiz_is_not_created()

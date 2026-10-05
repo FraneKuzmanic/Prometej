@@ -19,7 +19,7 @@ import QuizContainer from "../../components/QuizContainer";
 import { useEffect, useState } from "react";
 import { RootState, useAppDispatch } from "../../store/store";
 import {
-  fetchAllUserQuizzes,
+  fetchMyQuizzes,
   deleteQuiz,
   updateQuiz,
 } from "../../store/slices/quizSlice";
@@ -56,7 +56,7 @@ export default function MyQuizzes() {
   const handleDelete = (quizId: number) => {
     setDeleteDialogOpen(false);
     dispatch(deleteQuiz(quizId)).then(() => {
-      if (user) dispatch(fetchAllUserQuizzes(user.id));
+      dispatch(fetchMyQuizzes());
     });
   };
 
@@ -70,7 +70,7 @@ export default function MyQuizzes() {
         periodId: quiz.periodId,
       };
       dispatch(updateQuiz({ quiz: updatedQuiz })).then(() => {
-        dispatch(fetchAllUserQuizzes(user.id));
+        dispatch(fetchMyQuizzes());
       });
     }
     handleClose();
@@ -85,14 +85,14 @@ export default function MyQuizzes() {
         periodId: currentQuiz.periodId,
       };
       dispatch(updateQuiz({ quiz: updatedQuiz })).then(() => {
-        if (user) dispatch(fetchAllUserQuizzes(user.id));
+        dispatch(fetchMyQuizzes());
       });
     }
     setInputDrawer(false);
   };
 
   useEffect(() => {
-    if (user) dispatch(fetchAllUserQuizzes(user.id));
+    if (user) dispatch(fetchMyQuizzes());
   }, [dispatch, user]);
 
   const indexOfLastPost = currentPage * postsPerPage;

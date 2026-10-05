@@ -62,7 +62,7 @@ namespace Prometej_tests
             (await client.GetFromJsonAsync<JsonElement>("/api/user/me")).GetProperty("id").GetInt32();
 
         private static async Task<JsonElement[]> OwnQuizzes(HttpClient client) =>
-            (await client.GetFromJsonAsync<JsonElement>($"/api/quiz/getAllUserQuizzes/{await GetOwnId(client)}")).EnumerateArray().ToArray();
+            (await client.GetFromJsonAsync<JsonElement>("/api/quiz/getMyQuizzes")).EnumerateArray().ToArray();
 
         private async Task<int> QuizCountOf(int periodId) =>
             (await factory.CreateHttpsClient().GetFromJsonAsync<JsonElement>("/api/period")).EnumerateArray()

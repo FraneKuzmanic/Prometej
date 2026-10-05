@@ -23,20 +23,14 @@ namespace Prometej_api.Controllers
         [HttpGet("search")]
         public IActionResult SearchQuizzes([FromQuery, StringLength(100)] string? query, [FromQuery] int? periodId)
         {
-            return Ok(_quizService.searchQuizzes(query, periodId));
+            return Ok(_quizService.SearchQuizzes(query, periodId));
         }
 
         [Authorize(Roles = Roles.TeacherOrAdmin)]
-        [HttpGet("getAllUserQuizzes/{id}")]
-        public IActionResult GetAllUserQuizzes(int id)
+        [HttpGet("getMyQuizzes")]
+        public IActionResult GetMyQuizzes()
         {
-            // The list includes private quizzes with their entry codes, so it is for their Creator only.
-            if (id != User.GetUserId() && !User.IsAdmin())
-            {
-                return Forbid();
-            }
-
-            return Ok(_quizService.getAllUserQuizzes(id));
+            return Ok(_quizService.GetMyQuizzes(User.GetUserId()));
         }
 
         [HttpGet("get/{id}")]

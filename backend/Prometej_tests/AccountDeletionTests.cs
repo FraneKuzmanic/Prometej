@@ -33,11 +33,8 @@ namespace Prometej_tests
             Assert.Equal(HttpStatusCode.Created, response.StatusCode);
         }
 
-        private static async Task<JsonElement[]> OwnQuizzes(HttpClient client)
-        {
-            var id = (await client.GetFromJsonAsync<JsonElement>("/api/user/me")).GetProperty("id").GetInt32();
-            return (await client.GetFromJsonAsync<JsonElement>($"/api/quiz/getAllUserQuizzes/{id}")).EnumerateArray().ToArray();
-        }
+        private static async Task<JsonElement[]> OwnQuizzes(HttpClient client) =>
+            (await client.GetFromJsonAsync<JsonElement>("/api/quiz/getMyQuizzes")).EnumerateArray().ToArray();
 
         [Fact]
         public async Task A_teacher_with_a_quiz_cannot_delete_the_account_until_the_quiz_is_deleted()

@@ -39,7 +39,7 @@ namespace Prometej_core.Services.Implementations
         }
          
         // The public list: every listed Quiz, or those of one Period, or those a search finds.
-        public List<QuizBaseModel> searchQuizzes(string? search, int? periodId)
+        public List<QuizBaseModel> SearchQuizzes(string? search, int? periodId)
         {
             var quizzes = _quizRepository.ReadAll().Where(Quiz.IsListed);
             if (periodId != null)
@@ -76,10 +76,11 @@ namespace Prometej_core.Services.Implementations
             return quizBaseModels;
         }
 
-        public List<CreatorQuizViewModel> getAllUserQuizzes(int id)
+        // A Creator's own list: private Quizzes and their Entry Codes included.
+        public List<CreatorQuizViewModel> GetMyQuizzes(int creatorId)
         {
-            var quizes = _quizRepository.ReadAll().Include(q => q.Creator).Include(q => q.Period).Where(q => q.CreatorId == id).OrderBy(q => q.Id).ToList();
-            var quizGameCounts = _quizGameRepository.ReadAll().Where(g => g.Quiz.CreatorId == id)
+            var quizes = _quizRepository.ReadAll().Include(q => q.Creator).Include(q => q.Period).Where(q => q.CreatorId == creatorId).OrderBy(q => q.Id).ToList();
+            var quizGameCounts = _quizGameRepository.ReadAll().Where(g => g.Quiz.CreatorId == creatorId)
                 .GroupBy(g => g.QuizId).Select(g => new { QuizId = g.Key, Count = g.Count() })
                 .ToDictionary(g => g.QuizId, g => g.Count);
 

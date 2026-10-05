@@ -234,18 +234,18 @@ namespace Prometej_tests
         }
 
         [Fact]
-        public async Task A_teacher_lists_only_their_own_quizzes()
+        public async Task A_creator_lists_only_their_own_quizzes()
         {
             var teacher = await factory.LoginAs(ApiFactory.TeacherEmail);
             var otherTeacher = await factory.LoginAs(ApiFactory.OtherTeacherEmail);
             var admin = await factory.LoginAs(ApiFactory.AdminEmail);
             var student = await factory.LoginAsNewStudent();
             var quiz = await CreateQuiz(teacher, isPrivate: true);
-            var url = $"/api/quiz/getAllUserQuizzes/{await GetOwnId(teacher)}";
+            const string url = "/api/quiz/getMyQuizzes";
 
             Assert.Contains(quiz.Title, await teacher.GetStringAsync(url));
-            Assert.Contains(quiz.Title, await admin.GetStringAsync(url));
-            Assert.Equal(HttpStatusCode.Forbidden, (await otherTeacher.GetAsync(url)).StatusCode);
+            Assert.DoesNotContain(quiz.Title, await otherTeacher.GetStringAsync(url));
+            Assert.DoesNotContain(quiz.Title, await admin.GetStringAsync(url));
             Assert.Equal(HttpStatusCode.Forbidden, (await student.GetAsync(url)).StatusCode);
             Assert.Equal(HttpStatusCode.Unauthorized, (await factory.CreateHttpsClient().GetAsync(url)).StatusCode);
         }

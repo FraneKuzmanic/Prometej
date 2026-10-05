@@ -7,7 +7,7 @@ import { CreateQuizPayload, SubmitQuizPayload, UpdateQuizPayload } from "../../s
 const { quiz } = endpoints;
 
 export default {
-  getAllUserQuizzes: (userId: number) => axios.get(`${quiz.base}/getAllUserQuizzes/${userId}`),
+  getMyQuizzes: () => axios.get(`${quiz.base}/getMyQuizzes`),
   search: (query: string, periodId?: number) => axios.get(`${quiz.base}/search`, { params: { query, periodId } }),
   get: (quizId: number, code?: string) => axios.get(`${quiz.base}/get/${quizId}`, { params: { code } }),
   create: (data: CreateQuizPayload) => axios.post(`${quiz.base}/create`, data),
