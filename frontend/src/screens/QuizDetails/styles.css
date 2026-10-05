@@ -14,6 +14,28 @@
     padding-left: 2.5rem;
 }
 
+.quiz-details-heading.MuiTypography-root{
+    margin: 2rem 0 1rem 0;
+    padding-left: 2.5rem;
+    color: #553b08;
+}
+
+.quiz-details-text{
+    overflow-wrap: anywhere;
+}
+
+.quiz-details-answer{
+    margin: 0.5rem 0 1rem 0;
+}
+
+.quiz-details-correct.MuiTypography-root{
+    color: #4F6F52;
+}
+
+.quiz-details-wrong.MuiTypography-root{
+    color: #fd3737;
+}
+
 .pie-chart-container{
     margin: 3rem 0 3rem 0;
 }

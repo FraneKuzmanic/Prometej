@@ -100,6 +100,40 @@ export interface QuizGameViewModel {
     answers: AnswerViewModel[];
 }
 
+export interface QuestionReport {
+    questionId: number;
+    // the title as it is today; the counts are over the Answers as they were played
+    questionTitle: string;
+    isRetired: boolean;
+    answerCount: number;
+    correctCount: number;
+    // the wrong answer chosen most often, as its text was when played; null if nobody was wrong
+    mostChosenWrongAnswer: string | null;
+    mostChosenWrongCount: number;
+}
+
+export interface PlayerSummary {
+    userId: number;
+    userName: string;
+    gameCount: number;
+    // a Score goes with the number of Questions its game was played with
+    firstScore: number;
+    firstQuestionCount: number;
+    // the game with the highest share of correct answers
+    bestScore: number;
+    bestQuestionCount: number;
+    lastPlayed: string;
+}
+
+// How a Quiz was played, for its Creator: every Quiz Game, newest first, and the same
+// games counted by Question and by player.
+export interface QuizAnalytics {
+    quizTitle: string;
+    games: QuizGameViewModel[];
+    questions: QuestionReport[];
+    players: PlayerSummary[];
+}
+
 // A Quiz Game as its player reads it again, with its Quiz as it is today.
 export interface QuizGameReviewViewModel extends QuizGameViewModel {
     quizTitle: string;

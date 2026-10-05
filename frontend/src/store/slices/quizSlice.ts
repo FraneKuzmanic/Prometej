@@ -2,12 +2,12 @@ import { PayloadAction, createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 
 import QuizService from "../../services/routes/quiz";
-import { AnswerCreateRequest, QuestionCreateRequest, QuestionEditRequest, MyQuizGames, QuizBaseModel, QuizCreateRequest, QuizEditRequest, QuizGameReviewViewModel, QuizGameViewModel, QuizViewModel } from "../../types/models/Quiz";
+import { AnswerCreateRequest, QuestionCreateRequest, QuestionEditRequest, MyQuizGames, QuizAnalytics, QuizBaseModel, QuizCreateRequest, QuizEditRequest, QuizGameReviewViewModel, QuizGameViewModel, QuizViewModel } from "../../types/models/Quiz";
 
 interface QuizState {
     quizzes: QuizBaseModel[] | undefined;
     quiz: QuizViewModel | undefined;
-    quizGames: QuizGameViewModel[] | undefined;
+    analytics: QuizAnalytics | undefined;
     analyticsFailed: boolean;
     // the signed-in User's own Quiz Games and their progress per Period
     myGames: MyQuizGames | undefined;
@@ -43,7 +43,7 @@ export interface SubmitQuizPayload {
 const initialState: QuizState = {
     quizzes: undefined,
     quiz: undefined,
-    quizGames: undefined,
+    analytics: undefined,
     analyticsFailed: false,
     myGames: undefined,
     myGamesFailed: false,
@@ -176,11 +176,11 @@ const quizSlice = createSlice({
     });
     // Cleared first, so one quiz's plays never show under another.
     builder.addCase(getQuizAnalytics.pending, (state) => {
-        state.quizGames = undefined;
+        state.analytics = undefined;
         state.analyticsFailed = false;
     });
-    builder.addCase(getQuizAnalytics.fulfilled, (state, action: PayloadAction<QuizGameViewModel[]>) => {
-        state.quizGames = action.payload;
+    builder.addCase(getQuizAnalytics.fulfilled, (state, action: PayloadAction<QuizAnalytics>) => {
+        state.analytics = action.payload;
     });
     // An aborted request is one the screen has already replaced with another.
     builder.addCase(getQuizAnalytics.rejected, (state, action) => {
