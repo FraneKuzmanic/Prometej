@@ -19,7 +19,7 @@ namespace Prometej_core.Services.Contracts
         void Update(QuizEditRequest quiz, List<QuestionEditRequest>? questions, int callerId, bool isAdmin);
         void Delete(int id, int callerId, bool isAdmin);
         QuizGameViewModel SubmitQuiz(QuizSubmitRequest request, int userId);
-        List<QuizGameViewModel> GetQuizAnalytics(int quizId, int callerId, bool isAdmin);
+        QuizAnalyticsViewModel GetQuizAnalytics(int quizId, int callerId, bool isAdmin);
         MyQuizGamesViewModel GetMyGames(int userId);
         QuizGameReviewViewModel GetQuizGame(int id, int callerId);
     }

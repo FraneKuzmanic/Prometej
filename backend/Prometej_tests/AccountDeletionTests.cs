@@ -52,7 +52,8 @@ namespace Prometej_tests
             Assert.Equal(HttpStatusCode.Conflict, refused.StatusCode);
             // Still signed in, and nothing was deleted along the way.
             Assert.Equal(HttpStatusCode.OK, (await teacher.GetAsync("/api/user/me")).StatusCode);
-            Assert.Single(await teacher.GetFromJsonAsync<JsonElement[]>($"/api/quiz/getAnalytics/{quizId}") ?? []);
+            var analytics = await teacher.GetFromJsonAsync<JsonElement>($"/api/quiz/getAnalytics/{quizId}");
+            Assert.Equal(1, analytics.GetProperty("games").GetArrayLength());
 
             await teacher.DeleteAsync($"/api/quiz/delete/{quizId}");
             var allowed = await teacher.DeleteAsync("/api/user/me");

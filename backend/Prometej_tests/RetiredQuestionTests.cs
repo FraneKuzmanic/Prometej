@@ -56,7 +56,7 @@ namespace Prometej_tests
             });
 
         private static async Task<JsonElement[]> Analytics(HttpClient client, int quizId) =>
-            (await client.GetFromJsonAsync<JsonElement>($"/api/quiz/getAnalytics/{quizId}")).EnumerateArray().ToArray();
+            (await client.GetFromJsonAsync<JsonElement>($"/api/quiz/getAnalytics/{quizId}")).GetProperty("games").EnumerateArray().ToArray();
 
         // null: the row is gone. Otherwise whether the stored question is retired.
         private bool? IsRetired(int questionId)

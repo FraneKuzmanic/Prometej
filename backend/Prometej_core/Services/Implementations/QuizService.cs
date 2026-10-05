@@ -383,14 +383,88 @@ namespace Prometej_core.Services.Implementations
             return review;
         }
 
-        public List<QuizGameViewModel> GetQuizAnalytics(int quizId, int callerId, bool isAdmin)
+        public QuizAnalyticsViewModel GetQuizAnalytics(int quizId, int callerId, bool isAdmin)
         {
             var quiz = _quizRepository.ReadAll().FirstOrDefault(q => q.Id == quizId);
             EnsureCreatorOrAdmin(quiz, callerId, isAdmin);
 
-            var quizGames = _quizGameRepository.ReadAll().Include(g => g.Answers).Where(g => g.QuizId == quizId).OrderByDescending(g => g.DatePlayed).ToList();
+            var quizGames = _quizGameRepository.ReadAll()
+                .Include(g => g.Answers.OrderBy(a => a.QuestionId))
+                .Where(g => g.QuizId == quizId)
+                .OrderByDescending(g => g.DatePlayed).ThenByDescending(g => g.Id)
+                .ToList();
 
-            return _mapper.Map<List<QuizGameViewModel>>(quizGames);
+            return new QuizAnalyticsViewModel
+            {
+                QuizTitle = quiz.Title,
+                Games = _mapper.Map<List<QuizGameViewModel>>(quizGames),
+                Questions = QuestionReport(quizId, quizGames),
+                Players = PlayerSummaries(quizGames),
+            };
+        }
+
+        // A row for every question of the quiz, retired ones too: their answers are in the old
+        // scores. An answer counts as it was played, right when its two texts are equal, and is
+        // never read against the question as it is today.
+        private List<QuestionReportViewModel> QuestionReport(int quizId, List<QuizGame> quizGames)
+        {
+            var answers = quizGames.SelectMany(g => g.Answers).ToLookup(a => a.QuestionId);
+            var questions = _questionRepository.ReadAll().Where(q => q.QuizId == quizId).OrderBy(q => q.Id)
+                .Select(q => new { q.Id, q.QuestionTitle, q.IsRetired })
+                .ToList();
+
+            var report = new List<QuestionReportViewModel>();
+            foreach (var question in questions)
+            {
+                // Of two wrong answers chosen equally often, the one that sorts first.
+                var mostChosenWrong = answers[question.Id].Where(a => a.AnswerText != a.CorrectAnswer)
+                    .GroupBy(a => a.AnswerText)
+                    .OrderByDescending(g => g.Count()).ThenBy(g => g.Key, StringComparer.Ordinal)
+                    .FirstOrDefault();
+
+                report.Add(new QuestionReportViewModel
+                {
+                    QuestionId = question.Id,
+                    QuestionTitle = question.QuestionTitle,
+                    IsRetired = question.IsRetired,
+                    AnswerCount = answers[question.Id].Count(),
+                    CorrectCount = answers[question.Id].Count(a => a.AnswerText == a.CorrectAnswer),
+                    MostChosenWrongAnswer = mostChosenWrong?.Key,
+                    MostChosenWrongCount = mostChosenWrong?.Count() ?? 0,
+                });
+            }
+
+            return report;
+        }
+
+        // One row per player. Their best game is the one with the highest share of correct
+        // answers, not the highest score: two plays of an edited quiz may differ in length.
+        // Of two equally good games it is the earlier one.
+        private static List<PlayerSummaryViewModel> PlayerSummaries(List<QuizGame> quizGames)
+        {
+            static double Share(QuizGame g) => g.Answers.Count == 0 ? 0 : (double)g.Score / g.Answers.Count;
+
+            // The games are newest first and grouping a list keeps its order, so the players
+            // come out by their last play, newest first, and so do each player's games.
+            return quizGames.GroupBy(g => g.UserId).Select(group =>
+            {
+                var games = group.ToList();
+                var last = games.First();
+                var first = games.Last();
+                var best = games.OrderByDescending(Share).ThenBy(g => g.DatePlayed).ThenBy(g => g.Id).First();
+
+                return new PlayerSummaryViewModel
+                {
+                    UserId = group.Key,
+                    UserName = last.UserName,
+                    GameCount = games.Count,
+                    FirstScore = first.Score,
+                    FirstQuestionCount = first.Answers.Count,
+                    BestScore = best.Score,
+                    BestQuestionCount = best.Answers.Count,
+                    LastPlayed = last.DatePlayed,
+                };
+            }).ToList();
         }
 
         // A sent list is the whole set: a stored question missing from it is removed. One that
