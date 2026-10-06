@@ -1,4 +1,4 @@
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import { useEffect, useMemo, useState } from "react";
@@ -83,6 +83,8 @@ export default function Period() {
   const [text, setText] = useState("");
   const [isEdit, setIsEdit] = useState(false);
   const { html, entries } = useMemo(() => withHeadingIds(text), [text]);
+  const { hash, key } = useLocation();
+  const periodsLoaded = periods !== undefined;
 
   // Fetched whenever the screen opens, not only once: the number of a Period's Quizzes can
   // have changed. One answer holds every Period, so going from one to another needs no more.
@@ -103,6 +105,17 @@ export default function Period() {
       setText("");
     }
   }, [periodContent]);
+
+  // A heading named in the address is scrolled to, once the text holding it is on the page:
+  // a citation of the tutor's leads here. The key changes when the same address is opened
+  // again, so a second click on one citation scrolls again.
+  useEffect(() => {
+    if (!hash || isEdit || !periodsLoaded) return;
+    const heading = document.getElementById(decodeURIComponent(hash.slice(1)));
+    if (!heading?.closest(".content")) return;
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    heading.scrollIntoView({ behavior: reducedMotion ? "auto" : "smooth", block: "start" });
+  }, [hash, key, html, isEdit, periodsLoaded]);
 
   const cleanHTMLContent = (html: string): string => {
     return html

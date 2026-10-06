@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import Protocol
+from typing import Literal, Protocol
 
 from openai import AzureOpenAI
 
@@ -21,9 +21,13 @@ class ModelReply:
     completion_tokens: int = 0
 
 
+# "required": the reply must be a tool call; "none": it must be the answer.
+ToolChoice = Literal["auto", "required", "none"]
+
+
 class Model(Protocol):
     def complete(
-        self, messages: list[dict], tools: list[dict], schema: dict, allow_tools: bool
+        self, messages: list[dict], tools: list[dict], schema: dict, tool_choice: ToolChoice
     ) -> ModelReply: ...
 
 
@@ -40,7 +44,7 @@ class AzureModel:
         self._deployment = settings.azure_openai_deployment
 
     def complete(
-        self, messages: list[dict], tools: list[dict], schema: dict, allow_tools: bool
+        self, messages: list[dict], tools: list[dict], schema: dict, tool_choice: ToolChoice
     ) -> ModelReply:
         extra: dict = {}
         if tools:
@@ -48,7 +52,7 @@ class AzureModel:
             extra = {
                 "tools": tools,
                 "parallel_tool_calls": False,
-                "tool_choice": "auto" if allow_tools else "none",
+                "tool_choice": tool_choice,
             }
         response = self._client.chat.completions.create(
             model=self._deployment,

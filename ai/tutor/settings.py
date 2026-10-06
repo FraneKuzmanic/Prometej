@@ -1,5 +1,6 @@
 from pathlib import Path
 
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 # One .env at the repository root serves every project that needs a secret.
@@ -19,3 +20,9 @@ class Settings(BaseSettings):
     prometej_api_ca_file: str | None = None
 
     max_tool_calls: int = 6
+
+    @field_validator("prometej_api_ca_file")
+    @classmethod
+    def _from_the_root(cls, value: str | None) -> str | None:
+        """A relative path is relative to the repository, wherever the service is started."""
+        return str(ROOT / value) if value else None

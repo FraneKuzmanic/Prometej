@@ -60,4 +60,7 @@ def create_app(model: Model | None = None, material: Material | None = None) -> 
 
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)s %(message)s")
+# The HTTP clients log every address they call, the model's endpoint included.
+for name in ("httpx", "httpx2", "openai"):
+    logging.getLogger(name).setLevel(logging.WARNING)
 app = create_app()

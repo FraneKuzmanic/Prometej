@@ -7,7 +7,7 @@ from pydantic import ValidationError
 
 from tutor.checks import check
 from tutor.material import Hit, Material, Period
-from tutor.model import Model, ModelReply
+from tutor.model import Model, ModelReply, ToolChoice
 from tutor.prompts import retry_message, system_prompt
 from tutor.schemas import Answer, Citation, ModelAnswer, Turn, answer_schema
 from tutor.sections import Section, find
@@ -113,12 +113,20 @@ def ask(
         return Outcome(answer, stats, option)
 
     while True:
-        allow_tools = len(stats.tools) < max_tool_calls
-        reply = model.complete(messages, TOOLS, schema, allow_tools)
+        # Asked for an answer in a fixed shape, the model tends to give one at once, from
+        # memory. So the first move has to be a tool; after the budget, none may be.
+        tool_choice: ToolChoice = (
+            "required"
+            if not stats.tools
+            else "auto"
+            if len(stats.tools) < max_tool_calls
+            else "none"
+        )
+        reply = model.complete(messages, TOOLS, schema, tool_choice)
         stats.prompt_tokens += reply.prompt_tokens
         stats.completion_tokens += reply.completion_tokens
 
-        if reply.tool_calls and allow_tools:
+        if reply.tool_calls and tool_choice != "none":
             messages.append(_assistant_message(reply))
             for call in reply.tool_calls:
                 stats.tools.append(call.name)

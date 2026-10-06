@@ -64,13 +64,13 @@ class ScriptedModel:
         self.replies = list(replies)
         self.calls: list[dict] = []
 
-    def complete(self, messages, tools, schema, allow_tools) -> ModelReply:
+    def complete(self, messages, tools, schema, tool_choice) -> ModelReply:
         self.calls.append(
             {
                 "messages": [dict(message) for message in messages],
                 "tools": tools,
                 "schema": schema,
-                "allow_tools": allow_tools,
+                "tool_choice": tool_choice,
             }
         )
         return self.replies.pop(0)

@@ -9,17 +9,36 @@ import { Drawer, DrawerHeader, ScreenWrapper } from "./index.styled";
 import { Avatar } from "@mui/material";
 import Header from "./Header";
 import Sidebar from "./Sidebar";
-import { Outlet } from "react-router-dom";
+import { Outlet, useMatch } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { RootState } from "../../store/store";
+import { RootState, useAppDispatch } from "../../store/store";
+import { fetchTutorStatus, openTutor } from "../../store/slices/tutorSlice";
 import logo from "/logo.svg";
 import JoinQuiz from "../../components/JoinQuiz";
+import Tutor from "../../components/Tutor";
+import TutorButton from "../../components/Tutor/TutorButton";
+import ROLE from "../../types/enums/Role";
 
 export default function HomePage() {
   const theme = useTheme();
+  const dispatch = useAppDispatch();
   const [toggle, setToggle] = React.useState(true);
   const { authenticated, user } = useSelector((state: RootState) => state.user);
+  const { periods } = useSelector((state: RootState) => state.period);
+  const tutor = useSelector((state: RootState) => state.tutor);
   const [openJoinQuizDialog, setOpenJoinQuizDialog] = React.useState(false);
+
+  // The tutor is offered where the material is read: the Period list, a Period and the
+  // search. A Discussion, the quizzes and everything else have none.
+  const onPeriodList = useMatch("/learning");
+  const onPeriod = useMatch("/learning/:id");
+  const onSearch = useMatch("/search");
+  const tutorShown = tutor.available === true && Boolean(onPeriodList || onPeriod || onSearch);
+  const tutorPeriod = periods?.find((period) => period.id === Number(onPeriod?.params.id));
+
+  React.useEffect(() => {
+    dispatch(fetchTutorStatus());
+  }, [dispatch]);
 
   const toggleSidebar = () => {
     setToggle(!toggle);
@@ -72,6 +91,17 @@ export default function HomePage() {
         <DrawerHeader />
         <Outlet />
       </Box>
+      {tutorShown && (
+        <>
+          {!tutor.open && (
+            <TutorButton
+              shifted={Boolean(onPeriod) && user?.role === ROLE.Admin}
+              onClick={() => dispatch(openTutor())}
+            />
+          )}
+          <Tutor periodId={tutorPeriod?.id ?? null} periodName={tutorPeriod?.name} />
+        </>
+      )}
       {openJoinQuizDialog && (
         <JoinQuiz setOpenJoinQuizDialog={setOpenJoinQuizDialog} />
       )}

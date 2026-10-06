@@ -27,7 +27,7 @@ def _call(name: str, **arguments) -> ModelReply:
 
 
 class WalkthroughModel:
-    def complete(self, messages, tools, schema, allow_tools) -> ModelReply:
+    def complete(self, messages, tools, schema, tool_choice) -> ModelReply:
         question = next(m["content"] for m in reversed(messages) if m["role"] == "user")
         question = next(
             (

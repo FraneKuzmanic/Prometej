@@ -5,6 +5,7 @@ import periodSlice from './slices/periodSlice';
 import quizSlice from './slices/quizSlice';
 import discussionSlice from './slices/discussionSlice';
 import sittingSlice from './slices/sittingSlice';
+import tutorSlice from './slices/tutorSlice';
 
 export const store =  configureStore({
     reducer: {
@@ -13,6 +14,7 @@ export const store =  configureStore({
         quiz: quizSlice,
         discussion: discussionSlice,
         sitting: sittingSlice,
+        tutor: tutorSlice,
     },
 });
 

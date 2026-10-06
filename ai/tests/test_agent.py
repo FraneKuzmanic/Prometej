@@ -51,7 +51,7 @@ def test_a_wrong_quote_is_sent_back_once_and_the_second_answer_is_shown(material
     assert retry[-2]["role"] == "assistant"
     assert retry[-1]["role"] == "user"
     assert "the quote was not found in that section" in retry[-1]["content"]
-    assert model.calls[1]["allow_tools"] is True
+    assert model.calls[1]["tool_choice"] == "required"
 
 
 def test_two_wrong_quotes_are_never_shown(material):
@@ -84,7 +84,7 @@ def test_after_six_tool_calls_the_model_must_answer(material):
 
     outcome = ask("Pitanje?", [], None, model, material, max_tool_calls=6)
 
-    assert [call["allow_tools"] for call in model.calls] == [True] * 6 + [False]
+    assert [call["tool_choice"] for call in model.calls] == ["required"] + ["auto"] * 5 + ["none"]
     assert len(outcome.stats.tools) == 6
     assert outcome.answer.kind == "not_covered"
 
@@ -151,3 +151,14 @@ def test_the_option_is_asked_for_and_returned_only_when_wanted(material):
     assert outcome.option == 2
     assert "option" in model.calls[0]["schema"]["schema"]["properties"]
     assert '"option"' in model.calls[0]["messages"][0]["content"]
+
+
+def test_the_first_move_must_be_a_tool_and_later_ones_may_be(material):
+    model = ScriptedModel(
+        tool("search_material", query="Raskoljnikov"),
+        final("answer", citations=[cite()]),
+    )
+
+    ask("Tko je Raskoljnikov?", [], None, model, material)
+
+    assert [call["tool_choice"] for call in model.calls] == ["required", "auto"]

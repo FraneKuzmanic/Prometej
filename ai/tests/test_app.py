@@ -75,7 +75,7 @@ def test_the_log_line_holds_numbers_and_no_text(material, caplog):
 
 def test_a_model_or_a_material_that_fails_is_502(material):
     class Failing:
-        def complete(self, messages, tools, schema, allow_tools):
+        def complete(self, messages, tools, schema, tool_choice):
             raise httpx.ConnectError("no route")
 
     response = TestClient(create_app(Failing(), material)).post("/ask", json={"question": "?"})
