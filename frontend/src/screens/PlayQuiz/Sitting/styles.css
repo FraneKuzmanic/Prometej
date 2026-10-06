@@ -29,7 +29,7 @@
     width: 32px;
     height: 32px;
     font: inherit;
-    font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+    font-family: var(--font-sans);
     font-size: 14px;
     color: #553b08;
     background-color: transparent;

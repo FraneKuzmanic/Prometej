@@ -1,5 +1,38 @@
+/* The app's two families and its page tone, for the hand-written stylesheets. theme.ts
+   names the same values for MUI. */
+:root {
+  --font-sans: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --font-serif: "Literata", Georgia, "Times New Roman", serif;
+  --page: #f7f3e9;
+  --paper: #ffffff;
+  --rule: #e4dcc9;
+  --ink: #2a2115;
+  --ink-muted: #6a5d49;
+  --brown: #553b08;
+}
+
 body, #root {
   margin: 0;
   padding: 0;
   height: 100vh;
+}
+
+body {
+  background-color: var(--page);
+  color: var(--ink);
+  font-family: var(--font-sans);
+}
+
+::selection {
+  background-color: #e9dcb8;
+  color: var(--ink);
+}
+
+:focus-visible {
+  outline: 2px solid var(--brown);
+  outline-offset: 2px;
+}
+
+* {
+  scrollbar-color: #cfc4a8 transparent;
 }

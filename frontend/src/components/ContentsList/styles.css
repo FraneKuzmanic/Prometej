@@ -1,5 +1,5 @@
 .contents-list{
-    font-family: "Montserrat", sans-serif;
+    font-family: var(--font-sans);
     font-size: 0.9rem;
     margin-bottom: 1.5rem;
 }
@@ -28,8 +28,8 @@
 .contents-list a{
     display: block;
     padding: 0.3rem 0.75rem;
-    border-left: 3px solid #e9e5cd;
-    color: #444;
+    border-left: 3px solid var(--rule);
+    color: var(--ink-muted);
     text-decoration: none;
     overflow-wrap: anywhere;
 }

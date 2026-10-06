@@ -96,7 +96,7 @@
     box-sizing: border-box;
     padding: 8px 10px;
     font: inherit;
-    font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+    font-family: var(--font-sans);
     text-align: left;
     color: inherit;
     background-color: #daf5ff71;
@@ -252,7 +252,7 @@
 }
 
 .quiz-play-source summary{
-    font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+    font-family: var(--font-sans);
     cursor: pointer;
     font-weight: bold;
     padding: 5px 0;
