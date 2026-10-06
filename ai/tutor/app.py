@@ -6,10 +6,10 @@ import httpx
 import openai
 from fastapi import FastAPI, HTTPException
 
-from tutor import agent
+from tutor import agent, drafts
 from tutor.material import ApiMaterial, Material
 from tutor.model import AzureModel, Model
-from tutor.schemas import Answer, AskRequest
+from tutor.schemas import Answer, AskRequest, Draft, Drafts, DraftsRequest
 from tutor.settings import Settings
 
 logger = logging.getLogger("tutor")
@@ -55,6 +55,37 @@ def create_app(model: Model | None = None, material: Material | None = None) -> 
         # Numbers and names only: no question, answer or quote is ever logged.
         logger.info(json.dumps(asdict(outcome.stats)))
         return outcome.answer
+
+    @app.post("/drafts", response_model=Drafts, response_model_by_alias=True)
+    def draft(request: DraftsRequest) -> Drafts:
+        try:
+            drafted = drafts.draft(
+                request.period_id, request.section_id, the_model(), the_material()
+            )
+        except drafts.UnknownSection:
+            raise HTTPException(status_code=404, detail="No such section.")
+        except (openai.OpenAIError, httpx.HTTPError) as error:
+            logger.warning("drafts failed: %s", type(error).__name__)
+            raise HTTPException(status_code=502, detail="The model or the material failed.")
+
+        kept = drafted.kept
+        logger.info(
+            json.dumps(
+                {
+                    "drafts": len(kept),
+                    "dropped": drafted.dropped,
+                    "disagreed": sum(not judged.agrees for judged in kept),
+                    "prompt_tokens": drafted.prompt_tokens,
+                    "completion_tokens": drafted.completion_tokens,
+                }
+            )
+        )
+        return Drafts(
+            drafts=[
+                Draft(**judged.draft.model_dump(), agrees=bool(judged.agrees)) for judged in kept
+            ],
+            dropped=drafted.dropped,
+        )
 
     return app
 

@@ -10,6 +10,7 @@ namespace Prometej_api.Tutor
         Task<bool> IsAvailable();
         // Null when the service could not answer.
         Task<TutorAnswerViewModel?> Ask(TutorAskRequest request);
+        Task<TutorDraftsViewModel?> Drafts(TutorDraftsRequest request);
     }
 
     // The tutor is a service of its own (ai/), which holds everything about the language
@@ -43,14 +44,20 @@ namespace Prometej_api.Tutor
             }
         }
 
-        public async Task<TutorAnswerViewModel?> Ask(TutorAskRequest request)
+        public Task<TutorAnswerViewModel?> Ask(TutorAskRequest request) =>
+            Post<TutorAnswerViewModel>("ask", request);
+
+        public Task<TutorDraftsViewModel?> Drafts(TutorDraftsRequest request) =>
+            Post<TutorDraftsViewModel>("drafts", request);
+
+        private async Task<TAnswer?> Post<TAnswer>(string path, object request) where TAnswer : class
         {
             try
             {
                 using var timeout = new CancellationTokenSource(AnswerTimeout);
-                using var response = await http.PostAsJsonAsync(Address("ask"), request, timeout.Token);
+                using var response = await http.PostAsJsonAsync(Address(path), request, timeout.Token);
                 return response.IsSuccessStatusCode
-                    ? await response.Content.ReadFromJsonAsync<TutorAnswerViewModel>(timeout.Token)
+                    ? await response.Content.ReadFromJsonAsync<TAnswer>(timeout.Token)
                     : null;
             }
             catch (Exception exception) when (exception is HttpRequestException or OperationCanceledException)

@@ -84,3 +84,27 @@ class Answer(_Wire):
     kind: Kind
     answer: str
     citations: list[Citation]
+
+
+class DraftsRequest(_Wire):
+    period_id: int
+    section_id: str
+
+
+class Draft(_Wire):
+    question_title: str
+    first_answer: str
+    second_answer: str
+    third_answer: str
+    fourth_answer: str
+    correct_option: int
+    # The sentence of the section that makes the correct option right.
+    quote: str
+    # False when a second reading of the text did not pick the correct option.
+    agrees: bool
+
+
+class Drafts(_Wire):
+    drafts: list[Draft]
+    # How many the model wrote that are not offered: invalid, or their quote was not found.
+    dropped: int

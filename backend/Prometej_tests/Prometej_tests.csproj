@@ -26,4 +26,9 @@
     <ProjectReference Include="..\Prometej_api\Prometej_api.csproj" />
   </ItemGroup>
 
+  <!-- The cases the tutor's own question check is tested with, judged here by the API. -->
+  <ItemGroup>
+    <Content Include="..\..\ai\tests\fixtures\question_cases.json" Link="question_cases.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>

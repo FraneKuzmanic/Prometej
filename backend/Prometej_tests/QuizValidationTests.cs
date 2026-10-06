@@ -87,6 +87,27 @@ namespace Prometej_tests
             Assert.Equal(before, await CountOwnQuizzes(teacher));
         }
 
+        // The tutor's service checks a question it drafts by rules written once more, in
+        // Python. Both test suites judge this one file of cases, so the rules stay the same.
+        [Fact]
+        public async Task The_question_cases_shared_with_the_tutor_are_judged_as_the_file_says()
+        {
+            var admin = await factory.LoginAs(ApiFactory.AdminEmail);
+            var file = Path.Combine(AppContext.BaseDirectory, "question_cases.json");
+            var cases = JsonDocument.Parse(await File.ReadAllTextAsync(file)).RootElement;
+
+            Assert.True(cases.GetArrayLength() >= 10);
+            foreach (var item in cases.EnumerateArray())
+            {
+                var body = new { quiz = new { title = "Kviz", isPrivate = true }, questions = new[] { item.GetProperty("question") } };
+
+                var response = await admin.PostAsJsonAsync("/api/quiz/create", body);
+
+                var expected = item.GetProperty("valid").GetBoolean() ? HttpStatusCode.Created : HttpStatusCode.BadRequest;
+                Assert.True(response.StatusCode == expected, $"{item.GetProperty("name").GetString()}: {response.StatusCode}");
+            }
+        }
+
         [Fact]
         public async Task An_invalid_update_changes_nothing()
         {

@@ -18,6 +18,10 @@ namespace Prometej_tests
             {"kind":"answer","answer":"Raskoljnikov je bivši student.","citations":[{"periodId":4,"periodName":"Realizam","sectionId":"odjeljak-12","sectionTitle":"Zločin i kazna","quote":"bivši je student koji živi u bijedi"}]}
             """;
 
+        private const string DraftsAnswer = """
+            {"drafts":[{"questionTitle":"Tko je Raskoljnikov?","firstAnswer":"Bivši student","secondAnswer":"Istražitelj","thirdAnswer":"Trgovac","fourthAnswer":"Liječnik","correctOption":1,"quote":"bivši je student koji živi u bijedi","agrees":false}],"dropped":2}
+            """;
+
         private class StubTutor : HttpMessageHandler
         {
             public List<string> Asked { get; } = [];
@@ -38,7 +42,8 @@ namespace Prometej_tests
                 }
 
                 Asked.Add(await request.Content!.ReadAsStringAsync(cancellationToken));
-                return new HttpResponseMessage(Status) { Content = new StringContent(Answer, System.Text.Encoding.UTF8, "application/json") };
+                var body = request.RequestUri.AbsolutePath == "/drafts" ? DraftsAnswer : Answer;
+                return new HttpResponseMessage(Status) { Content = new StringContent(body, System.Text.Encoding.UTF8, "application/json") };
             }
         }
 
@@ -67,6 +72,17 @@ namespace Prometej_tests
             signedIn.EnsureSuccessStatusCode();
             return client;
         }
+
+        private static async Task<HttpClient> SignedIn(WebApplicationFactory<Program> api, string email)
+        {
+            var client = Anonymous(api);
+            var signedIn = await client.PostAsJsonAsync("/api/user/login", new { email, password = ApiFactory.Password });
+            signedIn.EnsureSuccessStatusCode();
+            return client;
+        }
+
+        private static Task<HttpResponseMessage> Draft(HttpClient client, object body) =>
+            client.PostAsJsonAsync("/api/tutor/drafts", body);
 
         private static Task<HttpResponseMessage> Ask(HttpClient client, object body) =>
             client.PostAsJsonAsync("/api/tutor/ask", body);
@@ -228,6 +244,77 @@ namespace Prometej_tests
             Assert.Equal(11, stub.Asked.Count);
             // Asking whether there is a tutor is not counted.
             Assert.True(await Available(student));
+        }
+
+        [Fact]
+        public async Task A_teacher_gets_the_drafts_of_a_section()
+        {
+            var stub = new StubTutor();
+            var teacher = await SignedIn(Configured(stub), ApiFactory.TeacherEmail);
+
+            var response = await Draft(teacher, new { periodId = 4, sectionId = "odjeljak-12" });
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var sent = JsonDocument.Parse(Assert.Single(stub.Asked)).RootElement;
+            Assert.Equal(4, sent.GetProperty("periodId").GetInt32());
+            Assert.Equal("odjeljak-12", sent.GetProperty("sectionId").GetString());
+
+            var answer = await response.Content.ReadFromJsonAsync<JsonElement>();
+            Assert.Equal(2, answer.GetProperty("dropped").GetInt32());
+            var draft = Assert.Single(answer.GetProperty("drafts").EnumerateArray());
+            Assert.Equal("Tko je Raskoljnikov?", draft.GetProperty("questionTitle").GetString());
+            Assert.Equal("Bivši student", draft.GetProperty("firstAnswer").GetString());
+            Assert.Equal("Liječnik", draft.GetProperty("fourthAnswer").GetString());
+            Assert.Equal(1, draft.GetProperty("correctOption").GetInt32());
+            Assert.Equal("bivši je student koji živi u bijedi", draft.GetProperty("quote").GetString());
+            Assert.False(draft.GetProperty("agrees").GetBoolean());
+        }
+
+        [Fact]
+        public async Task Drafts_are_for_teachers_and_admins()
+        {
+            var stub = new StubTutor();
+            var api = Configured(stub);
+            var body = new { periodId = 4, sectionId = "odjeljak-12" };
+
+            var signedOut = await Draft(Anonymous(api), body);
+            var student = await Draft(await NewStudent(api), body);
+            var admin = await Draft(await SignedIn(api, ApiFactory.AdminEmail), body);
+
+            Assert.Equal(HttpStatusCode.Unauthorized, signedOut.StatusCode);
+            Assert.Equal(HttpStatusCode.Forbidden, student.StatusCode);
+            Assert.Equal(HttpStatusCode.OK, admin.StatusCode);
+            Assert.Single(stub.Asked);
+        }
+
+        [Theory]
+        [InlineData("""{"periodId":4}""")]
+        [InlineData("""{"periodId":4,"sectionId":"Djela"}""")]
+        [InlineData("""{"periodId":4,"sectionId":"odjeljak-12345"}""")]
+        [InlineData("""{"periodId":0,"sectionId":"odjeljak-1"}""")]
+        [InlineData("""{"sectionId":"odjeljak-1"}""")]
+        public async Task A_drafts_request_of_the_wrong_shape_never_reaches_the_tutor(string body)
+        {
+            var stub = new StubTutor();
+            var teacher = await SignedIn(Configured(stub), ApiFactory.TeacherEmail);
+
+            var response = await teacher.PostAsync("/api/tutor/drafts", new StringContent(body, System.Text.Encoding.UTF8, "application/json"));
+
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+            Assert.Empty(stub.Asked);
+        }
+
+        [Fact]
+        public async Task Drafts_from_a_tutor_that_fails_are_503_and_without_one_404()
+        {
+            var stub = new StubTutor { Status = HttpStatusCode.NotFound };
+            var body = new { periodId = 4, sectionId = "odjeljak-12" };
+
+            var failed = await Draft(await SignedIn(Configured(stub), ApiFactory.TeacherEmail), body);
+            var notConfigured = await Draft(await factory.LoginAs(ApiFactory.TeacherEmail), body);
+
+            Assert.Equal(HttpStatusCode.ServiceUnavailable, failed.StatusCode);
+            Assert.Equal(HttpStatusCode.NotFound, notConfigured.StatusCode);
         }
     }
 }

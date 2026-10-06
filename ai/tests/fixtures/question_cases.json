@@ -1,0 +1,182 @@
+[
+  {
+    "name": "a plain question",
+    "valid": true,
+    "question": {
+      "questionTitle": "Tko je napisao Juditu?",
+      "firstAnswer": "Marko Marulić",
+      "secondAnswer": "Marin Držić",
+      "thirdAnswer": "Ivan Gundulić",
+      "fourthAnswer": "Petar Zoranić",
+      "correctOption": 1
+    }
+  },
+  {
+    "name": "options that differ only by case",
+    "valid": true,
+    "question": {
+      "questionTitle": "Tko je napisao Juditu?",
+      "firstAnswer": "Roman",
+      "secondAnswer": "roman",
+      "thirdAnswer": "Ivan Gundulić",
+      "fourthAnswer": "Petar Zoranić",
+      "correctOption": 1
+    }
+  },
+  {
+    "name": "a title and an option of 500 characters",
+    "valid": true,
+    "question": {
+      "questionTitle": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "firstAnswer": "Marko Marulić",
+      "secondAnswer": "Marin Držić",
+      "thirdAnswer": "Ivan Gundulić",
+      "fourthAnswer": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "correctOption": 1
+    }
+  },
+  {
+    "name": "texts with spaces around them",
+    "valid": true,
+    "question": {
+      "questionTitle": "  Tko je napisao Juditu?  ",
+      "firstAnswer": " Marko Marulić ",
+      "secondAnswer": "Marin Držić",
+      "thirdAnswer": "Ivan Gundulić",
+      "fourthAnswer": "Petar Zoranić",
+      "correctOption": 1
+    }
+  },
+  {
+    "name": "an empty title",
+    "valid": false,
+    "question": {
+      "questionTitle": "",
+      "firstAnswer": "Marko Marulić",
+      "secondAnswer": "Marin Držić",
+      "thirdAnswer": "Ivan Gundulić",
+      "fourthAnswer": "Petar Zoranić",
+      "correctOption": 1
+    }
+  },
+  {
+    "name": "a title of spaces",
+    "valid": false,
+    "question": {
+      "questionTitle": "   ",
+      "firstAnswer": "Marko Marulić",
+      "secondAnswer": "Marin Držić",
+      "thirdAnswer": "Ivan Gundulić",
+      "fourthAnswer": "Petar Zoranić",
+      "correctOption": 1
+    }
+  },
+  {
+    "name": "a title of 501 characters",
+    "valid": false,
+    "question": {
+      "questionTitle": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "firstAnswer": "Marko Marulić",
+      "secondAnswer": "Marin Držić",
+      "thirdAnswer": "Ivan Gundulić",
+      "fourthAnswer": "Petar Zoranić",
+      "correctOption": 1
+    }
+  },
+  {
+    "name": "an empty option",
+    "valid": false,
+    "question": {
+      "questionTitle": "Tko je napisao Juditu?",
+      "firstAnswer": "Marko Marulić",
+      "secondAnswer": "Marin Držić",
+      "thirdAnswer": "",
+      "fourthAnswer": "Petar Zoranić",
+      "correctOption": 1
+    }
+  },
+  {
+    "name": "an option of spaces",
+    "valid": false,
+    "question": {
+      "questionTitle": "Tko je napisao Juditu?",
+      "firstAnswer": "Marko Marulić",
+      "secondAnswer": "Marin Držić",
+      "thirdAnswer": "  ",
+      "fourthAnswer": "Petar Zoranić",
+      "correctOption": 1
+    }
+  },
+  {
+    "name": "two identical options",
+    "valid": false,
+    "question": {
+      "questionTitle": "Tko je napisao Juditu?",
+      "firstAnswer": "Marko Marulić",
+      "secondAnswer": "Marko Marulić",
+      "thirdAnswer": "Ivan Gundulić",
+      "fourthAnswer": "Petar Zoranić",
+      "correctOption": 1
+    }
+  },
+  {
+    "name": "two options that differ only by the spaces around them",
+    "valid": false,
+    "question": {
+      "questionTitle": "Tko je napisao Juditu?",
+      "firstAnswer": "Marko Marulić",
+      "secondAnswer": " Marko Marulić ",
+      "thirdAnswer": "Ivan Gundulić",
+      "fourthAnswer": "Petar Zoranić",
+      "correctOption": 1
+    }
+  },
+  {
+    "name": "an option of 501 characters",
+    "valid": false,
+    "question": {
+      "questionTitle": "Tko je napisao Juditu?",
+      "firstAnswer": "Marko Marulić",
+      "secondAnswer": "Marin Držić",
+      "thirdAnswer": "Ivan Gundulić",
+      "fourthAnswer": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "correctOption": 1
+    }
+  },
+  {
+    "name": "correct option 0",
+    "valid": false,
+    "question": {
+      "questionTitle": "Tko je napisao Juditu?",
+      "firstAnswer": "Marko Marulić",
+      "secondAnswer": "Marin Držić",
+      "thirdAnswer": "Ivan Gundulić",
+      "fourthAnswer": "Petar Zoranić",
+      "correctOption": 0
+    }
+  },
+  {
+    "name": "correct option 5",
+    "valid": false,
+    "question": {
+      "questionTitle": "Tko je napisao Juditu?",
+      "firstAnswer": "Marko Marulić",
+      "secondAnswer": "Marin Držić",
+      "thirdAnswer": "Ivan Gundulić",
+      "fourthAnswer": "Petar Zoranić",
+      "correctOption": 5
+    }
+  },
+  {
+    "name": "no correct option",
+    "valid": false,
+    "question": {
+      "questionTitle": "Tko je napisao Juditu?",
+      "firstAnswer": "Marko Marulić",
+      "secondAnswer": "Marin Držić",
+      "thirdAnswer": "Ivan Gundulić",
+      "fourthAnswer": "Petar Zoranić",
+      "correctOption": null
+    }
+  }
+]
