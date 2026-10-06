@@ -23,6 +23,9 @@ periods of the national exam catalogue.
   the national exam's reading and literature tasks take
 - can open a hint before answering and, where the quiz has one, reads an explanation after it
 - reads the discussion of a period: topics, and the replies under each
+- asks Prometej, a tutor that answers from the material only: each answer names the sections
+  it rests on and quotes them, a click opens the period at that heading, and when the
+  material does not cover a question, or the question is "write my essay", it says so
 
 **Anyone signed in** (registering creates a student account)
 
@@ -67,6 +70,10 @@ backend/     .NET 8, ASP.NET Core, EF Core, PostgreSQL
   Prometej_persistance/    DbContext, migrations, repository
   Prometej_tests/          integration tests
 frontend/    React 18, TypeScript, Vite, Redux Toolkit, MUI
+ai/          Python 3.13, FastAPI: the tutor
+  tutor/                   the prompt, three tools, the loop, the quote check
+  evals/                   the sets, the bars, the runner and every recorded result
+  tests/                   pytest, against a scripted model
 ```
 
 A few things worth knowing before reading the code:
@@ -105,6 +112,14 @@ A few things worth knowing before reading the code:
   the server's answer, sent with the post. One account can post five times a minute.
 - **Entry codes are rate limited.** A request that carries a code is limited to sixty a minute
   for an account, or for an address when nobody is signed in.
+- **The tutor quotes the material or does not answer.** A language model (GPT-4.1 on Azure
+  OpenAI) reads the period texts through three tools: search, list a period's sections, read
+  a section. Its answer has a fixed shape, and every quote in it is looked for, word for
+  word, in the section it names before anything is shown. A failed answer goes back to the
+  model once; after a second failure the student gets a fixed line and no answer. The model's
+  code is a small Python service the browser never talks to: the .NET API validates a
+  question, rate limits it and forwards it
+  ([0008](docs/adr/0008-the-tutor-quotes-the-material-or-does-not-answer.md)).
 
 Decisions with a longer story are in [`docs/adr`](docs/adr):
 
@@ -115,6 +130,50 @@ Decisions with a longer story are in [`docs/adr`](docs/adr):
 - [0005](docs/adr/0005-one-answer-row-per-point.md): a point is an answer row, whatever the type of question
 - [0006](docs/adr/0006-a-post-outlives-its-authors-account.md): a post in a discussion outlives its author's account
 - [0007](docs/adr/0007-a-test-is-sat-on-the-server.md): a test is sat on the server, in a sitting
+- [0008](docs/adr/0008-the-tutor-quotes-the-material-or-does-not-answer.md): the tutor quotes the material or does not answer
+
+## How the tutor is measured
+
+The bars were written down before the first run, and the commit that holds them
+(`ai/evals/bars.json`, with the sets) is older than the one that holds the results. A script
+scores every run; no model judges another.
+
+| Set | Items | Bar | Result | | Needed the retry | Never shown |
+| --- | --- | --- | --- | --- | --- | --- |
+| A. Quiz questions, with tools | 24 | at least 90.0% | 24 (100.0%) | pass | 2 | 0 |
+| A. The same questions, no tools (baseline) | 24 |  | 20 (83.3%) |  |  |  |
+| B. Where is this covered | 36 | at least 85.0% | 36 (100.0%) | pass | 0 | 0 |
+| C. Not covered, or homework | 15 | at least 90.0% | 15 (100.0%) | pass | 0 | 0 |
+| A. What the tools add | | at least 10 points | +16.7 points | pass | | |
+
+One run of each set, on 6 October 2026, with GPT-4.1 (`2025-04-14`) at temperature 0. The
+four runs used about 487,000 tokens; an answer took about five seconds (median).
+
+- **Set A** is the 24 four-option questions of the three sample quizzes that are not asked
+  about a poem. The tutor gets the question with its options and has to name one, through the
+  same loop and the same quote check as in the app. The baseline is the same model with no
+  tools and no material. Its four misses are facts particular to these texts, such as the
+  year of a collection.
+- **Set B** is 36 questions asked without naming a period ("Čime otac gađa Gregora Samsu?").
+  An item is right when a checked citation is in the expected period and section. About a
+  third use a name in another case or a paraphrase, because the search matches letters.
+- **Set C** is ten questions about works the material does not cover and five that ask for
+  an essay, homework or something else. An item is right when the tutor does not answer.
+- **Needed the retry** counts answers whose first try failed the quote check and whose
+  second passed. **Never shown** counts answers that failed twice.
+
+What the table does not show:
+
+- **The quote is checked, the wording around it is not.** Set A is the only measure of
+  whether the explanation is right, and it is 24 questions.
+- The sets are small and I wrote them, as I wrote the prompt. Set A's questions were written
+  from these same texts. Three results of 100% say that these sets do not find where the
+  tutor fails, not that it does not.
+- One model, one run. A second run could differ by an item or two.
+- Nothing here measures a conversation with follow-up questions, or a student trying to talk
+  the tutor out of its rules.
+
+`ai/evals/results` holds every recorded run, item by item.
 
 ## Running it locally
 
@@ -164,6 +223,34 @@ npm run dev
 It serves `http://localhost:5173` and forwards `/api` to the server, so start the server first.
 `VITE_PROXY_TARGET` in a `.env` file changes the target (see `.env.example`).
 
+### 4. The tutor (optional)
+
+Without it the application works as before and shows no tutor. It needs
+[Python 3.13](https://www.python.org/) and a deployment of GPT-4.1 on Azure OpenAI.
+
+Copy `.env.example` in the repository's root to `.env` and fill in the endpoint, the key, the
+deployment's name and the API version. The service reads the material from the server over
+HTTPS, so it has to trust the server's development certificate. Export it, and tell the
+server where the service listens:
+
+```
+cd backend
+dotnet dev-certs https --export-path ../ai/.certs/dev.pem --format Pem --no-password
+dotnet user-secrets set "Tutor:BaseUrl" "http://127.0.0.1:8000" --project Prometej_api
+```
+
+Set `PROMETEJ_API_CA_FILE=ai/.certs/dev.pem` in `.env`, delete the `dev.key` file the export
+wrote beside the certificate, then:
+
+```
+cd ai
+py -3.13 -m venv .venv
+.venv\Scripts\python -m pip install -e ".[dev]"
+.venv\Scripts\python -m uvicorn tutor.app:app --host 127.0.0.1 --port 8000
+```
+
+Start the server before the service, and restart the server after setting `Tutor:BaseUrl`.
+
 ## Tests
 
 ```
@@ -175,10 +262,25 @@ The tests are integration tests: they start the real API against PostgreSQL in a
 and talk to it over HTTP, so Docker has to be running. They cover authentication and
 authorization per role, quiz validation, the three question types and source texts, plays and
 results, tests and sittings (what a sitting sends, deadlines, two requests ending one sitting),
-both searches, the discussion, and the migrations (a migration is run against rows of the older
+both searches, the discussion, what the API forwards to the tutor and what it refuses first
+(the tutor's service is a stub there), and the migrations (a migration is run against rows of the older
 schema, to show what it does to them).
 
 The client has no automated tests yet; `npm run lint` and `npm run build` are its gates.
+
+The tutor's tests need no key and no network: the model is a scripted one and the material
+two small texts.
+
+```
+cd ai
+.venv\Scripts\python -m pytest
+```
+
+They cover the parsing of a text into sections (against a seeded text as well), the quote
+check, the loop (a wrong quote sent back once, two wrong quotes never shown, the limit on
+tool calls), the service's answers and its log line, and the scoring of the eval. The eval
+itself is not a test: `python -m evals.run --set coverage` asks the real model, costs money
+and writes a result file.
 
 ## Sample content
 
@@ -206,3 +308,8 @@ for this project. It is sample material and **has not been reviewed by a teacher
 - A mock sitting of a public quiz hides nothing: the same quiz can be opened as practice.
 - In a discussion a post cannot be edited or reported; an admin deleting it is the only
   remedy, and nothing updates live.
+- The tutor's quotes are checked against the material; its own sentences around them are
+  not. It is measured with one model, on small sets, in one run.
+- The tutor does not know about tests: a student sitting one can ask it.
+- Anyone can ask the tutor, ten times a minute, and nothing caps what that costs. It is
+  meant to run locally until a deployment sets a cap.

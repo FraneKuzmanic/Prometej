@@ -1,0 +1,258 @@
+{
+  "set": "choice-baseline",
+  "date": "2026-10-06",
+  "deployment": "gpt-4.1",
+  "limit": null,
+  "differs_from_seed": [],
+  "summary": {
+    "items": 24,
+    "right": 20,
+    "share": 0.8333,
+    "retried": 0,
+    "unverified": 0,
+    "prompt_tokens": 3085,
+    "completion_tokens": 120
+  },
+  "items": [
+    {
+      "id": "modernizam-4",
+      "question": "Tko je autor zbirke „Cvjetovi zla”?\n1. Charles Baudelaire\n2. Paul Verlaine\n3. Arthur Rimbaud\n4. Stéphane Mallarmé",
+      "expected": 1,
+      "option": 1,
+      "right": true,
+      "latency_ms": 1842,
+      "prompt_tokens": 114,
+      "completion_tokens": 5
+    },
+    {
+      "id": "modernizam-5",
+      "question": "Koja se Matoševa novela, objavljena 1892. godine, ubraja u proze kojima počinje hrvatska moderna?\n1. „Camao”\n2. „Cvijet sa raskršća”\n3. „Moć savjesti”\n4. „Kip domovine leta 188*”",
+      "expected": 3,
+      "option": 1,
+      "right": false,
+      "latency_ms": 1100,
+      "prompt_tokens": 139,
+      "completion_tokens": 5
+    },
+    {
+      "id": "modernizam-6",
+      "question": "Između kojih je dvaju polova razapeta Baudelaireova zbirka „Cvjetovi zla”?\n1. Između sela i grada\n2. Između spleena i ideala\n3. Između antike i kršćanstva\n4. Između razuma i dužnosti",
+      "expected": 2,
+      "option": 2,
+      "right": true,
+      "latency_ms": 1110,
+      "prompt_tokens": 138,
+      "completion_tokens": 5
+    },
+    {
+      "id": "modernizam-7",
+      "question": "Koja je Matoševa novela impresionistička priča o istinitom događaju?\n1. „Camao”\n2. „Cvijet sa raskršća”\n3. „Balkon”\n4. „Kip domovine leta 188*”",
+      "expected": 4,
+      "option": 1,
+      "right": false,
+      "latency_ms": 1510,
+      "prompt_tokens": 127,
+      "completion_tokens": 5
+    },
+    {
+      "id": "modernizam-8",
+      "question": "Koji je pjesnik hrvatske moderne u poeziju unio slavenski i antički mit, legendu i folklor?\n1. Vladimir Nazor\n2. Vladimir Vidrić\n3. Antun Gustav Matoš\n4. Dragutin Domjanić",
+      "expected": 1,
+      "option": 1,
+      "right": true,
+      "latency_ms": 1009,
+      "prompt_tokens": 127,
+      "completion_tokens": 5
+    },
+    {
+      "id": "modernizam-9",
+      "question": "Koja je Ujevićeva zbirka objavljena 1920. godine?\n1. „Kolajna”\n2. „Auto na korzu”\n3. „Lelek sebra”\n4. „Ojađeno zvono”",
+      "expected": 3,
+      "option": 1,
+      "right": false,
+      "latency_ms": 1040,
+      "prompt_tokens": 123,
+      "completion_tokens": 5
+    },
+    {
+      "id": "modernizam-10",
+      "question": "Koji pravac vjeruje da iza vidljivih stvari postoji skrivena veza koju pjesma može naslutiti?\n1. Naturalizam\n2. Simbolizam\n3. Realizam\n4. Klasicizam",
+      "expected": 2,
+      "option": 2,
+      "right": true,
+      "latency_ms": 819,
+      "prompt_tokens": 119,
+      "completion_tokens": 5
+    },
+    {
+      "id": "modernizam-11",
+      "question": "Koji događaji 1914. godine označuju kraj hrvatske moderne?\n1. Smrt Augusta Šenoe i izlazak Kumičićeva romana\n2. Pokretanje časopisa „Krugovi”\n3. Izlazak Šimićevih „Preobraženja”\n4. Matoševa smrt i izlazak antologije „Hrvatska mlada lirika”",
+      "expected": 4,
+      "option": 4,
+      "right": true,
+      "latency_ms": 1344,
+      "prompt_tokens": 158,
+      "completion_tokens": 5
+    },
+    {
+      "id": "realizam-4",
+      "question": "Tko je autor romana „Zločin i kazna”?\n1. Lav Nikolajevič Tolstoj\n2. Nikolaj Vasiljevič Gogolj\n3. Fjodor Mihajlovič Dostojevski\n4. Ivan Sergejevič Turgenjev",
+      "expected": 3,
+      "option": 3,
+      "right": true,
+      "latency_ms": 939,
+      "prompt_tokens": 134,
+      "completion_tokens": 5
+    },
+    {
+      "id": "realizam-5",
+      "question": "Kako se zove glavni junak romana „Zločin i kazna”?\n1. Raskoljnikov\n2. Porfirij Petrovič\n3. Ivica Kičmanović\n4. Ante Stipančić",
+      "expected": 1,
+      "option": 1,
+      "right": true,
+      "latency_ms": 799,
+      "prompt_tokens": 122,
+      "completion_tokens": 5
+    },
+    {
+      "id": "realizam-6",
+      "question": "U kojem se gradu događa radnja romana „Posljednji Stipančići”?\n1. U Zagrebu\n2. U Rijeci\n3. U Dubrovniku\n4. U Senju",
+      "expected": 4,
+      "option": 4,
+      "right": true,
+      "latency_ms": 1043,
+      "prompt_tokens": 114,
+      "completion_tokens": 5
+    },
+    {
+      "id": "realizam-7",
+      "question": "Kako se naziva razdoblje hrvatske književnosti koje prethodi realizmu i završava 1881. godine?\n1. Hrvatska moderna\n2. Šenoino doba\n3. Ilirski pokret\n4. Razdoblje realizma",
+      "expected": 2,
+      "option": 2,
+      "right": true,
+      "latency_ms": 1120,
+      "prompt_tokens": 128,
+      "completion_tokens": 5
+    },
+    {
+      "id": "realizam-8",
+      "question": "Kakva je kompozicija Šenoine pripovijesti „Prijan Lovro”?\n1. Uokvirena: pripovjedač udovici priča sudbinu svojega prijatelja\n2. Roman u pismima koja junak piše prijatelju\n3. Dnevnik glavnoga junaka\n4. Niz samostalnih novela bez okvira",
+      "expected": 1,
+      "option": 1,
+      "right": true,
+      "latency_ms": 819,
+      "prompt_tokens": 155,
+      "completion_tokens": 5
+    },
+    {
+      "id": "realizam-9",
+      "question": "Koji je roman napisao Ante Kovačić?\n1. „Zlatarovo zlato”\n2. „Pod starimi krovovi”\n3. „U registraturi”\n4. „Posljednji Stipančići”",
+      "expected": 3,
+      "option": 3,
+      "right": true,
+      "latency_ms": 912,
+      "prompt_tokens": 122,
+      "completion_tokens": 5
+    },
+    {
+      "id": "realizam-10",
+      "question": "Koja je Kranjčevićeva zbirka objavljena 1885. godine?\n1. „Trzaji”\n2. „Izabrane pjesme”\n3. „Pjesme”\n4. „Bugarkinje”",
+      "expected": 4,
+      "option": 3,
+      "right": false,
+      "latency_ms": 1378,
+      "prompt_tokens": 121,
+      "completion_tokens": 5
+    },
+    {
+      "id": "realizam-11",
+      "question": "Što je od navedenoga obilježje realizma?\n1. Osjećaji i mašta važniji su od razuma\n2. Vjeran prikaz suvremenoga društva i psihološki razrađeni likovi\n3. Stvarnost se naslućuje simbolima i zvukom riječi\n4. Uzor su antička djela i stroga pravila",
+      "expected": 2,
+      "option": 2,
+      "right": true,
+      "latency_ms": 988,
+      "prompt_tokens": 157,
+      "completion_tokens": 5
+    },
+    {
+      "id": "renesansa-4",
+      "question": "Tko je napisao spjev „Judita”?\n1. Marin Držić\n2. Marko Marulić\n3. Petar Hektorović\n4. Hanibal Lucić",
+      "expected": 2,
+      "option": 2,
+      "right": true,
+      "latency_ms": 877,
+      "prompt_tokens": 113,
+      "completion_tokens": 5
+    },
+    {
+      "id": "renesansa-5",
+      "question": "Kojoj književnoj vrsti pripada Držićeva „Novela od Stanca”?\n1. Tragediji\n2. Pastirskoj igri\n3. Epu\n4. Komediji",
+      "expected": 4,
+      "option": 4,
+      "right": true,
+      "latency_ms": 933,
+      "prompt_tokens": 117,
+      "completion_tokens": 5
+    },
+    {
+      "id": "renesansa-6",
+      "question": "Tko Hamletu otkriva da mu je otac ubijen?\n1. Očev duh\n2. Horacije\n3. Polonije\n4. Gertruda",
+      "expected": 1,
+      "option": 1,
+      "right": true,
+      "latency_ms": 898,
+      "prompt_tokens": 109,
+      "completion_tokens": 5
+    },
+    {
+      "id": "renesansa-7",
+      "question": "Koje se djelo često naziva prvim hrvatskim romanom?\n1. „Ribanje i ribarsko prigovaranje”\n2. „Robinja”\n3. „Planine”\n4. „Dundo Maroje”",
+      "expected": 3,
+      "option": 3,
+      "right": true,
+      "latency_ms": 938,
+      "prompt_tokens": 123,
+      "completion_tokens": 5
+    },
+    {
+      "id": "renesansa-8",
+      "question": "Kojim je stihom ispjevana „Judita”?\n1. Heksametrom\n2. Dvostruko rimovanim dvanaestercem\n3. Osmercem\n4. Desetercem",
+      "expected": 2,
+      "option": 2,
+      "right": true,
+      "latency_ms": 968,
+      "prompt_tokens": 120,
+      "completion_tokens": 5
+    },
+    {
+      "id": "renesansa-9",
+      "question": "Tko je autor romana „Don Quijote”?\n1. Ludovico Ariosto\n2. William Shakespeare\n3. Giovanni Boccaccio\n4. Miguel de Cervantes",
+      "expected": 4,
+      "option": 4,
+      "right": true,
+      "latency_ms": 816,
+      "prompt_tokens": 110,
+      "completion_tokens": 5
+    },
+    {
+      "id": "renesansa-10",
+      "question": "Što se u „Noveli od Stanca” dogodi Stancu?\n1. Maskirani mladići obriju mu bradu i odnesu robu\n2. Pomladi se zahvaljujući vilama\n3. Pronađe sina koji mu je potrošio dukate\n4. Pobijedi mladiće u nadmudrivanju",
+      "expected": 1,
+      "option": 1,
+      "right": true,
+      "latency_ms": 1042,
+      "prompt_tokens": 151,
+      "completion_tokens": 5
+    },
+    {
+      "id": "renesansa-11",
+      "question": "Što je od navedenoga obilježje renesanse?\n1. Kićen stil i misao o prolaznosti života\n2. Strogo jedinstvo mjesta, vremena i radnje\n3. Čovjek i njegov zemaljski život u središtu zanimanja\n4. Vjerno opisivanje suvremenoga društva",
+      "expected": 3,
+      "option": 3,
+      "right": true,
+      "latency_ms": 905,
+      "prompt_tokens": 144,
+      "completion_tokens": 5
+    }
+  ]
+}

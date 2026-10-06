@@ -1,0 +1,1135 @@
+{
+  "set": "coverage",
+  "date": "2026-10-06",
+  "deployment": "gpt-4.1",
+  "limit": null,
+  "differs_from_seed": [],
+  "summary": {
+    "items": 36,
+    "right": 36,
+    "share": 1.0,
+    "retried": 0,
+    "unverified": 0,
+    "prompt_tokens": 229684,
+    "completion_tokens": 7249
+  },
+  "items": [
+    {
+      "id": "c01",
+      "question": "Tko je u grčku tragediju uveo trećega glumca?",
+      "kind": "answer",
+      "answer": "Trećega glumca u grčku tragediju uveo je Sofoklo. To možeš pronaći u sažetku antike, gdje se izričito navodi njegova zasluga za tu inovaciju. Preporučujem da pročitaš taj dio za više informacija o razvoju grčke tragedije.",
+      "cited": [
+        {
+          "periodId": 1,
+          "sectionId": "odjeljak-13",
+          "sectionTitle": "Sažetak"
+        }
+      ],
+      "period_scoped": false,
+      "tools": [
+        "search_material",
+        "search_material",
+        "search_material",
+        "read_section",
+        "read_section"
+      ],
+      "retried": false,
+      "latency_ms": 7517,
+      "prompt_tokens": 14294,
+      "completion_tokens": 239,
+      "expected": {
+        "periodId": 1,
+        "headings": [
+          "Sofoklo: Antigona",
+          "Sažetak"
+        ]
+      },
+      "right": true
+    },
+    {
+      "id": "c02",
+      "question": "Koga Ahilej ubija u dvoboju da bi osvetio Patrokla?",
+      "kind": "answer",
+      "answer": "Ahilej ubija Hektora u dvoboju kako bi osvetio smrt svog prijatelja Patrokla. Hektor je bio trojanski junak koji je ubio Patrokla, a Ahilej se nakon toga vraća u borbu upravo zbog osvete.",
+      "cited": [
+        {
+          "periodId": 1,
+          "sectionId": "odjeljak-10",
+          "sectionTitle": "Homer: Ilijada i Odiseja"
+        }
+      ],
+      "period_scoped": false,
+      "tools": [
+        "search_material",
+        "search_material",
+        "search_material",
+        "read_section"
+      ],
+      "retried": false,
+      "latency_ms": 6610,
+      "prompt_tokens": 8645,
+      "completion_tokens": 238,
+      "expected": {
+        "periodId": 1,
+        "headings": [
+          "Homer: Ilijada i Odiseja"
+        ]
+      },
+      "right": true
+    },
+    {
+      "id": "c03",
+      "question": "Kojoj kraljici Eneja pripovijeda o propasti Troje?",
+      "kind": "answer",
+      "answer": "Eneja pripovijeda o propasti Troje kraljici Didoni, vladarici Kartage. Didona se zaljubljuje u Eneju nakon što joj ispriča svoju priču.",
+      "cited": [
+        {
+          "periodId": 1,
+          "sectionId": "odjeljak-12",
+          "sectionTitle": "Vergilije: Eneida"
+        }
+      ],
+      "period_scoped": false,
+      "tools": [
+        "search_material",
+        "read_section"
+      ],
+      "retried": false,
+      "latency_ms": 4054,
+      "prompt_tokens": 4437,
+      "completion_tokens": 140,
+      "expected": {
+        "periodId": 1,
+        "headings": [
+          "Vergilije: Eneida"
+        ]
+      },
+      "right": true
+    },
+    {
+      "id": "c04",
+      "question": "Gdje se danas čuva Bašćanska ploča?",
+      "kind": "answer",
+      "answer": "Bašćanska ploča danas se čuva u palači Hrvatske akademije znanosti i umjetnosti u Zagrebu. To možeš pronaći u dijelu koji opisuje gdje se ploča nalazi sada.",
+      "cited": [
+        {
+          "periodId": 2,
+          "sectionId": "odjeljak-14",
+          "sectionTitle": "Bašćanska ploča"
+        }
+      ],
+      "period_scoped": false,
+      "tools": [
+        "search_material",
+        "list_sections",
+        "read_section"
+      ],
+      "retried": false,
+      "latency_ms": 4820,
+      "prompt_tokens": 5848,
+      "completion_tokens": 172,
+      "expected": {
+        "periodId": 2,
+        "headings": [
+          "Bašćanska ploča"
+        ]
+      },
+      "right": true
+    },
+    {
+      "id": "c05",
+      "question": "Tko je izdao Rolanda i zašto?",
+      "kind": "answer",
+      "answer": "Rolanda je izdao njegov očuh Ganelon. Ganelon je bio uvrijeđen jer ga je Roland predložio za opasno poslanstvo, pa se iz osvete udružio s neprijateljem i izdao Franke, što je dovelo do Rolandove pogibije.",
+      "cited": [
+        {
+          "periodId": 2,
+          "sectionId": "odjeljak-13",
+          "sectionTitle": "Pjesan o Rolandu"
+        },
+        {
+          "periodId": 2,
+          "sectionId": "odjeljak-13",
+          "sectionTitle": "Pjesan o Rolandu"
+        }
+      ],
+      "period_scoped": false,
+      "tools": [
+        "search_material",
+        "search_material",
+        "list_sections",
+        "read_section"
+      ],
+      "retried": false,
+      "latency_ms": 8151,
+      "prompt_tokens": 7025,
+      "completion_tokens": 257,
+      "expected": {
+        "periodId": 2,
+        "headings": [
+          "Pjesan o Rolandu"
+        ]
+      },
+      "right": true
+    },
+    {
+      "id": "c06",
+      "question": "Kojim se pismima pisalo u hrvatskom srednjem vijeku?",
+      "kind": "answer",
+      "answer": "U hrvatskom srednjem vijeku pisalo se trima pismima: glagoljicom, hrvatskom ćirilicom (koja se naziva i bosančica) te latinicom. Svako od tih pisama korišteno je za različite potrebe i na različitim područjima.",
+      "cited": [
+        {
+          "periodId": 2,
+          "sectionId": "odjeljak-8",
+          "sectionTitle": "Tri jezika i tri pisma"
+        }
+      ],
+      "period_scoped": false,
+      "tools": [
+        "search_material",
+        "read_section"
+      ],
+      "retried": false,
+      "latency_ms": 5194,
+      "prompt_tokens": 4661,
+      "completion_tokens": 170,
+      "expected": {
+        "periodId": 2,
+        "headings": [
+          "Tri jezika i tri pisma",
+          "Sažetak"
+        ]
+      },
+      "right": true
+    },
+    {
+      "id": "c07",
+      "question": "Što piše na vratima pakla u Danteovu spjevu?",
+      "kind": "answer",
+      "answer": "Na vratima pakla u Danteovu spjevu piše da onaj tko ulazi mora ostaviti svaku nadu. To je poznati natpis koji upozorava duše na ulasku u pakao da više nema povratka ni nade za njih. Ako želiš, mogu ti pokazati gdje se to spominje u tekstu i objasniti više o značenju tog natpisa.",
+      "cited": [
+        {
+          "periodId": 7,
+          "sectionId": "odjeljak-11",
+          "sectionTitle": "Dante Alighieri: Božanstvena komedija"
+        }
+      ],
+      "period_scoped": false,
+      "tools": [
+        "search_material",
+        "list_sections",
+        "read_section"
+      ],
+      "retried": false,
+      "latency_ms": 6710,
+      "prompt_tokens": 5719,
+      "completion_tokens": 200,
+      "expected": {
+        "periodId": 7,
+        "headings": [
+          "Dante Alighieri: Božanstvena komedija"
+        ]
+      },
+      "right": true
+    },
+    {
+      "id": "c08",
+      "question": "Zašto se pripovjedači u Dekameronu sklanjaju u vilu izvan grada?",
+      "kind": "answer",
+      "answer": "Pripovjedači u Dekameronu sklanjaju se u vilu izvan grada kako bi pobjegli od kuge koja je zahvatila Firencu. Tamo se okupljaju kako bi izbjegli zarazu i vrijeme provode pričajući priče.",
+      "cited": [
+        {
+          "periodId": 7,
+          "sectionId": "odjeljak-13",
+          "sectionTitle": "Giovanni Boccaccio: Dekameron"
+        }
+      ],
+      "period_scoped": false,
+      "tools": [
+        "search_material",
+        "search_material",
+        "search_material",
+        "search_material",
+        "list_sections",
+        "read_section"
+      ],
+      "retried": false,
+      "latency_ms": 9869,
+      "prompt_tokens": 18030,
+      "completion_tokens": 225,
+      "expected": {
+        "periodId": 7,
+        "headings": [
+          "Giovanni Boccaccio: Dekameron"
+        ]
+      },
+      "right": true
+    },
+    {
+      "id": "c09",
+      "question": "Koji je hrvatski latinist u Rimu okrunjen pjesničkim lovorovim vijencem?",
+      "kind": "answer",
+      "answer": "Hrvatski latinist koji je u Rimu okrunjen pjesničkim lovorovim vijencem bio je Ilija Crijević. To se dogodilo 1484. godine.",
+      "cited": [
+        {
+          "periodId": 7,
+          "sectionId": "odjeljak-8",
+          "sectionTitle": "Latinisti"
+        }
+      ],
+      "period_scoped": false,
+      "tools": [
+        "search_material",
+        "read_section"
+      ],
+      "retried": false,
+      "latency_ms": 4351,
+      "prompt_tokens": 3604,
+      "completion_tokens": 155,
+      "expected": {
+        "periodId": 7,
+        "headings": [
+          "Latinisti"
+        ]
+      },
+      "right": true
+    },
+    {
+      "id": "c10",
+      "question": "Kako se zove Juditina sluškinja?",
+      "kind": "answer",
+      "answer": "Juditina sluškinja zove se Abra. To možeš pronaći u dijelu o likovima i u kratkom sadržaju Marulićeve Judite.",
+      "cited": [
+        {
+          "periodId": 3,
+          "sectionId": "odjeljak-13",
+          "sectionTitle": "Marko Marulić: Judita"
+        },
+        {
+          "periodId": 3,
+          "sectionId": "odjeljak-13",
+          "sectionTitle": "Marko Marulić: Judita"
+        }
+      ],
+      "period_scoped": false,
+      "tools": [
+        "search_material",
+        "read_section"
+      ],
+      "retried": false,
+      "latency_ms": 6031,
+      "prompt_tokens": 4718,
+      "completion_tokens": 208,
+      "expected": {
+        "periodId": 3,
+        "headings": [
+          "Marko Marulić: Judita"
+        ]
+      },
+      "right": true
+    },
+    {
+      "id": "c11",
+      "question": "Čime mladići namame starog seljaka kod Onofrijeve česme?",
+      "kind": "answer",
+      "answer": "Mladići namame starog seljaka Stanca tako što mu Dživo ispriča priču da su ga vile kod Onofrijeve česme pomladile, pa Stanac povjeruje i poželi isto, jer kod kuće ima mladu ženu. Zatim nagovore maskare da se pretvaraju da su vile i obećaju mu pomlađivanje.",
+      "cited": [
+        {
+          "periodId": 3,
+          "sectionId": "odjeljak-14",
+          "sectionTitle": "Marin Držić: Novela od Stanca"
+        },
+        {
+          "periodId": 3,
+          "sectionId": "odjeljak-14",
+          "sectionTitle": "Marin Držić: Novela od Stanca"
+        }
+      ],
+      "period_scoped": false,
+      "tools": [
+        "search_material",
+        "list_sections",
+        "read_section"
+      ],
+      "retried": false,
+      "latency_ms": 6492,
+      "prompt_tokens": 5816,
+      "completion_tokens": 306,
+      "expected": {
+        "periodId": 3,
+        "headings": [
+          "Marin Držić: Novela od Stanca"
+        ]
+      },
+      "right": true
+    },
+    {
+      "id": "c12",
+      "question": "Čiju lubanju Hamlet drži u ruci na groblju?",
+      "kind": "answer",
+      "answer": "Hamlet na groblju drži u ruci lubanju Jorika, dvorske lude koju je volio kao dijete. Ova scena simbolizira Hamletovo razmišljanje o prolaznosti života i smrti.",
+      "cited": [
+        {
+          "periodId": 3,
+          "sectionId": "odjeljak-15",
+          "sectionTitle": "William Shakespeare: Hamlet"
+        }
+      ],
+      "period_scoped": false,
+      "tools": [
+        "search_material",
+        "list_sections",
+        "read_section"
+      ],
+      "retried": false,
+      "latency_ms": 4833,
+      "prompt_tokens": 6188,
+      "completion_tokens": 169,
+      "expected": {
+        "periodId": 3,
+        "headings": [
+          "William Shakespeare: Hamlet"
+        ]
+      },
+      "right": true
+    },
+    {
+      "id": "c13",
+      "question": "Što Don Quijote vidi u vjetrenjačama?",
+      "kind": "answer",
+      "answer": "Don Quijote u vjetrenjačama vidi divove. On svijet oko sebe doživljava kroz prizmu viteških romana koje je čitao, pa tako obične vjetrenjače doživljava kao opasne protivnike s kojima se mora boriti. To pokazuje njegovu maštovitost i odvojenost od stvarnosti.",
+      "cited": [
+        {
+          "periodId": 3,
+          "sectionId": "odjeljak-16",
+          "sectionTitle": "Miguel de Cervantes: Don Quijote"
+        }
+      ],
+      "period_scoped": false,
+      "tools": [
+        "search_material",
+        "list_sections",
+        "read_section"
+      ],
+      "retried": false,
+      "latency_ms": 5574,
+      "prompt_tokens": 5963,
+      "completion_tokens": 225,
+      "expected": {
+        "periodId": 3,
+        "headings": [
+          "Miguel de Cervantes: Don Quijote"
+        ]
+      },
+      "right": true
+    },
+    {
+      "id": "c14",
+      "question": "Koja pjevanja nedostaju u Gundulićevu Osmanu i tko ih je dopunio?",
+      "kind": "answer",
+      "answer": "U Gundulićevu Osmanu nedostaju četrnaesto i petnaesto pjevanje. Ta dva pjevanja dopunio je Ivan Mažuranić 1844. godine. Ako želiš, mogu ti pokazati gdje se točno o tome piše u materijalu.",
+      "cited": [
+        {
+          "periodId": 8,
+          "sectionId": "odjeljak-13",
+          "sectionTitle": "Ivan Gundulić: Osman"
+        },
+        {
+          "periodId": 5,
+          "sectionId": "odjeljak-12",
+          "sectionTitle": "Ivan Mažuranić: Smrt Smail-age Čengića"
+        }
+      ],
+      "period_scoped": false,
+      "tools": [
+        "search_material",
+        "list_sections",
+        "read_section",
+        "read_section"
+      ],
+      "retried": false,
+      "latency_ms": 8079,
+      "prompt_tokens": 9940,
+      "completion_tokens": 289,
+      "expected": {
+        "periodId": 8,
+        "headings": [
+          "Ivan Gundulić: Osman",
+          "Sažetak"
+        ]
+      },
+      "right": true
+    },
+    {
+      "id": "c15",
+      "question": "Zašto kralj Bazilije drži sina zatvorena u kuli?",
+      "kind": "answer",
+      "answer": "Kralj Bazilije drži sina Sigismunda zatvorenog u kuli jer je, vjerujući zvijezdama, pročitao da će njegov sin biti okrutan i nepravedan vladar. Iz straha od te sudbine odlučuje ga izolirati od svijeta.",
+      "cited": [
+        {
+          "periodId": 8,
+          "sectionId": "odjeljak-14",
+          "sectionTitle": "Pedro Calderón de la Barca: Život je san"
+        }
+      ],
+      "period_scoped": false,
+      "tools": [
+        "search_material",
+        "list_sections",
+        "read_section"
+      ],
+      "retried": false,
+      "latency_ms": 5264,
+      "prompt_tokens": 6041,
+      "completion_tokens": 223,
+      "expected": {
+        "periodId": 8,
+        "headings": [
+          "Pedro Calderón de la Barca: Život je san"
+        ]
+      },
+      "right": true
+    },
+    {
+      "id": "c16",
+      "question": "Što je končeto?",
+      "kind": "answer",
+      "answer": "Končeto je neobična, oštroumna dosjetka koja se koristi u baroknoj književnosti kako bi iznenadila i zadivila čitatelja. Takav stil obiluje metaforama, antitezama i domišljatim dosjetkama, a cilj mu je izazvati čuđenje kod čitatelja.",
+      "cited": [
+        {
+          "periodId": 8,
+          "sectionId": "odjeljak-2",
+          "sectionTitle": "Obilježja razdoblja"
+        },
+        {
+          "periodId": 8,
+          "sectionId": "odjeljak-15",
+          "sectionTitle": "Sažetak"
+        }
+      ],
+      "period_scoped": false,
+      "tools": [
+        "search_material"
+      ],
+      "retried": false,
+      "latency_ms": 4008,
+      "prompt_tokens": 1932,
+      "completion_tokens": 224,
+      "expected": {
+        "periodId": 8,
+        "headings": [
+          "Obilježja razdoblja",
+          "Sažetak"
+        ]
+      },
+      "right": true
+    },
+    {
+      "id": "c17",
+      "question": "Gdje je Harpagon sakrio svoj novac?",
+      "kind": "answer",
+      "answer": "Harpagon je svoj novac sakrio tako da je \"zakopao u vrtu škrinjicu s deset tisuća škuda\". To pokazuje koliko mu je novac važan i koliko je sumnjičav prema svima oko sebe. Ako želiš, mogu ti objasniti više o njegovom karakteru i odnosu prema novcu.",
+      "cited": [
+        {
+          "periodId": 9,
+          "sectionId": "odjeljak-12",
+          "sectionTitle": "Molière: Škrtac"
+        }
+      ],
+      "period_scoped": false,
+      "tools": [
+        "search_material",
+        "list_sections",
+        "read_section"
+      ],
+      "retried": false,
+      "latency_ms": 5501,
+      "prompt_tokens": 6420,
+      "completion_tokens": 199,
+      "expected": {
+        "periodId": 9,
+        "headings": [
+          "Molière: Škrtac"
+        ]
+      },
+      "right": true
+    },
+    {
+      "id": "c18",
+      "question": "U koga je zaljubljena Racineova Fedra?",
+      "kind": "answer",
+      "answer": "Fedra je zaljubljena u svojega posinka Hipolita. Ta ljubav je zabranjena i ona se protiv nje uzalud bori, što je i sama priznala svojoj sluškinji Enoni. O tome možeš čitati u dijelu gdje se opisuje tema i sadržaj tragedije.",
+      "cited": [
+        {
+          "periodId": 9,
+          "sectionId": "odjeljak-13",
+          "sectionTitle": "Jean Racine: Fedra"
+        },
+        {
+          "periodId": 9,
+          "sectionId": "odjeljak-13",
+          "sectionTitle": "Jean Racine: Fedra"
+        }
+      ],
+      "period_scoped": false,
+      "tools": [
+        "search_material",
+        "list_sections",
+        "read_section"
+      ],
+      "retried": false,
+      "latency_ms": 5822,
+      "prompt_tokens": 6218,
+      "completion_tokens": 229,
+      "expected": {
+        "periodId": 9,
+        "headings": [
+          "Jean Racine: Fedra"
+        ]
+      },
+      "right": true
+    },
+    {
+      "id": "c19",
+      "question": "Što Relković kori u Satiru?",
+      "kind": "answer",
+      "answer": "Relković u Satiru kori zaostalost slavonskog sela i loše običaje. Te negativne pojave on pripisuje turskom nasljeđu, a kroz svoje djelo nastoji poučiti i popraviti društvo.",
+      "cited": [
+        {
+          "periodId": 9,
+          "sectionId": "odjeljak-9",
+          "sectionTitle": "Matija Antun Relković"
+        }
+      ],
+      "period_scoped": false,
+      "tools": [
+        "search_material",
+        "read_section"
+      ],
+      "retried": false,
+      "latency_ms": 4272,
+      "prompt_tokens": 3490,
+      "completion_tokens": 163,
+      "expected": {
+        "periodId": 9,
+        "headings": [
+          "Matija Antun Relković"
+        ]
+      },
+      "right": true
+    },
+    {
+      "id": "c20",
+      "question": "Kome Werther šalje svoja pisma?",
+      "kind": "answer",
+      "answer": "Werther svoja pisma šalje prijatelju Wilhelmu. U materijalu piše da su pisma upućena Wilhelmu, a njegove odgovore ne čitamo. Ako želiš, mogu ti pokazati gdje to piše.",
+      "cited": [
+        {
+          "periodId": 10,
+          "sectionId": "odjeljak-10",
+          "sectionTitle": "Johann Wolfgang Goethe: Patnje mladoga Werthera"
+        },
+        {
+          "periodId": 10,
+          "sectionId": "odjeljak-10",
+          "sectionTitle": "Johann Wolfgang Goethe: Patnje mladoga Werthera"
+        }
+      ],
+      "period_scoped": false,
+      "tools": [
+        "search_material",
+        "list_sections",
+        "read_section"
+      ],
+      "retried": false,
+      "latency_ms": 5325,
+      "prompt_tokens": 6314,
+      "completion_tokens": 196,
+      "expected": {
+        "periodId": 10,
+        "headings": [
+          "Johann Wolfgang Goethe: Patnje mladoga Werthera"
+        ]
+      },
+      "right": true
+    },
+    {
+      "id": "c21",
+      "question": "Kako završava Schillerova drama o braći Moor?",
+      "kind": "answer",
+      "answer": "Drama završava tako da Franz počini samoubojstvo, a Karl, rastrgan između ljubavi prema Amaliji i vjernosti družini, ubija Amaliju. Na kraju odluči sam se predati sudu, i to preko siromaha, kako bi siromah dobio nagradu za njegovu glavu. Ovim završetkom Schiller pokazuje da se nepravda ne može ispraviti novim nasiljem i da sloboda bez zakona vodi u zločin.",
+      "cited": [
+        {
+          "periodId": 10,
+          "sectionId": "odjeljak-11",
+          "sectionTitle": "Friedrich Schiller: Razbojnici"
+        }
+      ],
+      "period_scoped": false,
+      "tools": [
+        "search_material",
+        "list_sections",
+        "read_section"
+      ],
+      "retried": false,
+      "latency_ms": 8322,
+      "prompt_tokens": 6656,
+      "completion_tokens": 302,
+      "expected": {
+        "periodId": 10,
+        "headings": [
+          "Friedrich Schiller: Razbojnici"
+        ]
+      },
+      "right": true
+    },
+    {
+      "id": "c22",
+      "question": "Tko je preveo Hasanaginicu na njemački?",
+      "kind": "answer",
+      "answer": "Hasanaginicu je na njemački preveo Johann Wolfgang Goethe. Njegov prijevod proslavio je ovu baladu u Europi.",
+      "cited": [
+        {
+          "periodId": 10,
+          "sectionId": "odjeljak-12",
+          "sectionTitle": "Sažetak"
+        }
+      ],
+      "period_scoped": false,
+      "tools": [
+        "search_material",
+        "list_sections",
+        "read_section"
+      ],
+      "retried": false,
+      "latency_ms": 4261,
+      "prompt_tokens": 5510,
+      "completion_tokens": 160,
+      "expected": {
+        "periodId": 10,
+        "headings": [
+          "Hasanaginica",
+          "Sažetak"
+        ]
+      },
+      "right": true
+    },
+    {
+      "id": "c23",
+      "question": "Kako se zovu pjevanja Mažuranićeva spjeva o Smail-agi?",
+      "kind": "answer",
+      "answer": "Pjevanja Mažuranićeva spjeva zovu se: Agovanje, Noćnik, Četa, Harač i Kob. To su naslovi pet dijelova spjeva \"Smrt Smail-age Čengića\". Možeš ih pronaći u dijelu o književnim elementima tog djela.",
+      "cited": [
+        {
+          "periodId": 5,
+          "sectionId": "odjeljak-12",
+          "sectionTitle": "Ivan Mažuranić: Smrt Smail-age Čengića"
+        }
+      ],
+      "period_scoped": false,
+      "tools": [
+        "search_material",
+        "read_section"
+      ],
+      "retried": false,
+      "latency_ms": 4978,
+      "prompt_tokens": 6263,
+      "completion_tokens": 178,
+      "expected": {
+        "periodId": 5,
+        "headings": [
+          "Ivan Mažuranić: Smrt Smail-age Čengića"
+        ]
+      },
+      "right": true
+    },
+    {
+      "id": "c24",
+      "question": "Zašto Lenski izaziva Onjegina na dvoboj?",
+      "kind": "answer",
+      "answer": "Lenski izaziva Onjegina na dvoboj jer se uvrijedio kada je Onjegin, želeći mu napakostiti, dugo plesao s njegovom zaručnicom Olgom na Tatjaninom imendanu. To je Lenski doživio kao izdaju prijateljstva i povredu časti, pa ga je zbog toga izazvao na dvoboj.",
+      "cited": [
+        {
+          "periodId": 5,
+          "sectionId": "odjeljak-13",
+          "sectionTitle": "Aleksandar Sergejevič Puškin: Evgenij Onjegin"
+        }
+      ],
+      "period_scoped": false,
+      "tools": [
+        "search_material",
+        "read_section"
+      ],
+      "retried": false,
+      "latency_ms": 4360,
+      "prompt_tokens": 5513,
+      "completion_tokens": 208,
+      "expected": {
+        "periodId": 5,
+        "headings": [
+          "Aleksandar Sergejevič Puškin: Evgenij Onjegin"
+        ]
+      },
+      "right": true
+    },
+    {
+      "id": "c25",
+      "question": "Koju je strofu Vraz uveo u hrvatsku liriku?",
+      "kind": "answer",
+      "answer": "Vraz je u hrvatsku liriku uveo krakovjak, što je strofa od četiri šesterca preuzeta iz poljske narodne pjesme. Time je obogatio stihovne oblike u hrvatskoj poeziji.",
+      "cited": [
+        {
+          "periodId": 5,
+          "sectionId": "odjeljak-14",
+          "sectionTitle": "Petar Preradović i Stanko Vraz"
+        }
+      ],
+      "period_scoped": false,
+      "tools": [
+        "search_material",
+        "search_material",
+        "list_sections",
+        "read_section"
+      ],
+      "retried": false,
+      "latency_ms": 8038,
+      "prompt_tokens": 8700,
+      "completion_tokens": 190,
+      "expected": {
+        "periodId": 5,
+        "headings": [
+          "Petar Preradović i Stanko Vraz"
+        ]
+      },
+      "right": true
+    },
+    {
+      "id": "c26",
+      "question": "Kako završava život Ivice Kičmanovića?",
+      "kind": "answer",
+      "answer": "Ivica Kičmanović na kraju romana životari kao sitan činovnik i završava u registraturi. Kada mu u ruke dođu spisi o Lauri, propije se, a jedne noći polije spise i sebe i zapali registraturu. Time njegov život završava tragično, u očaju i samouništenju.",
+      "cited": [
+        {
+          "periodId": 4,
+          "sectionId": "odjeljak-15",
+          "sectionTitle": "Ante Kovačić: U registraturi"
+        }
+      ],
+      "period_scoped": false,
+      "tools": [
+        "search_material",
+        "list_sections",
+        "read_section",
+        "read_section"
+      ],
+      "retried": false,
+      "latency_ms": 6692,
+      "prompt_tokens": 9567,
+      "completion_tokens": 244,
+      "expected": {
+        "periodId": 4,
+        "headings": [
+          "Ante Kovačić: U registraturi"
+        ]
+      },
+      "right": true
+    },
+    {
+      "id": "c27",
+      "question": "Tko zavede Luciju Stipančić?",
+      "kind": "answer",
+      "answer": "Luciju Stipančić zavede Alfred, prijatelj njezina brata Jurja. On to učini iz zabave, a nakon toga nestane iz njezina života.",
+      "cited": [
+        {
+          "periodId": 4,
+          "sectionId": "odjeljak-14",
+          "sectionTitle": "Vjenceslav Novak: Posljednji Stipančići"
+        }
+      ],
+      "period_scoped": false,
+      "tools": [
+        "search_material",
+        "list_sections",
+        "read_section"
+      ],
+      "retried": false,
+      "latency_ms": 6042,
+      "prompt_tokens": 6681,
+      "completion_tokens": 162,
+      "expected": {
+        "periodId": 4,
+        "headings": [
+          "Vjenceslav Novak: Posljednji Stipančići"
+        ]
+      },
+      "right": true
+    },
+    {
+      "id": "c28",
+      "question": "Tko izda ljubavnike u Matoševoj noveli Camao?",
+      "kind": "answer",
+      "answer": "Ljubavnike u noveli Camao izda papiga Camao. Ona pred mužem ponovi riječi koje su jedno drugomu govorili, što dovodi do tragičnog završetka.",
+      "cited": [
+        {
+          "periodId": 6,
+          "sectionId": "odjeljak-12",
+          "sectionTitle": "Antun Gustav Matoš: novele"
+        }
+      ],
+      "period_scoped": false,
+      "tools": [
+        "search_material",
+        "read_section"
+      ],
+      "retried": false,
+      "latency_ms": 4342,
+      "prompt_tokens": 7021,
+      "completion_tokens": 147,
+      "expected": {
+        "periodId": 6,
+        "headings": [
+          "Antun Gustav Matoš: novele"
+        ]
+      },
+      "right": true
+    },
+    {
+      "id": "c29",
+      "question": "Od koliko se tercina sastoji Svakidašnja jadikovka?",
+      "kind": "answer",
+      "answer": "Svakidašnja jadikovka sastoji se od dvadeset i jedne tercine. To znači da pjesma ima 21 strofu po tri stiha.",
+      "cited": [
+        {
+          "periodId": 6,
+          "sectionId": "odjeljak-14",
+          "sectionTitle": "Tin Ujević: pjesme"
+        }
+      ],
+      "period_scoped": false,
+      "tools": [
+        "search_material",
+        "read_section"
+      ],
+      "retried": false,
+      "latency_ms": 4382,
+      "prompt_tokens": 3952,
+      "completion_tokens": 173,
+      "expected": {
+        "periodId": 6,
+        "headings": [
+          "Tin Ujević: pjesme"
+        ]
+      },
+      "right": true
+    },
+    {
+      "id": "c30",
+      "question": "Čime otac gađa Gregora Samsu?",
+      "kind": "answer",
+      "answer": "Otac gađa Gregora jabukama, a jedna mu se zarije u leđa. To se događa nakon što ga majka ugleda i onesvijesti se, a otac reagira nasilno na Gregorovu prisutnost.",
+      "cited": [
+        {
+          "periodId": 11,
+          "sectionId": "odjeljak-13",
+          "sectionTitle": "Franz Kafka: Preobražaj"
+        }
+      ],
+      "period_scoped": false,
+      "tools": [
+        "search_material",
+        "read_section"
+      ],
+      "retried": false,
+      "latency_ms": 4434,
+      "prompt_tokens": 8270,
+      "completion_tokens": 148,
+      "expected": {
+        "periodId": 11,
+        "headings": [
+          "Franz Kafka: Preobražaj"
+        ]
+      },
+      "right": true
+    },
+    {
+      "id": "c31",
+      "question": "Zbog koga se Janez objesio?",
+      "kind": "answer",
+      "answer": "Janez se objesio zbog Anke, žene koju je volio, a koja ga je odbacila jer nije imao novca. On joj u drami izravno kaže da se objesio zbog nje, a Anka mu se ruga i jasno pokazuje da joj je važan samo materijalni interes.",
+      "cited": [
+        {
+          "periodId": 11,
+          "sectionId": "odjeljak-14",
+          "sectionTitle": "Miroslav Krleža: Kraljevo"
+        },
+        {
+          "periodId": 11,
+          "sectionId": "odjeljak-14",
+          "sectionTitle": "Miroslav Krleža: Kraljevo"
+        }
+      ],
+      "period_scoped": false,
+      "tools": [
+        "search_material",
+        "read_section"
+      ],
+      "retried": false,
+      "latency_ms": 5099,
+      "prompt_tokens": 4591,
+      "completion_tokens": 202,
+      "expected": {
+        "periodId": 11,
+        "headings": [
+          "Miroslav Krleža: Kraljevo"
+        ]
+      },
+      "right": true
+    },
+    {
+      "id": "c32",
+      "question": "Od kojega je pjesnika Šimić preuzeo raspored stihova oko središnje osi?",
+      "kind": "answer",
+      "answer": "Šimić je raspored stihova oko središnje osi preuzeo od njemačkog pjesnika Holza. To je posebno istaknuto u materijalu o njegovoj poeziji.",
+      "cited": [
+        {
+          "periodId": 11,
+          "sectionId": "odjeljak-12",
+          "sectionTitle": "Antun Branko Šimić: Preobraženja i druge pjesme"
+        }
+      ],
+      "period_scoped": false,
+      "tools": [
+        "search_material"
+      ],
+      "retried": false,
+      "latency_ms": 2773,
+      "prompt_tokens": 2040,
+      "completion_tokens": 138,
+      "expected": {
+        "periodId": 11,
+        "headings": [
+          "Antun Branko Šimić: Preobraženja i druge pjesme"
+        ]
+      },
+      "right": true
+    },
+    {
+      "id": "c33",
+      "question": "Čime Leone na kraju drame napadne barunicu Castelli?",
+      "kind": "answer",
+      "answer": "Leone na kraju drame napadne barunicu Castelli škarama. On je u tom trenutku izuzetno uzrujan zbog svega što se dogodilo u obitelji i nakon što ga barunica vrijeđa, zgrabi škare i potrči za njom. Sluga zatim javlja da je barunica zaklana.",
+      "cited": [
+        {
+          "periodId": 12,
+          "sectionId": "odjeljak-13",
+          "sectionTitle": "Miroslav Krleža: Gospoda Glembajevi"
+        }
+      ],
+      "period_scoped": false,
+      "tools": [
+        "search_material",
+        "read_section"
+      ],
+      "retried": false,
+      "latency_ms": 4609,
+      "prompt_tokens": 4697,
+      "completion_tokens": 174,
+      "expected": {
+        "periodId": 12,
+        "headings": [
+          "Miroslav Krleža: Gospoda Glembajevi"
+        ]
+      },
+      "right": true
+    },
+    {
+      "id": "c34",
+      "question": "Zašto Melkior Tresić gladuje?",
+      "kind": "answer",
+      "answer": "Melkior Tresić gladuje zato što se boji rata i želi oslabiti kako bi bio proglašen nesposobnim za vojsku. Time pokušava izbjeći mobilizaciju i sudjelovanje u ratu, što pokazuje njegov strah i nemoć pred ratnim događajima.",
+      "cited": [
+        {
+          "periodId": 12,
+          "sectionId": "odjeljak-15",
+          "sectionTitle": "Ranko Marinković: Kiklop"
+        }
+      ],
+      "period_scoped": false,
+      "tools": [
+        "search_material",
+        "read_section"
+      ],
+      "retried": false,
+      "latency_ms": 3715,
+      "prompt_tokens": 4558,
+      "completion_tokens": 177,
+      "expected": {
+        "periodId": 12,
+        "headings": [
+          "Ranko Marinković: Kiklop"
+        ]
+      },
+      "right": true
+    },
+    {
+      "id": "c35",
+      "question": "O čemu se najviše govori na Meursaultovu suđenju?",
+      "kind": "answer",
+      "answer": "Na Meursaultovu suđenju najviše se raspravlja o njegovom ponašanju na majčinu pogrebu i o tome što je radio dan poslije, a ne toliko o samom ubojstvu. Društvo ga osuđuje više zbog njegove ravnodušnosti i neprihvaćanja društvenih vrijednosti nego zbog samog zločina.",
+      "cited": [
+        {
+          "periodId": 12,
+          "sectionId": "odjeljak-14",
+          "sectionTitle": "Albert Camus: Stranac"
+        }
+      ],
+      "period_scoped": false,
+      "tools": [
+        "search_material",
+        "read_section"
+      ],
+      "retried": false,
+      "latency_ms": 4335,
+      "prompt_tokens": 4395,
+      "completion_tokens": 209,
+      "expected": {
+        "periodId": 12,
+        "headings": [
+          "Albert Camus: Stranac"
+        ]
+      },
+      "right": true
+    },
+    {
+      "id": "c36",
+      "question": "Koji se časopis pedesetih godina suprotstavio socijalističkomu realizmu?",
+      "kind": "answer",
+      "answer": "Časopis koji se pedesetih godina suprotstavio socijalističkom realizmu bio je Krugovi. Taj časopis zauzeo se za slobodu pisanja i otvaranje prema europskoj i svjetskoj književnosti, a oko njega se okupio naraštaj mladih pisaca nazvanih krugovašima.",
+      "cited": [
+        {
+          "periodId": 12,
+          "sectionId": "odjeljak-10",
+          "sectionTitle": "Krugovaši"
+        }
+      ],
+      "period_scoped": false,
+      "tools": [
+        "search_material",
+        "read_section"
+      ],
+      "retried": false,
+      "latency_ms": 5069,
+      "prompt_tokens": 5967,
+      "completion_tokens": 210,
+      "expected": {
+        "periodId": 12,
+        "headings": [
+          "Krugovaši",
+          "Društveni i povijesni kontekst"
+        ]
+      },
+      "right": true
+    }
+  ]
+}

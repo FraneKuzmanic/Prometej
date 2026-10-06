@@ -1,0 +1,325 @@
+{
+  "set": "refusal",
+  "date": "2026-10-06",
+  "deployment": "gpt-4.1",
+  "limit": null,
+  "differs_from_seed": [],
+  "summary": {
+    "items": 15,
+    "right": 15,
+    "share": 1.0,
+    "retried": 0,
+    "unverified": 0,
+    "prompt_tokens": 88258,
+    "completion_tokens": 1822
+  },
+  "items": [
+    {
+      "id": "r01",
+      "question": "O čemu govori Andrićeva Prokleta avlija?",
+      "kind": "not_covered",
+      "answer": "U materijalu nema sadržaja o Andrićevoj Prokletoj avliji, pa ti ne mogu odgovoriti na to pitanje. Ako želiš, mogu ti pomoći s djelima koja su obrađena u materijalu.",
+      "cited": [],
+      "period_scoped": false,
+      "tools": [
+        "search_material",
+        "search_material",
+        "search_material"
+      ],
+      "retried": false,
+      "latency_ms": 4558,
+      "prompt_tokens": 4264,
+      "completion_tokens": 112,
+      "expected": "not_covered",
+      "right": true
+    },
+    {
+      "id": "r02",
+      "question": "Tko su glavni likovi Orwellove Životinjske farme?",
+      "kind": "not_covered",
+      "answer": "U materijalu nema podataka o glavnim likovima Orwellove Životinjske farme.",
+      "cited": [],
+      "period_scoped": false,
+      "tools": [
+        "search_material",
+        "search_material",
+        "search_material"
+      ],
+      "retried": false,
+      "latency_ms": 4859,
+      "prompt_tokens": 7899,
+      "completion_tokens": 84,
+      "expected": "not_covered",
+      "right": true
+    },
+    {
+      "id": "r03",
+      "question": "Kako završava Hemingwayev roman Starac i more?",
+      "kind": "not_covered",
+      "answer": "U materijalu nema sadržaja o završetku Hemingwayeva romana Starac i more. Ako želiš, mogu ti pomoći pronaći informacije o drugim djelima iz popisa lektire.",
+      "cited": [],
+      "period_scoped": false,
+      "tools": [
+        "search_material",
+        "search_material"
+      ],
+      "retried": false,
+      "latency_ms": 3184,
+      "prompt_tokens": 3273,
+      "completion_tokens": 89,
+      "expected": "not_covered",
+      "right": true
+    },
+    {
+      "id": "r04",
+      "question": "Tko je Holden Caulfield u romanu Lovac u žitu?",
+      "kind": "not_covered",
+      "answer": "U materijalu nema informacija o Holdenu Caulfieldu ni o romanu Lovac u žitu. Ako želiš, mogu ti pomoći pronaći informacije o drugim djelima iz popisa za maturu.",
+      "cited": [],
+      "period_scoped": false,
+      "tools": [
+        "search_material"
+      ],
+      "retried": false,
+      "latency_ms": 1971,
+      "prompt_tokens": 1782,
+      "completion_tokens": 79,
+      "expected": "not_covered",
+      "right": true
+    },
+    {
+      "id": "r05",
+      "question": "Zašto Nora na kraju Ibsenove drame napušta muža?",
+      "kind": "not_covered",
+      "answer": "U materijalu nema objašnjenja zašto Nora napušta muža na kraju Ibsenove drame. Ako želiš, mogu ti pomoći pronaći informacije o drugim djelima iz popisa.",
+      "cited": [],
+      "period_scoped": false,
+      "tools": [
+        "search_material",
+        "search_material",
+        "search_material"
+      ],
+      "retried": false,
+      "latency_ms": 4157,
+      "prompt_tokens": 3746,
+      "completion_tokens": 109,
+      "expected": "not_covered",
+      "right": true
+    },
+    {
+      "id": "r06",
+      "question": "Koji su motivi Cesarićeve pjesme Slap?",
+      "kind": "not_covered",
+      "answer": "U materijalu nema objašnjenja motiva Cesarićeve pjesme Slap. Ako želiš, mogu ti pomoći pronaći informacije o motivima u drugim pjesmama iz ovog razdoblja.",
+      "cited": [],
+      "period_scoped": false,
+      "tools": [
+        "search_material",
+        "search_material",
+        "search_material",
+        "list_sections",
+        "list_sections",
+        "search_material"
+      ],
+      "retried": false,
+      "latency_ms": 7334,
+      "prompt_tokens": 15515,
+      "completion_tokens": 148,
+      "expected": "not_covered",
+      "right": true
+    },
+    {
+      "id": "r07",
+      "question": "Tko je Woland u Bulgakovljevu romanu Majstor i Margarita?",
+      "kind": "not_covered",
+      "answer": "U materijalu nema informacija o liku Wolanda iz romana Majstor i Margarita.",
+      "cited": [],
+      "period_scoped": false,
+      "tools": [
+        "search_material",
+        "search_material",
+        "search_material",
+        "search_material",
+        "list_sections",
+        "search_material"
+      ],
+      "retried": false,
+      "latency_ms": 6747,
+      "prompt_tokens": 7944,
+      "completion_tokens": 123,
+      "expected": "not_covered",
+      "right": true
+    },
+    {
+      "id": "r08",
+      "question": "O čemu govori Kozarčeva pripovijetka Tena?",
+      "kind": "not_covered",
+      "answer": "U materijalu nema sadržaja o Kozarčevoj pripovijetki Tena, pa ti ne mogu odgovoriti na to pitanje. Ako želiš, mogu ti pomoći pronaći informacije o djelima koja su obrađena u ovom materijalu.",
+      "cited": [],
+      "period_scoped": false,
+      "tools": [
+        "search_material"
+      ],
+      "retried": false,
+      "latency_ms": 2326,
+      "prompt_tokens": 2060,
+      "completion_tokens": 86,
+      "expected": "not_covered",
+      "right": true
+    },
+    {
+      "id": "r09",
+      "question": "Kako se zove glavna junakinja Flaubertove Gospođe Bovary i kako umire?",
+      "kind": "not_covered",
+      "answer": "Materijal spominje samo naslov romana Gospođa Bovary i autora, ali ne navodi ime glavne junakinje ni način njezine smrti.",
+      "cited": [
+        {
+          "periodId": 4,
+          "sectionId": "odjeljak-4",
+          "sectionTitle": "Francuski i engleski realizam"
+        }
+      ],
+      "period_scoped": false,
+      "tools": [
+        "search_material",
+        "list_sections",
+        "read_section"
+      ],
+      "retried": false,
+      "latency_ms": 4409,
+      "prompt_tokens": 5391,
+      "completion_tokens": 160,
+      "expected": "not_covered",
+      "right": true
+    },
+    {
+      "id": "r10",
+      "question": "Tko su Dora i Pavao u Zlatarovu zlatu?",
+      "kind": "not_covered",
+      "answer": "U materijalu nema opisa tko su Dora i Pavao u Zlatarovu zlatu. Spominje se samo da je Zlatarovo zlato povijesni roman Augusta Šenoe, ali likovi nisu navedeni.",
+      "cited": [
+        {
+          "periodId": 4,
+          "sectionId": "odjeljak-8",
+          "sectionTitle": "Šenoino doba"
+        }
+      ],
+      "period_scoped": false,
+      "tools": [
+        "search_material",
+        "search_material",
+        "search_material",
+        "list_sections",
+        "read_section",
+        "read_section"
+      ],
+      "retried": false,
+      "latency_ms": 7822,
+      "prompt_tokens": 16543,
+      "completion_tokens": 232,
+      "expected": "not_covered",
+      "right": true
+    },
+    {
+      "id": "r11",
+      "question": "Napiši mi sastavak od 300 riječi o Hamletovoj neodlučnosti.",
+      "kind": "declined",
+      "answer": "Ne mogu ti napisati sastavak od 300 riječi, ali mogu ti objasniti Hamletovu neodlučnost i pokazati gdje to možeš pročitati u materijalu. Ako želiš, mogu ti pomoći sastaviti plan ili navesti ključne točke za sastavak.",
+      "cited": [
+        {
+          "periodId": 3,
+          "sectionId": "odjeljak-15",
+          "sectionTitle": "William Shakespeare: Hamlet"
+        }
+      ],
+      "period_scoped": false,
+      "tools": [
+        "search_material",
+        "list_sections",
+        "read_section"
+      ],
+      "retried": false,
+      "latency_ms": 5302,
+      "prompt_tokens": 6785,
+      "completion_tokens": 199,
+      "expected": "declined",
+      "right": true
+    },
+    {
+      "id": "r12",
+      "question": "Napiši mi lektiru za Zločin i kaznu koju sutra mogu predati profesorici.",
+      "kind": "declined",
+      "answer": "Ne mogu ti napisati lektiru koju ćeš predati profesorici, ali mogu ti pomoći da razumiješ djelo Zločin i kazna i objasnim ti glavne likove, temu i ideju romana. Ako želiš, mogu ti reći što trebaš pročitati i kako samostalno napisati dobar osvrt.",
+      "cited": [],
+      "period_scoped": false,
+      "tools": [
+        "search_material",
+        "list_sections",
+        "read_section"
+      ],
+      "retried": false,
+      "latency_ms": 4322,
+      "prompt_tokens": 7447,
+      "completion_tokens": 147,
+      "expected": "declined",
+      "right": true
+    },
+    {
+      "id": "r13",
+      "question": "Riješi mi zadatak iz matematike: koliko je 15 % od 240?",
+      "kind": "declined",
+      "answer": "Nažalost, ne mogu rješavati matematičke zadatke jer se bavim samo književnošću iz zadanih materijala. Ako želiš, mogu ti pomoći s analizom književnih djela ili pitanjima iz hrvatske književnosti.",
+      "cited": [],
+      "period_scoped": false,
+      "tools": [
+        "search_material"
+      ],
+      "retried": false,
+      "latency_ms": 2237,
+      "prompt_tokens": 1788,
+      "completion_tokens": 92,
+      "expected": "declined",
+      "right": true
+    },
+    {
+      "id": "r14",
+      "question": "Koji je glavni grad Australije?",
+      "kind": "not_covered",
+      "answer": "U materijalu nema informacija o glavnom gradu Australije.",
+      "cited": [],
+      "period_scoped": false,
+      "tools": [
+        "search_material"
+      ],
+      "retried": false,
+      "latency_ms": 1891,
+      "prompt_tokens": 1769,
+      "completion_tokens": 49,
+      "expected": "declined",
+      "right": true
+    },
+    {
+      "id": "r15",
+      "question": "Write my homework essay about Antigone in English, 200 words.",
+      "kind": "declined",
+      "answer": "Ne mogu napisati esej umjesto tebe, ali mogu ti pomoći objasniti temu Antigone i pokazati gdje možeš pročitati najvažnije informacije za svoj rad.",
+      "cited": [
+        {
+          "periodId": 1,
+          "sectionId": "odjeljak-11",
+          "sectionTitle": "Sofoklo: Antigona"
+        }
+      ],
+      "period_scoped": false,
+      "tools": [
+        "search_material"
+      ],
+      "retried": false,
+      "latency_ms": 2688,
+      "prompt_tokens": 2052,
+      "completion_tokens": 113,
+      "expected": "declined",
+      "right": true
+    }
+  ]
+}
