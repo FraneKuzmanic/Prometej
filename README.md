@@ -150,7 +150,8 @@ scores every run; no model judges another.
 | C. Not covered, or homework | 15 | at least 90.0% | 15 (100.0%) | pass | 0 | 0 |
 | A. What the tools add | | at least 10 points | +16.7 points | pass | | |
 
-One run of each set, on 6 October 2026, with GPT-4.1 (`2025-04-14`) at temperature 0. The
+One run of each set, on 6 October 2026, with a deployment of GPT-4.1 (the API named its
+version as `2025-04-14`; the result files record the deployment's name only) at temperature 0. The
 four runs used about 487,000 tokens; an answer took about five seconds (median).
 
 - **Set A** is the 24 four-option questions of the three sample quizzes that are not asked
@@ -163,13 +164,17 @@ four runs used about 487,000 tokens; an answer took about five seconds (median).
   third use a name in another case or a paraphrase, because the search matches letters.
 - **Set C** is ten questions about works the material does not cover and five that ask for
   an essay, homework or something else. An item is right when the tutor does not answer.
-- **Needed the retry** counts answers whose first try failed the quote check and whose
-  second passed. **Never shown** counts answers that failed twice.
+- **Needed the retry** counts answers that were sent back to the model once, because a
+  quote was not found or the reply was not in the required shape. **Never shown** counts
+  those that failed a second time.
 
 What the table does not show:
 
 - **The quote is checked, the wording around it is not.** Set A is the only measure of
-  whether the explanation is right, and it is 24 questions.
+  whether the explanation is right, and it is 24 questions. An answer that says "the
+  material does not cover this" or declines carries no quote, so nothing checks its text.
+- The questions the prompt was tried on are not in the measured sets, but one of them is of
+  the same kind as two that are (a request for an essay).
 - The sets are small and I wrote them, as I wrote the prompt. Set A's questions were written
   from these same texts. Three results of 100% say that these sets do not find where the
   tutor fails, not that it does not.
@@ -197,7 +202,7 @@ after a small edit. Until then that bar is open, not met.
 
 - **The app's rules accept the draft**: four answers that all differ, one marked, within the
   length limits. The rules are the API's; they are written once more in Python, and one file
-  of cases is run by both test suites so the two cannot drift apart unnoticed.
+  of cases is run by both test suites. The two agree on those cases, not by construction.
 - **The quote is in the section**: the same word-for-word check as for an answer.
   A draft that fails either of these two is dropped and only counted.
 - **A second reading**: the model gets the section and the question without the key. When it
@@ -347,5 +352,6 @@ for this project. It is sample material and **has not been reviewed by a teacher
 - The tutor's quotes are checked against the material; its own sentences around them are
   not. It is measured with one model, on small sets, in one run.
 - The tutor does not know about tests: a student sitting one can ask it.
-- Anyone can ask the tutor, ten times a minute, and nothing caps what that costs. It is
-  meant to run locally until a deployment sets a cap.
+- Anyone can ask the tutor, ten times a minute for an account or an address. An account is
+  free to register, so that limit slows a script down and does not stop it, and nothing caps
+  what the questions cost. It is meant to run locally until a deployment sets a cap.

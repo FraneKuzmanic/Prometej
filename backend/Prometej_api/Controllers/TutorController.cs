@@ -37,7 +37,7 @@ namespace Prometej_api.Controllers
                 return NotFound();
             }
 
-            var answer = await _tutorClient.Ask(model);
+            var answer = await _tutorClient.Ask(model, HttpContext.RequestAborted);
 
             return answer is null ? StatusCode(StatusCodes.Status503ServiceUnavailable) : Ok(answer);
         }
@@ -54,7 +54,7 @@ namespace Prometej_api.Controllers
                 return NotFound();
             }
 
-            var drafts = await _tutorClient.Drafts(model);
+            var drafts = await _tutorClient.Drafts(model, HttpContext.RequestAborted);
 
             return drafts is null ? StatusCode(StatusCodes.Status503ServiceUnavailable) : Ok(drafts);
         }

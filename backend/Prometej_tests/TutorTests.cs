@@ -28,6 +28,8 @@ namespace Prometej_tests
             public HttpStatusCode Health { get; set; } = HttpStatusCode.OK;
             public HttpStatusCode Status { get; set; } = HttpStatusCode.OK;
             public bool Unreachable { get; set; }
+            // What it answers instead of an answer, when set.
+            public string? Body { get; set; }
 
             protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
             {
@@ -42,7 +44,7 @@ namespace Prometej_tests
                 }
 
                 Asked.Add(await request.Content!.ReadAsStringAsync(cancellationToken));
-                var body = request.RequestUri.AbsolutePath == "/drafts" ? DraftsAnswer : Answer;
+                var body = Body ?? (request.RequestUri.AbsolutePath == "/drafts" ? DraftsAnswer : Answer);
                 return new HttpResponseMessage(Status) { Content = new StringContent(body, System.Text.Encoding.UTF8, "application/json") };
             }
         }
@@ -222,6 +224,17 @@ namespace Prometej_tests
 
             Assert.Equal(HttpStatusCode.ServiceUnavailable, failed.StatusCode);
             Assert.Equal(HttpStatusCode.ServiceUnavailable, unreachable.StatusCode);
+        }
+
+        [Fact]
+        public async Task A_tutor_that_answers_something_else_than_an_answer_is_503()
+        {
+            var stub = new StubTutor { Body = "<html>Bad gateway</html>" };
+            var client = Anonymous(Configured(stub));
+
+            var response = await Ask(client, new { question = "Tko je Raskoljnikov?" });
+
+            Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
         }
 
         [Fact]

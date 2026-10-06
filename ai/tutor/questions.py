@@ -10,6 +10,11 @@ MAX_TEXT = 500
 OPTION_KEYS = ["firstAnswer", "secondAnswer", "thirdAnswer", "fourthAnswer"]
 
 
+def _length(text: str) -> int:
+    """As .NET counts a string: in UTF-16 units, so a character outside the basic plane is two."""
+    return len(text.encode("utf-16-le")) // 2
+
+
 def problems(question: dict) -> list[str]:
     """Why the API would refuse this Question, in the shape `quiz/create` takes; empty if not."""
     found: list[str] = []
@@ -17,7 +22,7 @@ def problems(question: dict) -> list[str]:
     title = question.get("questionTitle")
     if not isinstance(title, str) or not title.strip():
         found.append("The question has no title.")
-    elif len(title) > MAX_TEXT:
+    elif _length(title) > MAX_TEXT:
         found.append(f"The title is longer than {MAX_TEXT} characters.")
 
     options = [question.get(key) for key in OPTION_KEYS]
@@ -25,7 +30,7 @@ def problems(question: dict) -> list[str]:
         found.append("A question needs four answers.")
     else:
         # Length is counted before trimming and sameness after it, as the API does.
-        if any(len(option) > MAX_TEXT for option in options):
+        if any(_length(option) > MAX_TEXT for option in options):
             found.append(f"An answer is longer than {MAX_TEXT} characters.")
         if len({option.strip() for option in options}) < len(options):
             found.append("The four answers must all differ.")

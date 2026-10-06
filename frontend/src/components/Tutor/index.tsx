@@ -39,6 +39,12 @@ export default function Tutor({ periodId, periodName }: TutorProps) {
   const narrow = useMediaQuery("(max-width:599.95px)");
   const [question, setQuestion] = useState("");
   const end = useRef<HTMLDivElement>(null);
+  const field = useRef<HTMLTextAreaElement>(null);
+
+  // The button that opened the panel is gone once it is open, so focus goes to the field.
+  useEffect(() => {
+    if (open) field.current?.focus();
+  }, [open]);
 
   useEffect(() => {
     end.current?.scrollIntoView({ block: "end" });
@@ -88,7 +94,14 @@ export default function Tutor({ periodId, periodName }: TutorProps) {
         },
       }}
     >
-      <Box component="section" aria-label="Prometej" className="tutor-layout">
+      <Box
+        component="section"
+        aria-label="Prometej"
+        className="tutor-layout"
+        onKeyDown={(event) => {
+          if (event.key === "Escape") dispatch(closeTutor());
+        }}
+      >
         <Box className="tutor-head">
           <img src={TUTOR_AVATAR} alt="" />
           <Box className="tutor-head-names">
@@ -132,20 +145,15 @@ export default function Tutor({ periodId, periodName }: TutorProps) {
           )}
           {error !== undefined && (
             <Box className="tutor-error" role="alert">
-              {error === 429 ? (
-                <Typography color="error">
-                  Previše pitanja u kratkom vremenu. Pokušaj ponovno za minutu.
-                </Typography>
-              ) : (
-                <>
-                  <Typography color="error">
-                    Prometej trenutno nije dostupan. Pokušaj ponovno.
-                  </Typography>
-                  <Button size="small" sx={{ color: "#553b08" }} onClick={askAgain}>
-                    Pokušaj ponovno
-                  </Button>
-                </>
-              )}
+              <Typography color="error">
+                {error === 429
+                  ? "Previše pitanja u kratkom vremenu. Pokušaj ponovno za minutu."
+                  : "Prometej trenutno nije dostupan. Pokušaj ponovno."}
+              </Typography>
+              {/* The question is still the last message; it is sent again, not typed again. */}
+              <Button size="small" sx={{ color: "#553b08" }} onClick={askAgain}>
+                Pokušaj ponovno
+              </Button>
             </Box>
           )}
           <div ref={end} />
@@ -159,6 +167,7 @@ export default function Tutor({ periodId, periodName }: TutorProps) {
             size="small"
             placeholder="Postavi pitanje…"
             value={question}
+            inputRef={field}
             onChange={(event) => setQuestion(event.target.value)}
             onKeyDown={handleKeyDown}
             inputProps={{ maxLength: MAX_QUESTION, "aria-label": "Pitanje" }}

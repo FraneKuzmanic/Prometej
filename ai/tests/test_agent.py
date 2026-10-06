@@ -143,6 +143,13 @@ def test_a_tool_called_wrongly_answers_with_text_the_model_can_read(material):
     assert all("error" in json.loads(result) for result in results)
 
 
+def test_tool_arguments_that_are_not_an_object_are_answered_not_raised(material):
+    from tutor.tools import dispatch
+
+    for arguments in ("[1]", '"odjeljak-1"', "not json"):
+        assert "error" in json.loads(dispatch("read_section", arguments, material))
+
+
 def test_the_option_is_asked_for_and_returned_only_when_wanted(material):
     model = ScriptedModel(final("answer", citations=[cite()], option=2))
 

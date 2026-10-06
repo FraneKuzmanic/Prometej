@@ -15,8 +15,10 @@ from pathlib import Path
 
 from evals.score import choice_right, coverage_right, refusal_right
 from tutor import agent
+from tutor.drafts import OPTION_SCHEMA
 from tutor.material import ApiMaterial
 from tutor.model import AzureModel, Model
+from tutor.questions import OPTION_KEYS
 from tutor.settings import ROOT, Settings
 
 HERE = Path(__file__).resolve().parent
@@ -24,22 +26,10 @@ SETS = HERE / "sets"
 RESULTS = HERE / "results"
 SEED = ROOT / "backend/Prometej_api/Seed/Content"
 
-OPTION_KEYS = ["firstAnswer", "secondAnswer", "thirdAnswer", "fourthAnswer"]
-
 BASELINE_PROMPT = (
     "You answer a multiple-choice question about literature for a Croatian high-school "
     'student. Put the number of the right option in "option".'
 )
-BASELINE_SCHEMA = {
-    "name": "option",
-    "strict": True,
-    "schema": {
-        "type": "object",
-        "properties": {"option": {"type": "integer", "enum": [1, 2, 3, 4]}},
-        "required": ["option"],
-        "additionalProperties": False,
-    },
-}
 
 
 def rows(name: str) -> list[dict]:
@@ -94,7 +84,7 @@ def run_item(name: str, item: dict, model: Model, material: ApiMaterial, max_too
                 {"role": "user", "content": item["question"]},
             ],
             [],
-            BASELINE_SCHEMA,
+            OPTION_SCHEMA,
             "none",
         )
         option = json.loads(reply.content or "{}").get("option")

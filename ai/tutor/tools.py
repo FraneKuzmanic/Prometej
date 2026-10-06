@@ -59,6 +59,8 @@ def dispatch(name: str, arguments: str, material: Material) -> str:
         args = json.loads(arguments)
     except json.JSONDecodeError:
         return _json({"error": "The arguments were not valid JSON."})
+    if not isinstance(args, dict):
+        return _json({"error": "The arguments must be a JSON object."})
 
     if name == "search_material":
         hits = material.search(str(args.get("query", "")))

@@ -15,6 +15,7 @@ from tutor.material import Material
 from tutor.model import Model
 from tutor.questions import OPTION_KEYS, problems
 from tutor.sections import chapter_text, find
+from tutor.tools import MAX_SECTION_CHARACTERS
 
 MAX_DRAFTS = 5
 
@@ -148,7 +149,8 @@ def draft(period_id: int, section_id: str, model: Model, material: Material) -> 
     if sections is None or section is None:
         raise UnknownSection
     text = chapter_text(sections, section_id) or ""
-    source = f"Section: {section.title}\n\n{text}"
+    # The same cap as a section the tutor reads; a quote is still looked for in the whole text.
+    source = f"Section: {section.title}\n\n{text[:MAX_SECTION_CHARACTERS]}"
 
     result = Drafted()
 

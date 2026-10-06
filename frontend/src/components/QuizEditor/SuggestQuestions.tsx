@@ -120,7 +120,7 @@ export default function SuggestQuestions({ initialPeriodId, onAdd, onClose }: Su
             value={periods ? periodId : ""}
             onChange={(event) => setPeriodId(event.target.value)}
           >
-            {periods?.map((period) => (
+            {(periods ?? []).map((period) => (
               <MenuItem key={period.id} value={String(period.id)}>
                 {period.name}
               </MenuItem>
@@ -138,7 +138,7 @@ export default function SuggestQuestions({ initialPeriodId, onAdd, onClose }: Su
               periodId !== "" && sections?.length === 0 ? "Za ovo razdoblje nema gradiva." : " "
             }
           >
-            {sections?.map((section) => (
+            {(sections ?? []).map((section) => (
               <MenuItem
                 key={section.id}
                 value={section.id}
@@ -162,8 +162,8 @@ export default function SuggestQuestions({ initialPeriodId, onAdd, onClose }: Su
         {error !== undefined && (
           <Typography color="error" role="alert">
             {error === "limit"
-              ? "Previše pitanja u kratkom vremenu. Pokušaj ponovno za minutu."
-              : "Prometej trenutno nije dostupan. Pokušaj ponovno."}
+              ? "Previše zahtjeva u kratkom vremenu. Pokušajte ponovno za minutu."
+              : "Prometej trenutno nije dostupan. Pokušajte ponovno."}
           </Typography>
         )}
         {result && drafts.length === 0 && (
@@ -195,7 +195,7 @@ export default function SuggestQuestions({ initialPeriodId, onAdd, onClose }: Su
               <blockquote>{draft.quote}</blockquote>
               {!draft.agrees && (
                 <Alert severity="warning" sx={{ marginTop: 1 }}>
-                  Provjeri ovo pitanje: druga provjera nije dala isti odgovor.
+                  Provjerite ovo pitanje: druga provjera nije dala isti odgovor.
                 </Alert>
               )}
             </Box>

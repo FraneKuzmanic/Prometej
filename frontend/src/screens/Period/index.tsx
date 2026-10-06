@@ -111,7 +111,8 @@ export default function Period() {
   // again, so a second click on one citation scrolls again.
   useEffect(() => {
     if (!hash || isEdit || !periodsLoaded) return;
-    const heading = document.getElementById(decodeURIComponent(hash.slice(1)));
+    // Taken as written: a heading's id is plain letters, and decoding a mistyped address throws.
+    const heading = document.getElementById(hash.slice(1));
     if (!heading?.closest(".content")) return;
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     heading.scrollIntoView({ behavior: reducedMotion ? "auto" : "smooth", block: "start" });

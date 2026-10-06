@@ -18,6 +18,14 @@
     border-radius: 50%;
 }
 
+/* Beside the open panel, not under it: an Admin's own button on a Period page. Under 600 px
+   the panel covers the page whole. */
+@media (min-width: 600px){
+    .tutor-open .speed-dial.MuiSpeedDial-root{
+        right: 416px;
+    }
+}
+
 .tutor-layout{
     font-family: "Roboto", "Helvetica", "Arial", sans-serif;
     display: flex;

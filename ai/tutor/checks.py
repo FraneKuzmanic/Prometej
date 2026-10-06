@@ -3,20 +3,17 @@
 What is checked is the quote. The sentences the model writes around it are not.
 """
 
-import unicodedata
-
 from tutor.material import Material
 from tutor.schemas import ModelAnswer
-from tutor.sections import chapter_text
+from tutor.sections import chapter_text, clean_text
 
 MIN_QUOTE = 15
 MAX_QUOTE = 400
 
-
-def normalise(text: str) -> str:
-    """Composed characters and every run of whitespace as one space. Nothing else is forgiven:
-    case, letters, quotation marks and dashes have to be the text's own."""
-    return " ".join(unicodedata.normalize("NFC", text).split())
+# A quote is compared as a section's own text is cleaned: composed characters, every run of
+# whitespace as one space. Nothing else is forgiven: case, letters, quotation marks and
+# dashes have to be the text's own.
+normalise = clean_text
 
 
 def check(answer: ModelAnswer, material: Material) -> list[str]:

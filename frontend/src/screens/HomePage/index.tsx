@@ -45,7 +45,7 @@ export default function HomePage() {
   };
 
   return (
-    <ScreenWrapper>
+    <ScreenWrapper className={tutorShown && tutor.open ? "tutor-open" : undefined}>
       <CssBaseline />
       <Header toggle={toggle} toggleSidebar={toggleSidebar} />
       <Drawer variant="permanent" open={toggle}>
