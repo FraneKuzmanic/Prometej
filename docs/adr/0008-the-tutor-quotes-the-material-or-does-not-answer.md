@@ -49,6 +49,27 @@ The measured sets are not the ones the prompt was tried on (`dev.jsonl` is for t
 recorded run is a file in `ai/evals/results`, and a run is not repeated for a better number.
 The README has the table.
 
+## Drafts of questions
+
+The same service drafts four-option questions for a teacher, from one section of a period's
+text, and the same rule holds: the material has to be shown.
+
+- A draft carries the sentence of the section that makes its right answer right.
+- Two checks decide whether a draft is offered at all. The application's own rules for a
+  question have to accept it; they are the API's, written once more in Python, and one file
+  of cases is run by both test suites. And the quote has to be in the section, word for word.
+  A draft that fails either is dropped and only counted.
+- A third check only warns. The model is given the section and the question without the
+  key; if it picks another answer, the teacher sees the draft with a note to check it.
+- Nothing is stored. A draft becomes a question when the teacher adds it to the editor, and a
+  stored one when the quiz is saved, through the same validation as a question typed by hand.
+- A draft has no hint and no explanation. Text a model wrote and nobody checked does not go
+  into a field a student reads; the quote is shown to the teacher only.
+
+Its bars were committed before its run, as the tutor's were. One of them cannot be scored by
+a script: whether a teacher would use the draft. A person rates thirty drafts drawn with a
+fixed seed, and that row of the table says so.
+
 ## Considered options
 
 - **Embeddings and a vector index.** The usual answer to "find the relevant text". Twelve

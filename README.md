@@ -51,6 +51,10 @@ periods of the national exam catalogue.
   started and how each sitting stands, closes the test (which opens the answers to the
   students), and lets one student sit it again
 - copies a quiz, to give the same test to a second class
+- asks Prometej for drafts: from a chosen chapter of a period's material, up to five
+  four-option questions, each shown with the sentence that supports its right answer.
+  The teacher picks which to add, edits them as any other question, and nothing is stored
+  until the quiz is saved
 
 **An admin**
 
@@ -71,7 +75,7 @@ backend/     .NET 8, ASP.NET Core, EF Core, PostgreSQL
   Prometej_tests/          integration tests
 frontend/    React 18, TypeScript, Vite, Redux Toolkit, MUI
 ai/          Python 3.13, FastAPI: the tutor
-  tutor/                   the prompt, three tools, the loop, the quote check
+  tutor/                   the prompt, three tools, the loop, the quote check, question drafts
   evals/                   the sets, the bars, the runner and every recorded result
   tests/                   pytest, against a scripted model
 ```
@@ -172,6 +176,37 @@ What the table does not show:
 - One model, one run. A second run could differ by an item or two.
 - Nothing here measures a conversation with follow-up questions, or a student trying to talk
   the tutor out of its rules.
+
+### Question drafts
+
+The drafts had their own bars, committed before their run as well. Five drafts were asked
+for from the first work of each of the twelve periods, and every draft the model wrote was
+recorded, also those that are never offered to a teacher.
+
+| Drafts | Of | Bar | Result | |
+| --- | --- | --- | --- | --- |
+| The app's rules accept the draft | 60 | at least 95.0% | 60 (100.0%) | pass |
+| The quote is in the section | 60 | at least 95.0% | 59 (98.3%) | pass |
+| A second reading picks the same answer | 59 | at least 85.0% | 59 (100.0%) | pass |
+| Rated usable by a person | 30 | at least 70.0% | not rated yet | |
+
+One run, on 6 October 2026, about 80,000 tokens. The last row is the only one a script
+cannot fill: thirty of the offered drafts, drawn with a fixed seed, wait in
+`ai/evals/results/drafts-to-rate.md` to be rated by one person, me, as usable as they are or
+after a small edit. Until then that bar is open, not met.
+
+- **The app's rules accept the draft**: four answers that all differ, one marked, within the
+  length limits. The rules are the API's; they are written once more in Python, and one file
+  of cases is run by both test suites so the two cannot drift apart unnoticed.
+- **The quote is in the section**: the same word-for-word check as for an answer.
+  A draft that fails either of these two is dropped and only counted.
+- **A second reading**: the model gets the section and the question without the key. When it
+  picks another answer the draft is still offered, with a warning.
+
+What this table does not show: the model marked the fourth answer as right in 2 drafts of
+60 and the second in 29, so a teacher should shuffle; most questions ask for a fact stated in
+one sentence, which the quote requirement invites; and a second reading by the same model
+agrees with itself more easily than a student would.
 
 `ai/evals/results` holds every recorded run, item by item.
 
@@ -278,7 +313,8 @@ cd ai
 
 They cover the parsing of a text into sections (against a seeded text as well), the quote
 check, the loop (a wrong quote sent back once, two wrong quotes never shown, the limit on
-tool calls), the service's answers and its log line, and the scoring of the eval. The eval
+tool calls), question drafts (which are dropped, which only warned about), the service's
+answers and its log line, and the scoring of the eval. The eval
 itself is not a test: `python -m evals.run --set coverage` asks the real model, costs money
 and writes a result file.
 
