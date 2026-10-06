@@ -1,4 +1,4 @@
-import { IconButton } from "@mui/material";
+import { ButtonBase } from "@mui/material";
 import { TUTOR_AVATAR } from "./avatar";
 import "./styles.css";
 
@@ -10,13 +10,13 @@ interface TutorButtonProps {
 
 export default function TutorButton({ shifted, onClick }: TutorButtonProps) {
   return (
-    <IconButton
+    <ButtonBase
       className="tutor-button"
-      aria-label="Pitaj Prometeja"
       onClick={onClick}
       sx={{ position: "fixed", bottom: 16, right: shifted ? 88 : 16 }}
     >
       <img src={TUTOR_AVATAR} alt="" />
-    </IconButton>
+      Pitaj Prometeja
+    </ButtonBase>
   );
 }

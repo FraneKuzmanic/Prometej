@@ -12,6 +12,7 @@ import {
   useMediaQuery,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
+import AddCommentOutlinedIcon from "@mui/icons-material/AddCommentOutlined";
 import SendIcon from "@mui/icons-material/Send";
 import { RootState, useAppDispatch } from "../../store/store";
 import { askTutor, closeTutor, newConversation } from "../../store/slices/tutorSlice";
@@ -110,7 +111,9 @@ export default function Tutor({ periodId, periodName }: TutorProps) {
           </Box>
           <Button
             size="small"
-            sx={{ color: "#553b08" }}
+            color="inherit"
+            className="tutor-new"
+            startIcon={<AddCommentOutlinedIcon />}
             disabled={pending || messages.length === 0}
             onClick={() => dispatch(newConversation())}
           >
@@ -180,9 +183,6 @@ export default function Tutor({ periodId, periodName }: TutorProps) {
             <SendIcon />
           </IconButton>
         </Box>
-        <Typography className="tutor-note">
-          Prometej odgovara samo iz gradiva i može pogriješiti. Provjeri navod u tekstu.
-        </Typography>
       </Box>
     </Drawer>
   );
