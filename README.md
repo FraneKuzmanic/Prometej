@@ -15,7 +15,8 @@ periods of the national exam catalogue.
 
 - reads the material of a period, with a contents list that follows the reading, and searches
   it; the search ignores case and Croatian diacritics, so "senoa" finds "Šenoa"
-- plays public quizzes, or a private one with the five-digit entry code a teacher gave the class
+- plays public quizzes, or a private practice quiz with the five-digit entry code a teacher
+  gave the class
 - answers three kinds of question: four options, matching pairs, and putting items in order,
   with a point for every right pair or place
 - reads the poem or excerpt a question is asked about beside the question, the form most of
@@ -27,6 +28,10 @@ periods of the national exam catalogue.
 
 - has every play stored, and sees it again under "Moji rezultati", answer by answer
 - sees their progress per period
+- sits a test a teacher gave the class: once, with no answer shown before the end, the
+  answers saved as they are given, and against the server's clock if the teacher set a time
+- solves any public quiz the same way, as a mock: every question open at any time, nothing
+  marked until it is handed in
 - opens a topic in a period's discussion or replies to one; a teacher's and an admin's post
   is marked as such
 - deletes their own reply, and their own topic while nobody has replied to it
@@ -39,6 +44,10 @@ periods of the national exam catalogue.
 - sees how a quiz was played: every play and its answers, each question with how often it was
   answered right and the wrong answer chosen most often (pair by pair and place by place for
   the other two kinds), and each student's number of plays, first and best result
+- makes a private quiz a test, with an optional time limit and closing time; sees who has
+  started and how each sitting stands, closes the test (which opens the answers to the
+  students), and lets one student sit it again
+- copies a quiz, to give the same test to a second class
 
 **An admin**
 
@@ -83,11 +92,19 @@ A few things worth knowing before reading the code:
   one handler maps them to status codes. Controllers have no `try/catch`.
 - **A retried submit stores one play.** The client sends a key per play, and a unique index
   is the guarantee.
+- **A test is sat on the server.** A practice play lives in the browser until it is handed in.
+  A test's questions reach a student only inside a sitting, without their answers; the lists
+  of a matching and an ordering question are shuffled by the server, which reads the student's
+  numbers back through the order it showed. A sitting whose time ran out is ended by the next
+  request that reads it, and its result is an ordinary stored play
+  ([0007](docs/adr/0007-a-test-is-sat-on-the-server.md)).
 - **A post outlives its author's account.** A topic holds what other people answered, so
   deleting an account leaves its posts in place without a name, and an author can delete a
   topic only while it has no replies
   ([0006](docs/adr/0006-a-post-outlives-its-authors-account.md)). Who may delete a post is
   the server's answer, sent with the post. One account can post five times a minute.
+- **Entry codes cannot be swept.** A request that carries a code is limited to sixty a minute
+  for an account, or for an address when nobody is signed in.
 
 Decisions with a longer story are in [`docs/adr`](docs/adr):
 
@@ -97,6 +114,7 @@ Decisions with a longer story are in [`docs/adr`](docs/adr):
 - [0004](docs/adr/0004-a-session-is-checked-against-the-stored-account.md): a session is checked against the stored account
 - [0005](docs/adr/0005-one-answer-row-per-point.md): a point is an answer row, whatever the type of question
 - [0006](docs/adr/0006-a-post-outlives-its-authors-account.md): a post in a discussion outlives its author's account
+- [0007](docs/adr/0007-a-test-is-sat-on-the-server.md): a test is sat on the server, in a sitting
 
 ## Running it locally
 
@@ -156,7 +174,8 @@ dotnet test
 The tests are integration tests: they start the real API against PostgreSQL in a container
 and talk to it over HTTP, so Docker has to be running. They cover authentication and
 authorization per role, quiz validation, the three question types and source texts, plays and
-results, both searches, the discussion, and the migrations (a migration is run against rows of the older
+results, tests and sittings (what a sitting sends, deadlines, two requests ending one sitting),
+both searches, the discussion, and the migrations (a migration is run against rows of the older
 schema, to show what it does to them).
 
 The client has no automated tests yet; `npm run lint` and `npm run build` are its gates.
@@ -181,6 +200,9 @@ for this project. It is sample material and **has not been reviewed by a teacher
 - The application is not deployed.
 - No password reset: a forgotten password cannot be recovered.
 - No automated tests for the client.
-- A private quiz is practice, not a test: the correct answer is shown after each question.
+- A test stops what the server can stop. It does not stop a student from looking an answer
+  up, or from sitting it again from a second account. There are no grades, no classes and no
+  list of who has not started.
+- A mock sitting of a public quiz hides nothing: the same quiz can be opened as practice.
 - In a discussion a post cannot be edited or reported; an admin deleting it is the only
   remedy, and nothing updates live.
