@@ -49,9 +49,7 @@ export default function HomePage() {
       <Drawer variant="permanent" open={toggle}>
         <DrawerHeader
           sx={{
-            minHeight: { xs: 80, sm: 80 },
-            // The logo sits in the middle of the drawer; the chevron keeps to the edge.
-            position: "relative",
+            minHeight: { xs: 88, sm: 88 },
             justifyContent: "center",
           }}
         >
@@ -61,8 +59,10 @@ export default function HomePage() {
               alt="Prometej"
               src={logo}
               sx={{
-                width: 64,
-                height: 64,
+                width: 75,
+                height: 75,
+                // In the middle of the room the chevron leaves it.
+                margin: "0 auto",
                 borderRadius: "50%",
                 backgroundColor: "#e9e5cd",
               }}
@@ -71,7 +71,6 @@ export default function HomePage() {
           <IconButton
             aria-label={toggle ? "Sakrij izbornik" : "Prikaži izbornik"}
             onClick={toggleSidebar}
-            sx={toggle ? { position: "absolute", right: 8 } : undefined}
           >
             {toggle ? <ChevronLeftIcon /> : <ChevronRightIcon />}
           </IconButton>
