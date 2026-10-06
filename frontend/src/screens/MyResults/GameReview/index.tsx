@@ -19,9 +19,11 @@ const formatDate = (date: string) =>
 // One of the player's own Quiz Games, read again: every Question as it was when played.
 export default function GameReview() {
   const { id } = useParams();
-  const { gameReview: storedReview, gameReviewFailed } = useSelector(
-    (state: RootState) => state.quiz
-  );
+  const {
+    gameReview: storedReview,
+    gameReviewFailed,
+    gameReviewLocked,
+  } = useSelector((state: RootState) => state.quiz);
   // The store may still hold the play opened before this one until the fetch below starts.
   const gameReview = storedReview?.id === Number(id) ? storedReview : undefined;
   const dispatch = useAppDispatch();
@@ -44,6 +46,12 @@ export default function GameReview() {
       {gameReviewFailed && (
         <Box>
           <Typography>Rezultat ne postoji.</Typography>
+          {backToResults}
+        </Box>
+      )}
+      {gameReviewLocked && (
+        <Box>
+          <Typography>Odgovori će biti vidljivi kad provjera završi.</Typography>
           {backToResults}
         </Box>
       )}

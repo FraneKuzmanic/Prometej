@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import {
   Box,
   Button,
+  Chip,
   Link,
   Paper,
   Table,
@@ -126,14 +127,35 @@ export default function MyResults() {
                 {myGames.games.map((game) => (
                   <TableRow
                     key={game.id}
-                    hover
-                    className="my-results-row"
-                    onClick={() => navigate(`/my-results/${game.id}`)}
+                    hover={game.reviewAvailable}
+                    className={game.reviewAvailable ? "my-results-row" : undefined}
+                    onClick={() =>
+                      game.reviewAvailable && navigate(`/my-results/${game.id}`)
+                    }
                   >
                     <TableCell component="th" scope="row">
-                      <Link component="button" underline="hover" color="inherit">
-                        {game.quizTitle}
-                      </Link>
+                      {/* The flex box is inside the cell: a cell that is itself flex
+                          loses its row's bottom border. */}
+                      <Box className="my-results-quiz">
+                        {game.reviewAvailable ? (
+                          <Link component="button" underline="hover" color="inherit">
+                            {game.quizTitle}
+                          </Link>
+                        ) : (
+                          game.quizTitle
+                        )}
+                        {game.playedAs !== "practice" && (
+                          <Chip
+                            size="small"
+                            label={game.playedAs === "test" ? "Provjera" : "Kao provjera"}
+                          />
+                        )}
+                      </Box>
+                      {!game.reviewAvailable && (
+                        <Typography variant="body2" color="text.secondary">
+                          odgovori nakon završetka
+                        </Typography>
+                      )}
                     </TableCell>
                     <TableCell>{game.periodName ?? "—"}</TableCell>
                     <TableCell align="right">

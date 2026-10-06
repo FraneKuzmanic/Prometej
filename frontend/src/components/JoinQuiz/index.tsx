@@ -11,7 +11,8 @@ interface JoinQuizProps {
 
 export default function JoinQuiz({ setOpenJoinQuizDialog }: JoinQuizProps) {
   const [quizCode, setQuizCode] = useState<string>("");
-  const [notFound, setNotFound] = useState<boolean>(false);
+  // what the field says when the code did not open a Quiz
+  const [error, setError] = useState<string>("");
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
 
@@ -19,9 +20,15 @@ export default function JoinQuiz({ setOpenJoinQuizDialog }: JoinQuizProps) {
     dispatch(fetchQuizByCode(quizCode)).then((resultAction) => {
       if (fetchQuizByCode.fulfilled.match(resultAction)) {
         setOpenJoinQuizDialog(false);
-        navigate(`/play-quiz/${resultAction.payload.id}?code=${quizCode}`);
+        const { id, isTest } = resultAction.payload;
+        // A Test is sat, not played: its Questions come only with a Sitting.
+        navigate(`/${isTest ? "sitting" : "play-quiz"}/${id}?code=${quizCode}`);
       } else {
-        setNotFound(true);
+        setError(
+          resultAction.payload === 429
+            ? "Previše pokušaja. Pričekajte minutu."
+            : "Kviz s tim kodom ne postoji."
+        );
       }
     });
   };
@@ -43,10 +50,10 @@ export default function JoinQuiz({ setOpenJoinQuizDialog }: JoinQuizProps) {
         value={quizCode}
         onChange={(e) => {
           setQuizCode(e.target.value);
-          setNotFound(false);
+          setError("");
         }}
-        error={notFound}
-        helperText={notFound ? "Kviz s tim kodom ne postoji." : ""}
+        error={error !== ""}
+        helperText={error}
       />
       <Button
         variant="contained"

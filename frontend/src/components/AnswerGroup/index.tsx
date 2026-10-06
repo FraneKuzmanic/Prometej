@@ -35,6 +35,8 @@ export default function AnswerGroup({
       </Typography>
       {answers.map((answer) => {
         const correct = answer.answerText === answer.correctAnswer;
+        // A point left empty in a Sitting has no chosen text.
+        const answerText = answer.answerText === "" ? "Bez odgovora" : answer.answerText;
         return (
           <Box key={answer.id}>
             <Typography
@@ -42,10 +44,10 @@ export default function AnswerGroup({
               className={correct ? "answer-group-correct" : "answer-group-wrong"}
             >
               {answer.item !== null
-                ? `${answer.item} → ${answer.answerText}`
+                ? `${answer.item} → ${answerText}`
                 : answer.place !== null
-                ? `${answer.place}. mjesto: ${answer.answerText}`
-                : `${answerLabel}: ${answer.answerText}`}
+                ? `${answer.place}. mjesto: ${answerText}`
+                : `${answerLabel}: ${answerText}`}
             </Typography>
             {!correct && (
               <Typography variant={body}>

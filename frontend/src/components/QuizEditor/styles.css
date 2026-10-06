@@ -105,6 +105,10 @@
     z-index: 1000; /* Ensure it is on top of other elements */
     width: 300px;
     min-height: 300px;
+    /* With every field of a test shown it is taller than a small window. */
+    max-height: 95vh;
+    box-sizing: border-box;
+    overflow-y: auto;
 }
 
 .quiz-editor-message{

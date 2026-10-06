@@ -62,6 +62,17 @@ export default function PlayQuiz() {
     dispatch(fetchQuiz({ quizId: Number(id), code }));
   }, [dispatch, id, code]);
 
+  // A Test is sat, not played: this address only leads there. Not before the session is
+  // known, or its Creator, who may try it out here, would be sent on as well.
+  const sitsInstead =
+    !!quiz && quiz.id === Number(id) && quiz.isTest && authenticated !== undefined && !isCreator;
+
+  useEffect(() => {
+    if (sitsInstead) {
+      navigate(`/sitting/${id}${code ? `?code=${code}` : ""}`, { replace: true });
+    }
+  }, [sitsInstead, navigate, id, code]);
+
   useEffect(() => {
     if (quiz) {
       setQuizQuestions(quiz.questions);
@@ -234,7 +245,7 @@ export default function PlayQuiz() {
           </Box>
         </Paper>
       )}
-      {quiz && quiz.questions.length === 0 && (
+      {quiz && quiz.questions.length === 0 && !quiz.isTest && (
         <Paper elevation={3} className="quiz-play-container">
           <Box className="quiz-play-header">
             <Typography className="quiz-play-title" variant="h5">

@@ -2,6 +2,7 @@ import {
   Alert,
   Box,
   Button,
+  Checkbox,
   FormControlLabel,
   IconButton,
   LinearProgress,
@@ -20,7 +21,12 @@ import { useEffect, useRef, useState } from "react";
 import "./styles.css";
 import QuestionContainer from "../QuestionContainer";
 import SourceTextFields from "../QuestionContainer/SourceTextFields";
-import { QuestionType, SourceTextRequest } from "../../types/models/Quiz";
+import {
+  QuestionType,
+  QuizCreateRequest,
+  SourceTextRequest,
+} from "../../types/models/Quiz";
+import { fromLocalInput, toLocalInput } from "./closesAt";
 import {
   EditorSourceTexts,
   EditorQuestion,
@@ -40,13 +46,14 @@ interface QuizEditorProps {
   initialTitle: string;
   initialIsPrivate: boolean;
   initialPeriodId: number | null;
+  initialIsTest: boolean;
+  initialTimeLimitMinutes: number | null;
+  initialClosesAt: string | null;
   initialQuestions: EditorQuestion[];
   initialSourceTexts: EditorSourceTexts;
   // Resolves to whether the Quiz was saved; the editor stays open when it was not.
   onSave: (
-    title: string,
-    isPrivate: boolean,
-    periodId: number | null,
+    quiz: QuizCreateRequest,
     questions: EditorQuestion[],
     sourceTexts: EditorSourceTexts
   ) => Promise<boolean>;
@@ -55,6 +62,10 @@ interface QuizEditorProps {
 
 // The server's limit of Questions for one Source Text.
 const MAX_SOURCE_TEXT_QUESTIONS = 10;
+
+// The server's limits for a time limit, in minutes.
+const MIN_TIME_LIMIT = 1;
+const MAX_TIME_LIMIT = 300;
 
 // What a Question of each type still needs, said after "Pitanje {n} nije potpuno: ".
 const missing: Record<QuestionType, string> = {
@@ -67,6 +78,9 @@ export default function QuizEditor({
   initialTitle,
   initialIsPrivate,
   initialPeriodId,
+  initialIsTest,
+  initialTimeLimitMinutes,
+  initialClosesAt,
   initialQuestions,
   initialSourceTexts,
   onSave,
@@ -90,6 +104,15 @@ export default function QuizEditor({
   const [selected, setSelected] = useState<number>(0);
   const [quizTitle, setQuizTitle] = useState<string>(initialTitle);
   const [isPrivate, setIsPrivate] = useState<boolean>(initialIsPrivate);
+  const [isTest, setIsTest] = useState<boolean>(initialIsTest);
+  // as typed; empty for no limit
+  const [timeLimit, setTimeLimit] = useState<string>(
+    initialTimeLimitMinutes === null ? "" : String(initialTimeLimitMinutes)
+  );
+  // the value of a datetime-local field, in the Teacher's own time; empty for none
+  const [closesAt, setClosesAt] = useState<string>(
+    initialClosesAt === null ? "" : toLocalInput(initialClosesAt)
+  );
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [saveFailed, setSaveFailed] = useState<boolean>(false);
   const [inputDrawer, setInputDrawer] = useState<boolean>(false);
@@ -129,15 +152,34 @@ export default function QuizEditor({
     setInputDrawer(true);
   };
 
+  // A time limit means something where the Quiz can be sat: a Test, and a Public Quiz
+  // solved as one. A Private Quiz that is practice has none.
+  const hasTimeLimit = isTest || !isPrivate;
+  const timeLimitMinutes = hasTimeLimit && timeLimit !== "" ? Number(timeLimit) : null;
+  const timeLimitValid =
+    timeLimitMinutes === null ||
+    (Number.isInteger(timeLimitMinutes) &&
+      timeLimitMinutes >= MIN_TIME_LIMIT &&
+      timeLimitMinutes <= MAX_TIME_LIMIT);
+
   const saveQuiz = () => {
     setIsSaving(true);
     setSaveFailed(false);
-    onSave(quizTitle.trim(), isPrivate, periodId, quizQuestions, sourceTexts).then(
-      (saved) => {
-        setIsSaving(false);
-        setSaveFailed(!saved);
-      }
-    );
+    onSave(
+      {
+        title: quizTitle.trim(),
+        isPrivate,
+        periodId,
+        isTest,
+        timeLimitMinutes,
+        closesAt: isTest && closesAt !== "" ? fromLocalInput(closesAt) : null,
+      },
+      quizQuestions,
+      sourceTexts
+    ).then((saved) => {
+      setIsSaving(false);
+      setSaveFailed(!saved);
+    });
   };
 
   const insertQuestion = (index: number, question: EditorQuestion) => {
@@ -407,11 +449,57 @@ export default function QuizEditor({
             control={
               <Switch
                 checked={isPrivate}
-                onChange={(e) => setIsPrivate(e.target.checked)}
+                onChange={(e) => {
+                  setIsPrivate(e.target.checked);
+                  // Only a Private Quiz can be a Test.
+                  if (!e.target.checked) setIsTest(false);
+                }}
               />
             }
             label="Privatni kviz"
           />
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={isTest}
+                disabled={!isPrivate}
+                onChange={(e) => setIsTest(e.target.checked)}
+              />
+            }
+            label="Provjera (jedan pokušaj, bez povratne informacije)"
+          />
+          {hasTimeLimit && (
+            <TextField
+              type="number"
+              fullWidth
+              size="small"
+              label="Vremensko ograničenje (min)"
+              sx={{ marginTop: "1rem" }}
+              inputProps={{ min: MIN_TIME_LIMIT, max: MAX_TIME_LIMIT }}
+              InputLabelProps={{ shrink: true }}
+              value={timeLimit}
+              onChange={(e) => setTimeLimit(e.target.value)}
+              error={!timeLimitValid}
+              helperText={
+                timeLimitValid
+                  ? "Prazno: bez ograničenja"
+                  : `Cijeli broj od ${MIN_TIME_LIMIT} do ${MAX_TIME_LIMIT}`
+              }
+            />
+          )}
+          {isTest && (
+            <TextField
+              type="datetime-local"
+              fullWidth
+              size="small"
+              label="Zatvara se"
+              sx={{ marginTop: "1rem" }}
+              InputLabelProps={{ shrink: true }}
+              value={closesAt}
+              onChange={(e) => setClosesAt(e.target.value)}
+              helperText="Prazno: dok je ne zatvorite"
+            />
+          )}
           {isSaving ? <LinearProgress sx={{ width: "100%" }} /> : null}
           {saveFailed && (
             <Typography color="error" sx={{ fontSize: 14 }}>
@@ -422,7 +510,7 @@ export default function QuizEditor({
             variant="contained"
             disabled={isSaving}
             onClick={() => {
-              quizTitle.trim() ? saveQuiz() : null;
+              quizTitle.trim() && timeLimitValid ? saveQuiz() : null;
             }}
             style={{
               backgroundColor: "#553b08",

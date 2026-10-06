@@ -7,6 +7,12 @@ export interface QuizBaseModel {
     // the Period the Quiz is about, if it says one
     periodId: number | null;
     periodName: string | null;
+    // a Test: sat once by each Student, in a Sitting
+    isTest: boolean;
+    // how long a Sitting of the Quiz may take; null for no limit
+    timeLimitMinutes: number | null;
+    // when a Test closes; null until its Creator closes it
+    closesAt: string | null;
     questionCount: number;
     // only in a Creator's own list: how many Quiz Games deleting the Quiz would delete
     quizGameCount?: number;
@@ -71,6 +77,11 @@ export interface QuizCreateRequest {
     title: string;
     isPrivate: boolean;
     periodId: number | null;
+    // Sent with every save, as the Period is: the server reads a request without them as
+    // "a practice Quiz without a time limit".
+    isTest: boolean;
+    timeLimitMinutes: number | null;
+    closesAt: string | null;
 }
 
 export interface QuizEditRequest {
@@ -79,6 +90,11 @@ export interface QuizEditRequest {
     isPrivate: boolean;
     // Sent with every update: the server reads a request without it as "no Period".
     periodId: number | null;
+    // Sent with every save, as the Period is: the server reads a request without them as
+    // "a practice Quiz without a time limit".
+    isTest: boolean;
+    timeLimitMinutes: number | null;
+    closesAt: string | null;
 }
 
 export interface QuizViewModel {
@@ -90,6 +106,12 @@ export interface QuizViewModel {
     entryCode?: number;
     periodId: number | null;
     periodName: string | null;
+    isTest: boolean;
+    timeLimitMinutes: number | null;
+    closesAt: string | null;
+    // a Test that was started: its Questions can no longer be edited
+    questionsLocked: boolean;
+    // empty for a Test read by anyone but its Creator or an Admin
     questions: QuestionViewModel[];
     // the Source Texts those Questions are asked about
     sourceTexts: SourceTextViewModel[];
@@ -150,7 +172,12 @@ export interface QuizGameViewModel {
     score: number;
     datePlayed: string;
     answers: AnswerViewModel[];
+    playedAs: PlayedAs;
 }
+
+// "practice": marked Question by Question. "mock": a Sitting of a Public Quiz, the player's
+// own choice. "test": a Sitting of a Test.
+export type PlayedAs = "practice" | "mock" | "test";
 
 export interface QuestionReport {
     questionId: number;
@@ -223,6 +250,9 @@ export interface PlayedQuizGame {
     // the points the game could give when it was played
     maxScore: number;
     datePlayed: string;
+    playedAs: PlayedAs;
+    // false for a Test that is not closed yet: its Answers are not shown before that
+    reviewAvailable: boolean;
 }
 
 export interface PeriodProgress {

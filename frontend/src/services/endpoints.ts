@@ -5,6 +5,7 @@ const userBase = `${base}/user`;
 const periodBase = `${base}/period`;
 const quizBase = `${base}/quiz`;
 const discussionBase = `${base}/discussion`;
+const sittingBase = `${base}/sitting`;
 
 export const endpoints = {
   user: {
@@ -18,5 +19,8 @@ export const endpoints = {
   },
   discussion: {
     base: discussionBase,
+  },
+  sitting: {
+    base: sittingBase,
   },
 };

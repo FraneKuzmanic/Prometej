@@ -7,6 +7,7 @@ import {
   toRequest,
 } from "../../../components/QuizEditor/questions";
 import { fetchQuiz, updateQuiz } from "../../../store/slices/quizSlice";
+import { QuizCreateRequest } from "../../../types/models/Quiz";
 import { useSelector } from "react-redux";
 import { RootState, useAppDispatch } from "../../../store/store";
 import { useNavigate, useParams } from "react-router-dom";
@@ -27,15 +28,13 @@ export default function EditQuiz() {
   }
 
   const saveQuiz = async (
-    title: string,
-    isPrivate: boolean,
-    periodId: number | null,
+    header: QuizCreateRequest,
     questions: EditorQuestion[],
     sourceTexts: EditorSourceTexts
   ) => {
     const result = await dispatch(
       updateQuiz({
-        quiz: { id: quiz.id, title, isPrivate, periodId },
+        quiz: { id: quiz.id, ...header },
         // The lists are the whole set: a stored Question or Source Text left out is removed.
         ...toRequest(questions, sourceTexts),
       })
@@ -53,6 +52,9 @@ export default function EditQuiz() {
       initialTitle={quiz.title}
       initialIsPrivate={quiz.isPrivate}
       initialPeriodId={quiz.periodId}
+      initialIsTest={quiz.isTest}
+      initialTimeLimitMinutes={quiz.timeLimitMinutes}
+      initialClosesAt={quiz.closesAt}
       initialQuestions={questions}
       initialSourceTexts={sourceTexts}
       onSave={saveQuiz}

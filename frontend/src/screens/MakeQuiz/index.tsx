@@ -5,6 +5,7 @@ import {
   toRequest,
 } from "../../components/QuizEditor/questions";
 import { createQuiz } from "../../store/slices/quizSlice";
+import { QuizCreateRequest } from "../../types/models/Quiz";
 import { useAppDispatch } from "../../store/store";
 import { useNavigate } from "react-router-dom";
 
@@ -13,17 +14,12 @@ export default function MakeQuiz() {
   const navigate = useNavigate();
 
   const saveQuiz = async (
-    title: string,
-    isPrivate: boolean,
-    periodId: number | null,
+    quiz: QuizCreateRequest,
     questions: EditorQuestion[],
     sourceTexts: EditorSourceTexts
   ) => {
     const result = await dispatch(
-      createQuiz({
-        quiz: { title, isPrivate, periodId },
-        ...toRequest(questions, sourceTexts),
-      })
+      createQuiz({ quiz, ...toRequest(questions, sourceTexts) })
     );
     const saved = createQuiz.fulfilled.match(result);
     if (saved) navigate("/learning");
@@ -35,6 +31,9 @@ export default function MakeQuiz() {
       initialTitle=""
       initialIsPrivate={true}
       initialPeriodId={null}
+      initialIsTest={false}
+      initialTimeLimitMinutes={null}
+      initialClosesAt={null}
       initialQuestions={[]}
       initialSourceTexts={{}}
       onSave={saveQuiz}

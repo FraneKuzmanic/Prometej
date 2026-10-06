@@ -9,6 +9,8 @@ interface Props {
   name: string;
   authorName: string;
   entryCode?: number;
+  // a Test, said beside its Entry Code
+  isTest?: boolean;
   periodName: string | null;
   questionCount: number;
 }
@@ -57,6 +59,9 @@ export default function QuizContainer(props: Props) {
                 padding: 1,
               }}
             >
+              {props.isTest && (
+                <span className="quiz-container-test">Provjera · </span>
+              )}
               Ulazni kod:
               <span
                 style={{ color: "#553b08", marginLeft: 5, fontStyle: "italic" }}

@@ -15,6 +15,8 @@ interface QuizState {
     // one of those Quiz Games, opened for review
     gameReview: QuizGameReviewViewModel | undefined;
     gameReviewFailed: boolean;
+    // the Quiz Game is a Test's, and the Test is not closed yet
+    gameReviewLocked: boolean;
     // the Quiz Game the server stored for the play just finished
     lastGame: QuizGameViewModel | undefined;
     // "rejected": the server refused the submission, so sending it again cannot help.
@@ -52,6 +54,7 @@ const initialState: QuizState = {
     myGamesFailed: false,
     gameReview: undefined,
     gameReviewFailed: false,
+    gameReviewLocked: false,
     lastGame: undefined,
     submitStatus: "idle",
 };
@@ -82,11 +85,15 @@ const fetchQuiz = createAsyncThunk(
     }
 );
 
-const fetchQuizByCode = createAsyncThunk(
+const fetchQuizByCode = createAsyncThunk<QuizViewModel, string, { rejectValue: number | undefined }>(
     'quiz/getByCode',
-    async (quizCode: string) => {
-        const response = await QuizService.getByCode(quizCode);
-        return response.data;
+    async (quizCode, { rejectWithValue }) => {
+        try {
+            const response = await QuizService.getByCode(quizCode);
+            return response.data;
+        } catch (error) {
+            return rejectWithValue(axios.isAxiosError(error) ? error.response?.status : undefined);
+        }
     }
 );
 
@@ -142,11 +149,15 @@ const fetchMyGames = createAsyncThunk(
     }
 );
 
-const fetchQuizGame = createAsyncThunk(
+const fetchQuizGame = createAsyncThunk<QuizGameReviewViewModel, number, { rejectValue: number | undefined }>(
     'quiz/getGame',
-    async (gameId: number) => {
-        const response = await QuizService.getGame(gameId);
-        return response.data;
+    async (gameId, { rejectWithValue }) => {
+        try {
+            const response = await QuizService.getGame(gameId);
+            return response.data;
+        } catch (error) {
+            return rejectWithValue(axios.isAxiosError(error) ? error.response?.status : undefined);
+        }
     }
 );
 
@@ -207,12 +218,15 @@ const quizSlice = createSlice({
     builder.addCase(fetchQuizGame.pending, (state) => {
         state.gameReview = undefined;
         state.gameReviewFailed = false;
+        state.gameReviewLocked = false;
     });
     builder.addCase(fetchQuizGame.fulfilled, (state, action: PayloadAction<QuizGameReviewViewModel>) => {
         state.gameReview = action.payload;
     });
     builder.addCase(fetchQuizGame.rejected, (state, action) => {
-        if (!action.meta.aborted) {
+        if (action.payload === 409) {
+            state.gameReviewLocked = true;
+        } else if (!action.meta.aborted) {
             state.gameReviewFailed = true;
         }
     });

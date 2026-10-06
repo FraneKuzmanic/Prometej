@@ -11,6 +11,7 @@ import Search from "./Search";
 import { Navigate, createBrowserRouter } from "react-router-dom";
 import EditQuiz from "./MakeQuiz/EditQuiz";
 import PlayQuiz from "./PlayQuiz";
+import SittingScreen from "./PlayQuiz/Sitting";
 import { QuizDetails } from "./QuizDetails";
 import MyResults from "./MyResults";
 import GameReview from "./MyResults/GameReview";
@@ -103,6 +104,11 @@ export const appRouter = createBrowserRouter([
   {
     path: "/play-quiz/:id",
     element: <PlayQuiz />,
+  },
+  // Signed out it shows where to sign in, as a Discussion does.
+  {
+    path: "/sitting/:quizId",
+    element: <SittingScreen />,
   },
   {
     path: "/make-quiz",

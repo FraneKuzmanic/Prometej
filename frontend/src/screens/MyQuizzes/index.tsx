@@ -24,7 +24,7 @@ import {
   updateQuiz,
 } from "../../store/slices/quizSlice";
 import { useSelector } from "react-redux";
-import { QuizBaseModel } from "../../types/models/Quiz";
+import { QuizBaseModel, QuizEditRequest } from "../../types/models/Quiz";
 import "./styles.css";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { useNavigate } from "react-router-dom";
@@ -60,15 +60,22 @@ export default function MyQuizzes() {
     });
   };
 
+  // An update carries the Quiz's whole header, so a change to one field sends the others
+  // as the card has them.
+  const headerOf = (quiz: QuizBaseModel): QuizEditRequest => ({
+    id: quiz.id,
+    title: quiz.title,
+    isPrivate: quiz.isPrivate,
+    periodId: quiz.periodId,
+    isTest: quiz.isTest,
+    timeLimitMinutes: quiz.timeLimitMinutes,
+    closesAt: quiz.closesAt,
+  });
+
   // The server gives a Quiz made private its Entry Code and takes it from one made public.
   const toggleVisibility = (quiz: QuizBaseModel) => {
     if (user) {
-      const updatedQuiz = {
-        id: quiz.id,
-        title: quiz.title,
-        isPrivate: !quiz.isPrivate,
-        periodId: quiz.periodId,
-      };
+      const updatedQuiz = { ...headerOf(quiz), isPrivate: !quiz.isPrivate };
       dispatch(updateQuiz({ quiz: updatedQuiz })).then(() => {
         dispatch(fetchMyQuizzes());
       });
@@ -78,12 +85,7 @@ export default function MyQuizzes() {
 
   const handleNameChange = () => {
     if (currentQuiz && user) {
-      const updatedQuiz = {
-        id: currentQuiz.id,
-        title: quizTitle.trim(),
-        isPrivate: currentQuiz.isPrivate,
-        periodId: currentQuiz.periodId,
-      };
+      const updatedQuiz = { ...headerOf(currentQuiz), title: quizTitle.trim() };
       dispatch(updateQuiz({ quiz: updatedQuiz })).then(() => {
         dispatch(fetchMyQuizzes());
       });
@@ -138,6 +140,7 @@ export default function MyQuizzes() {
               name={quiz.title}
               authorName={quiz.creatorName}
               entryCode={quiz.entryCode}
+              isTest={quiz.isTest}
               periodName={quiz.periodName}
               questionCount={quiz.questionCount}
             />
@@ -162,9 +165,12 @@ export default function MyQuizzes() {
         open={Boolean(menu?.anchor)}
         onClose={handleClose}
       >
-        <MenuItem onClick={() => menu && toggleVisibility(menu.quiz)}>
-          {menu?.quiz.isPrivate ? "Učini javnim" : "Učini privatnim"}
-        </MenuItem>
+        {/* A Test is a Private Quiz; it is made practice again in the editor first. */}
+        {!menu?.quiz.isTest && (
+          <MenuItem onClick={() => menu && toggleVisibility(menu.quiz)}>
+            {menu?.quiz.isPrivate ? "Učini javnim" : "Učini privatnim"}
+          </MenuItem>
+        )}
         <MenuItem
           onClick={() => {
             if (menu) {

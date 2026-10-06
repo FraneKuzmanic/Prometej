@@ -1,0 +1,108 @@
+.sitting-header{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+}
+
+.sitting-clock.MuiTypography-root{
+    flex-shrink: 0;
+    padding-right: 20px;
+    font-weight: bold;
+    font-variant-numeric: tabular-nums;
+}
+
+.sitting-clock.ending.MuiTypography-root{
+    color: #c62828;
+}
+
+/* One button for each Question; a filled one has an answer. */
+.sitting-strip{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 0 20px 15px 40px;
+    border-bottom: 1px solid #81818162;
+}
+
+.sitting-strip-item{
+    width: 32px;
+    height: 32px;
+    font: inherit;
+    font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+    font-size: 14px;
+    color: #553b08;
+    background-color: transparent;
+    border: 1px solid #553b08;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.sitting-strip-item.answered{
+    color: white;
+    background-color: #553b08;
+}
+
+.sitting-strip-item.current{
+    outline: 2px solid #78C1F3;
+    outline-offset: 2px;
+}
+
+.sitting-strip-item:focus-visible{
+    outline: 2px solid #553b08;
+    outline-offset: 2px;
+}
+
+.sitting-options{
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 15px 0;
+}
+
+.sitting-options .quiz-play-item{
+    padding: 10px 10px 10px 20px;
+}
+
+/* Chosen, not right: nothing in a sitting says which answer is correct. */
+.quiz-play-item.chosen{
+    border-width: 2px;
+    border-color: #553b08;
+    background-color: #fff3c4;
+}
+
+.sitting-instruction.MuiTypography-root{
+    margin-top: 10px;
+    color: #5f5f5f;
+}
+
+.sitting-save-state{
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 32px;
+    margin-top: 10px;
+    color: #5f5f5f;
+}
+
+.sitting-panel{
+    padding: 30px 40px 20px 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.sitting-eyebrow.MuiTypography-root{
+    color: #553b08;
+    font-weight: bold;
+}
+
+.sitting-score.MuiTypography-root{
+    margin: 30px 0;
+    text-align: center;
+}
+
+.sitting-note.MuiTypography-root{
+    margin-top: 15px;
+    font-weight: bold;
+}
