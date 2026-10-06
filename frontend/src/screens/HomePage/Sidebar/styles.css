@@ -1,9 +1,116 @@
-.sidebar{
-    background-color: #553b08;
-    color: white;
+.sidebar {
+  padding: 12px 10px 16px;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
-.sidebar-item-selected{
-    color: black;
-    background-color: #e9e5cd;
+.sidebar li {
+  list-style: none;
+}
+
+.sidebar .sidebar-row {
+  min-height: 42px;
+  padding: 0 12px;
+  margin-bottom: 2px;
+  gap: 12px;
+  border-radius: 8px;
+  color: var(--ink);
+  transition: background-color 140ms ease-out, color 140ms ease-out;
+}
+
+.sidebar .sidebar-icon {
+  min-width: 0;
+  color: var(--ink-muted);
+  transition: color 140ms ease-out;
+}
+
+.sidebar .sidebar-icon svg {
+  font-size: 1.375rem;
+}
+
+.sidebar .sidebar-label {
+  margin: 0;
+}
+
+.sidebar .sidebar-label .MuiTypography-root {
+  font-size: 0.975rem;
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+.sidebar .sidebar-row:hover .sidebar-icon {
+  color: var(--brown);
+}
+
+.sidebar .sidebar-row.Mui-selected,
+.sidebar .sidebar-row.Mui-selected:hover {
+  background-color: var(--parchment);
+  color: var(--brown);
+}
+
+.sidebar .sidebar-row.Mui-selected .sidebar-icon {
+  color: var(--brown);
+}
+
+.sidebar .sidebar-row.Mui-selected .MuiTypography-root {
+  font-weight: 600;
+}
+
+.sidebar-group {
+  margin-top: 14px;
+}
+
+.sidebar .sidebar-group-name .MuiTypography-root {
+  font-weight: 600;
+}
+
+/* A group's items hang from a hairline under the middle of the group's icon. */
+.sidebar .sidebar-group-items {
+  margin-left: 22px;
+  padding-left: 9px;
+  border-left: 1px solid var(--rule);
+}
+
+.sidebar .sidebar-group-items .sidebar-row {
+  min-height: 38px;
+  padding: 0 10px;
+  gap: 10px;
+}
+
+.sidebar .sidebar-group-items .sidebar-icon svg {
+  font-size: 1.2rem;
+}
+
+/* Collapsed: icons only. A group's name goes and a hairline stands between the groups. */
+.sidebar-collapsed {
+  padding-left: 9px;
+  padding-right: 9px;
+}
+
+.sidebar-collapsed .sidebar-row,
+.sidebar-collapsed .sidebar-group-items .sidebar-row {
+  min-height: 42px;
+  padding: 0;
+  justify-content: center;
+}
+
+.sidebar-collapsed .sidebar-label,
+.sidebar-collapsed .sidebar-group-name {
+  display: none;
+}
+
+.sidebar-collapsed .sidebar-group {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--rule);
+}
+
+.sidebar.sidebar-collapsed .sidebar-group-items {
+  margin-left: 0;
+  padding-left: 0;
+  border-left: 0;
+}
+
+.sidebar-collapsed .sidebar-group-items .sidebar-icon svg {
+  font-size: 1.375rem;
 }

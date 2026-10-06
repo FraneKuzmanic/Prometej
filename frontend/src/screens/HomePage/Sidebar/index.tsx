@@ -1,19 +1,21 @@
 import {
   List,
-  ListItem,
   ListItemButton,
   ListItemIcon,
   ListItemText,
+  Tooltip,
 } from "@mui/material";
-import LocalLibraryIcon from "@mui/icons-material/LocalLibrary";
-import QuizIcon from "@mui/icons-material/Quiz";
-import AssignmentIcon from "@mui/icons-material/Assignment";
-import NoteAddIcon from "@mui/icons-material/NoteAdd";
-import PersonIcon from "@mui/icons-material/Person";
-import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
-import GroupIcon from "@mui/icons-material/Group";
+import AutoStoriesOutlinedIcon from "@mui/icons-material/AutoStoriesOutlined";
+import SchoolOutlinedIcon from "@mui/icons-material/SchoolOutlined";
+import QuizOutlinedIcon from "@mui/icons-material/QuizOutlined";
+import EmojiEventsOutlinedIcon from "@mui/icons-material/EmojiEventsOutlined";
+import KeyOutlinedIcon from "@mui/icons-material/KeyOutlined";
+import CoPresentOutlinedIcon from "@mui/icons-material/CoPresentOutlined";
+import CollectionsBookmarkOutlinedIcon from "@mui/icons-material/CollectionsBookmarkOutlined";
+import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
+import GroupOutlinedIcon from "@mui/icons-material/GroupOutlined";
 import "./styles.css";
-import { useState } from "react";
+import { ReactNode } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import ROLE from "../../../types/enums/Role";
 import { UserViewModel } from "../../../types/models/User";
@@ -25,6 +27,22 @@ interface SidebarProps {
   setOpenJoinQuizDialog: (value: boolean) => void;
 }
 
+interface NavItem {
+  label: string;
+  icon: ReactNode;
+  // Where the item leads. "Pridruži se kvizu" has none: it opens a dialog.
+  path?: string;
+  // Other screens that belong to the item, so it stays marked on them.
+  alsoOn?: string[];
+  onClick?: () => void;
+}
+
+interface NavGroup {
+  label: string;
+  icon: ReactNode;
+  items: NavItem[];
+}
+
 export default function Sidebar({
   toggle,
   user,
@@ -32,237 +50,110 @@ export default function Sidebar({
   setOpenJoinQuizDialog,
 }: SidebarProps) {
   const navigate = useNavigate();
-  const location = useLocation();
-  const [selectedItem, setSelectedItem] = useState(
-    location.pathname.split("/")[1] || "learning"
-  );
+  const { pathname } = useLocation();
+  const isCreator =
+    authenticated && (user?.role === ROLE.Teacher || user?.role === ROLE.Admin);
 
-  const handleItemClick = (item: string) => {
-    setSelectedItem(item);
-    navigate(`/${item}`);
+  const periods: NavItem = {
+    label: "Razdoblja",
+    icon: <AutoStoriesOutlinedIcon />,
+    path: "/learning",
+    alsoOn: ["/search"],
+  };
+
+  const groups: NavGroup[] = [
+    {
+      label: "Učionica",
+      icon: <SchoolOutlinedIcon />,
+      items: [
+        { label: "Kvizovi", icon: <QuizOutlinedIcon />, path: "/quizzes" },
+        ...(authenticated
+          ? [
+              {
+                label: "Moji rezultati",
+                icon: <EmojiEventsOutlinedIcon />,
+                path: "/my-results",
+              },
+            ]
+          : []),
+        {
+          label: "Pridruži se kvizu",
+          icon: <KeyOutlinedIcon />,
+          onClick: () => setOpenJoinQuizDialog(true),
+        },
+      ],
+    },
+  ];
+
+  if (isCreator) {
+    groups.push({
+      label: "Nastava",
+      icon: <CoPresentOutlinedIcon />,
+      items: [
+        {
+          label: "Moji kvizovi",
+          icon: <CollectionsBookmarkOutlinedIcon />,
+          path: "/my-quizzes",
+          alsoOn: ["/quiz-details"],
+        },
+        { label: "Novi kviz", icon: <AddCircleOutlineIcon />, path: "/make-quiz" },
+        ...(user?.role === ROLE.Admin
+          ? [{ label: "Korisnici", icon: <GroupOutlinedIcon />, path: "/users" }]
+          : []),
+      ],
+    });
+  }
+
+  // The address says which item is marked, so a link inside a page moves the mark too.
+  const isOn = (item: NavItem) =>
+    [item.path, ...(item.alsoOn ?? [])].some(
+      (path) => path && (pathname === path || pathname.startsWith(`${path}/`))
+    );
+
+  const open = (item: NavItem) =>
+    item.onClick ? item.onClick() : navigate(item.path!);
+
+  const row = (item: NavItem) => {
+    const selected = isOn(item);
+    return (
+      <li key={item.label}>
+        {/* Collapsed, only the icon is seen, so the name is its tooltip. */}
+        <Tooltip title={toggle ? "" : item.label} placement="right">
+          <ListItemButton
+            className="sidebar-row"
+            selected={selected}
+            aria-current={selected ? "page" : undefined}
+            onClick={() => open(item)}
+          >
+            <ListItemIcon className="sidebar-icon">{item.icon}</ListItemIcon>
+            <ListItemText className="sidebar-label" primary={item.label} />
+          </ListItemButton>
+        </Tooltip>
+      </li>
+    );
   };
 
   return (
-    <List className="sidebar">
-      <ListItem
-        key={"learning"}
-        sx={{ display: "block" }}
-        className={`sidebar-item${
-          selectedItem === "learning" ? "-selected" : ""
-        }`}
-      >
-        <ListItemButton
-          onClick={() => handleItemClick("learning")}
-          sx={{
-            minHeight: 48,
-            justifyContent: toggle ? "initial" : "center",
-            px: 2.5,
-          }}
-        >
-          <ListItemIcon
-            sx={{
-              minWidth: 0,
-              mr: toggle ? 3 : "auto",
-              justifyContent: "center",
-              color: selectedItem === "learning" ? "black" : "white",
-            }}
-          >
-            <LocalLibraryIcon />
-          </ListItemIcon>
-          <ListItemText primary={"Učenje"} sx={{ opacity: toggle ? 1 : 0 }} />
-        </ListItemButton>
-      </ListItem>
-      <ListItem
-        key={"quizzes"}
-        sx={{ display: "block" }}
-        className={`sidebar-item${
-          selectedItem === "quizzes" ? "-selected" : ""
-        }`}
-      >
-        <ListItemButton
-          onClick={() => handleItemClick("quizzes")}
-          sx={{
-            minHeight: 48,
-            justifyContent: toggle ? "initial" : "center",
-            px: 2.5,
-          }}
-        >
-          <ListItemIcon
-            sx={{
-              minWidth: 0,
-              mr: toggle ? 3 : "auto",
-              justifyContent: "center",
-              color: selectedItem === "quizzes" ? "black" : "white",
-            }}
-          >
-            <QuizIcon />
-          </ListItemIcon>
-          <ListItemText primary={"Kvizovi"} sx={{ opacity: toggle ? 1 : 0 }} />
-        </ListItemButton>
-      </ListItem>
-      {authenticated && (
-        <ListItem
-          key={"my-results"}
-          sx={{ display: "block" }}
-          className={`sidebar-item${
-            selectedItem === "my-results" ? "-selected" : ""
-          }`}
-        >
+    <nav
+      className={`sidebar${toggle ? "" : " sidebar-collapsed"}`}
+      aria-label="Glavna navigacija"
+    >
+      <List disablePadding>{row(periods)}</List>
+      {groups.map((group) => (
+        <div className="sidebar-group" key={group.label}>
+          {/* A group's name opens its first item. */}
           <ListItemButton
-            onClick={() => handleItemClick("my-results")}
-            sx={{
-              minHeight: 48,
-              justifyContent: toggle ? "initial" : "center",
-              px: 2.5,
-            }}
+            className="sidebar-row sidebar-group-name"
+            onClick={() => open(group.items[0])}
           >
-            <ListItemIcon
-              sx={{
-                minWidth: 0,
-                mr: toggle ? 3 : "auto",
-                justifyContent: "center",
-                color: selectedItem === "my-results" ? "black" : "white",
-              }}
-            >
-              <EmojiEventsIcon />
-            </ListItemIcon>
-            <ListItemText
-              primary={"Moji rezultati"}
-              sx={{ opacity: toggle ? 1 : 0 }}
-            />
+            <ListItemIcon className="sidebar-icon">{group.icon}</ListItemIcon>
+            <ListItemText className="sidebar-label" primary={group.label} />
           </ListItemButton>
-        </ListItem>
-      )}
-      {authenticated &&
-        (user?.role == ROLE.Teacher || user?.role === ROLE.Admin) && (
-          <ListItem
-            key={"my-quizzes"}
-            sx={{ display: "block" }}
-            className={`sidebar-item${
-              selectedItem === "my-quizzes" ? "-selected" : ""
-            }`}
-          >
-            <ListItemButton
-              onClick={() => handleItemClick("my-quizzes")}
-              sx={{
-                minHeight: 48,
-                justifyContent: toggle ? "initial" : "center",
-                px: 2.5,
-              }}
-            >
-              <ListItemIcon
-                sx={{
-                  minWidth: 0,
-                  mr: toggle ? 3 : "auto",
-                  justifyContent: "center",
-                  color: selectedItem === "my-quizzes" ? "black" : "white",
-                }}
-              >
-                <PersonIcon />
-              </ListItemIcon>
-              <ListItemText
-                primary={"Moji kvizovi"}
-                sx={{ opacity: toggle ? 1 : 0 }}
-              />
-            </ListItemButton>
-          </ListItem>
-        )}
-      {authenticated &&
-        (user?.role == ROLE.Teacher || user?.role === ROLE.Admin) && (
-          <ListItem
-            key={"make-quiz"}
-            sx={{ display: "block" }}
-            className={`sidebar-item${
-              selectedItem === "make-quiz" ? "-selected" : ""
-            }`}
-          >
-            <ListItemButton
-              onClick={() => handleItemClick("make-quiz")}
-              sx={{
-                minHeight: 48,
-                justifyContent: toggle ? "initial" : "center",
-                px: 2.5,
-              }}
-            >
-              <ListItemIcon
-                sx={{
-                  minWidth: 0,
-                  mr: toggle ? 3 : "auto",
-                  justifyContent: "center",
-                  color: selectedItem === "make-quiz" ? "black" : "white",
-                }}
-              >
-                <NoteAddIcon />
-              </ListItemIcon>
-              <ListItemText
-                primary={"Napravi kviz"}
-                sx={{ opacity: toggle ? 1 : 0 }}
-              />
-            </ListItemButton>
-          </ListItem>
-        )}
-      {authenticated && user?.role === ROLE.Admin && (
-        <ListItem
-          key={"users"}
-          sx={{ display: "block" }}
-          className={`sidebar-item${
-            selectedItem === "users" ? "-selected" : ""
-          }`}
-        >
-          <ListItemButton
-            onClick={() => handleItemClick("users")}
-            sx={{
-              minHeight: 48,
-              justifyContent: toggle ? "initial" : "center",
-              px: 2.5,
-            }}
-          >
-            <ListItemIcon
-              sx={{
-                minWidth: 0,
-                mr: toggle ? 3 : "auto",
-                justifyContent: "center",
-                color: selectedItem === "users" ? "black" : "white",
-              }}
-            >
-              <GroupIcon />
-            </ListItemIcon>
-            <ListItemText
-              primary={"Korisnici"}
-              sx={{ opacity: toggle ? 1 : 0 }}
-            />
-          </ListItemButton>
-        </ListItem>
-      )}
-      <ListItem
-        key={"exam"}
-        sx={{ display: "block" }}
-        className={`sidebar-item${selectedItem === "exam" ? "-selected" : ""}`}
-      >
-        <ListItemButton
-          onClick={() => setOpenJoinQuizDialog(true)}
-          sx={{
-            minHeight: 48,
-            justifyContent: toggle ? "initial" : "center",
-            px: 2.5,
-          }}
-        >
-          <ListItemIcon
-            sx={{
-              minWidth: 0,
-              mr: toggle ? 3 : "auto",
-              justifyContent: "center",
-              color: selectedItem === "exam" ? "black" : "white",
-            }}
-          >
-            <AssignmentIcon />
-          </ListItemIcon>
-          <ListItemText
-            primary={"Pridruži se kvizu"}
-            sx={{ opacity: toggle ? 1 : 0 }}
-          />
-        </ListItemButton>
-      </ListItem>
-    </List>
+          <List disablePadding className="sidebar-group-items">
+            {group.items.map(row)}
+          </List>
+        </div>
+      ))}
+    </nav>
   );
 }
