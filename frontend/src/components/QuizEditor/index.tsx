@@ -41,6 +41,8 @@ import CancelIcon from "@mui/icons-material/Cancel";
 import { useSelector } from "react-redux";
 import { RootState, useAppDispatch } from "../../store/store";
 import { fetchPeriods } from "../../store/slices/periodSlice";
+import { fetchTutorStatus } from "../../store/slices/tutorSlice";
+import SuggestQuestions from "./SuggestQuestions";
 
 interface QuizEditorProps {
   initialTitle: string;
@@ -132,6 +134,13 @@ export default function QuizEditor({
     index: number;
   } | null>(null);
   const [addMenuAnchor, setAddMenuAnchor] = useState<HTMLElement | null>(null);
+  const [suggesting, setSuggesting] = useState<boolean>(false);
+  const tutorAvailable = useSelector((state: RootState) => state.tutor.available);
+
+  // The editor is outside the layout that asks this on the learning screens.
+  useEffect(() => {
+    if (tutorAvailable === undefined) dispatch(fetchTutorStatus());
+  }, [dispatch, tutorAvailable]);
 
   const sourceTextOf = (question: EditorQuestion) =>
     question.sourceTextKey ? sourceTexts[question.sourceTextKey] : undefined;
@@ -199,6 +208,14 @@ export default function QuizEditor({
   // The type is chosen here and stays: the fields of one type say nothing in another.
   const addQuestion = (type: QuestionType) =>
     insertQuestion(quizQuestions.length, newQuestion(type));
+
+  // The tutor's drafts go to the end, as Questions like any other; the first is opened.
+  const addDrafts = (drafts: EditorQuestion[]) => {
+    setSelected(quizQuestions.length);
+    setQuizQuestions([...quizQuestions, ...drafts]);
+    setIncomplete(null);
+    setSuggesting(false);
+  };
 
   // A new Source Text comes with its first Question.
   const addSourceText = () => {
@@ -397,7 +414,24 @@ export default function QuizEditor({
           <MenuItem onClick={() => addSourceText()}>
             Polazni tekst s pitanjima
           </MenuItem>
+          {tutorAvailable && (
+            <MenuItem
+              onClick={() => {
+                setAddMenuAnchor(null);
+                setSuggesting(true);
+              }}
+            >
+              Predloži pitanja
+            </MenuItem>
+          )}
         </Menu>
+        {suggesting && (
+          <SuggestQuestions
+            initialPeriodId={periodId}
+            onAdd={addDrafts}
+            onClose={() => setSuggesting(false)}
+          />
+        )}
         <SpeedDial
           ariaLabel="Radnje kviza"
           sx={{

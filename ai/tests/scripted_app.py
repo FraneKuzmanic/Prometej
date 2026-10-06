@@ -26,8 +26,39 @@ def _call(name: str, **arguments) -> ModelReply:
     return ModelReply(content=None, tool_calls=[call])
 
 
+def _drafts(source: str) -> ModelReply:
+    """Three drafts from the section sent: two whose quote is its first lines, one whose
+    quote is in no text and is dropped."""
+    lines = [line for line in source.split("\n\n", 1)[1].split("\n") if len(line) >= 40]
+
+    def one(title: str, quote: str) -> dict:
+        return {
+            "question_title": title,
+            "first_answer": "Prvi odgovor",
+            "second_answer": "Drugi odgovor",
+            "third_answer": "Treći odgovor",
+            "fourth_answer": "Četvrti odgovor",
+            "correct_option": 1,
+            "quote": quote,
+        }
+
+    drafts = [
+        one("Prvi prijedlog pitanja?", clean_text(lines[0])[:200].rsplit(" ", 1)[0]),
+        one("Drugi prijedlog pitanja?", clean_text(lines[1])[:200].rsplit(" ", 1)[0]),
+        one("Treći prijedlog pitanja?", FALSE_QUOTE),
+    ]
+    return ModelReply(content=json.dumps({"drafts": drafts}, ensure_ascii=False))
+
+
 class WalkthroughModel:
     def complete(self, messages, tools, schema, tool_choice) -> ModelReply:
+        if schema["name"] == "question_drafts":
+            return _drafts(messages[1]["content"])
+        if schema["name"] == "option":
+            # The second reading disagrees with the second draft.
+            disagrees = "Drugi prijedlog pitanja?" in messages[1]["content"]
+            return ModelReply(content=json.dumps({"option": 2 if disagrees else 1}))
+
         question = next(m["content"] for m in reversed(messages) if m["role"] == "user")
         question = next(
             (

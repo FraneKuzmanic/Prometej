@@ -19,6 +19,7 @@
 }
 
 .tutor-layout{
+    font-family: "Roboto", "Helvetica", "Arial", sans-serif;
     display: flex;
     flex-direction: column;
     height: 100%;

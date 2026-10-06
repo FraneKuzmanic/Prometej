@@ -22,6 +22,31 @@ export interface TutorTurn{
     content: string;
 }
 
+// A Question the tutor drafted from a section; nothing is stored until its Quiz is saved.
+export interface TutorDraft{
+    questionTitle: string;
+    firstAnswer: string;
+    secondAnswer: string;
+    thirdAnswer: string;
+    fourthAnswer: string;
+    correctOption: number;
+    // the sentence of the section that makes the correct answer right, found there word for word
+    quote: string;
+    // false when a second reading of the section did not pick the correct answer
+    agrees: boolean;
+}
+
+export interface TutorDrafts{
+    drafts: TutorDraft[];
+    // drafts that were written and are not offered: invalid, or without a quote that holds
+    dropped: number;
+}
+
+export interface TutorDraftsRequest{
+    periodId: number;
+    sectionId: string;
+}
+
 export interface TutorAskRequest{
     question: string;
     // the conversation so far; the server keeps none of it
