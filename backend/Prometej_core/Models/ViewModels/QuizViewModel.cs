@@ -16,6 +16,12 @@ namespace Prometej_core.Models.ViewModels
         public int? EntryCode { get; set; }
         public int? PeriodId { get; set; }
         public string? PeriodName { get; set; }
+        public bool IsTest { get; set; }
+        public int? TimeLimitMinutes { get; set; }
+        public DateTime? ClosesAt { get; set; }
+        // A test that was started: its questions can no longer be edited. Said only to
+        // whoever may edit it.
+        public bool QuestionsLocked { get; set; }
         public List<QuestionViewModel> Questions { get; set; }
         // The passages those questions are asked about.
         public List<SourceTextViewModel> SourceTexts { get; set; } = [];

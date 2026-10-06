@@ -42,6 +42,8 @@ builder.Services.AddTransient<IRepository<QuizGame>, Repository<QuizGame>>();
 builder.Services.AddTransient<IRepository<SourceText>, Repository<SourceText>>();
 builder.Services.AddTransient<IRepository<Topic>, Repository<Topic>>();
 builder.Services.AddTransient<IRepository<Reply>, Repository<Reply>>();
+builder.Services.AddTransient<IRepository<Sitting>, Repository<Sitting>>();
+builder.Services.AddTransient<IRepository<SittingAnswer>, Repository<SittingAnswer>>();
 
 #endregion Repo DI
 
@@ -51,6 +53,7 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IPeriodService, PeriodService>();
 builder.Services.AddScoped<IQuizService, QuizService>();
 builder.Services.AddScoped<IDiscussionService, DiscussionService>();
+builder.Services.AddScoped<ISittingService, SittingService>();
 builder.Services.AddSingleton<TokenService>();
 
 #endregion Service DI
@@ -120,13 +123,27 @@ builder.Services.AddAuthorization();
 
 #region Rate limiting
 
-// One account cannot flood a discussion: five posts a minute, counted per user.
 builder.Services.AddRateLimiter(options =>
 {
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    // One account cannot flood a discussion: five posts a minute, counted per user.
     options.AddPolicy(DiscussionController.PostingLimit, httpContext => RateLimitPartition.GetFixedWindowLimiter(
         httpContext.User.FindFirstValue("sub") ?? "",
         _ => new FixedWindowRateLimiterOptions { PermitLimit = 5, Window = TimeSpan.FromMinutes(1) }));
+    // Entry codes are five digits. A request that carries one is counted, per account when
+    // there is a session and per address otherwise; a request without a code is not.
+    options.AddPolicy(QuizController.EntryCodeLimit, httpContext =>
+    {
+        var carriesCode = httpContext.Request.RouteValues.ContainsKey("quizCode") || httpContext.Request.Query.ContainsKey("code");
+        if (!carriesCode)
+        {
+            return RateLimitPartition.GetNoLimiter("");
+        }
+
+        var key = httpContext.User.FindFirstValue("sub") ?? httpContext.Connection.RemoteIpAddress?.ToString() ?? "";
+        return RateLimitPartition.GetFixedWindowLimiter(key,
+            _ => new FixedWindowRateLimiterOptions { PermitLimit = 60, Window = TimeSpan.FromMinutes(1) });
+    });
 });
 
 #endregion Rate limiting

@@ -18,6 +18,10 @@ namespace Prometej_core.Models.ViewModels
         // The points the game could give when it was played, not what the quiz gives now.
         public int MaxScore { get; set; }
         public DateTime DatePlayed { get; set; }
+        // One of PlayedAs.
+        public required string PlayedAs { get; set; }
+        // False for a test that is not closed yet: its answers are not shown before that.
+        public bool ReviewAvailable { get; set; }
     }
 
     public class PeriodProgressViewModel

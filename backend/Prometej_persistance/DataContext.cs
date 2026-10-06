@@ -18,6 +18,8 @@ namespace Prometej_persistance
         public DbSet<SourceText> SourceTexts { get; set; }
         public DbSet<Topic> Topics { get; set; }
         public DbSet<Reply> Replies { get; set; }
+        public DbSet<Sitting> Sittings { get; set; }
+        public DbSet<SittingAnswer> SittingAnswers { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -54,6 +56,13 @@ namespace Prometej_persistance
                 .HasOne(t => t.Author).WithMany().HasForeignKey(t => t.AuthorId).OnDelete(DeleteBehavior.SetNull);
             modelBuilder.Entity<Reply>()
                 .HasOne(r => r.Author).WithMany().HasForeignKey(r => r.AuthorId).OnDelete(DeleteBehavior.SetNull);
+            // A sitting's result goes with the quiz or the user, which take the sitting too.
+            modelBuilder.Entity<Sitting>()
+                .HasOne(s => s.QuizGame).WithOne(g => g.Sitting).HasForeignKey<Sitting>(s => s.QuizGameId).OnDelete(DeleteBehavior.SetNull);
+            // One running sitting per user and quiz; the index refuses a second start that races the first.
+            modelBuilder.Entity<Sitting>().HasIndex(s => new { s.QuizId, s.UserId }).IsUnique().HasFilter("\"FinishedAt\" IS NULL");
+            modelBuilder.Entity<Sitting>().Property(s => s.Version).IsRowVersion();
+            modelBuilder.Entity<Sitting>().Property(s => s.Outcome).HasMaxLength(20);
         }
 
     }

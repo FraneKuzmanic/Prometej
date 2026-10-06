@@ -110,6 +110,18 @@ namespace Prometej_tests
             return quiz.Id;
         }
 
+        // A test cannot wait for a clock to run out, so a sitting's start and the end of its
+        // time limit are moved into the past.
+        public void Backdate(int sittingId, TimeSpan by)
+        {
+            using var scope = Services.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<DataContext>();
+            var sitting = context.Sittings.Single(s => s.Id == sittingId);
+            sitting.StartedAt -= by;
+            sitting.TimeLimitEndsAt -= by;
+            context.SaveChanges();
+        }
+
         // Topics stored directly: the API lets one account post five times a minute, and a
         // test about pages needs more than that. Each is a minute newer than the one before.
         public void AddTopics(int periodId, int count)

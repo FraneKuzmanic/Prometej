@@ -28,8 +28,12 @@ namespace Prometej_core.Services.Implementations
         private readonly IRepository<Answer> _answerRepository;
         private readonly IRepository<Period> _periodRepository;
         private readonly IRepository<SourceText> _sourceTextRepository;
-        public QuizService(IMapper mapper, IRepository<Quiz> quizRepository, IRepository<Question> questionRepository, IRepository<QuizGame> quizGameRepository, IRepository<User> userRepository, IRepository<Answer> answerRepository, IRepository<Period> periodRepository, IRepository<SourceText> sourceTextRepository)
+        private readonly IRepository<Sitting> _sittingRepository;
+        private readonly ISittingService _sittingService;
+        public QuizService(IMapper mapper, IRepository<Quiz> quizRepository, IRepository<Question> questionRepository, IRepository<QuizGame> quizGameRepository, IRepository<User> userRepository, IRepository<Answer> answerRepository, IRepository<Period> periodRepository, IRepository<SourceText> sourceTextRepository, IRepository<Sitting> sittingRepository, ISittingService sittingService)
         {
+            _sittingService = sittingService;
+            _sittingRepository = sittingRepository;
             _sourceTextRepository = sourceTextRepository;
             _periodRepository = periodRepository;
             _answerRepository = answerRepository;
@@ -122,7 +126,7 @@ namespace Prometej_core.Services.Implementations
                 throw new NotFoundException("Quiz not found");
             }
 
-            return ToViewModel(quiz!);
+            return ToViewModel(quiz!, withQuestions: !quiz!.IsTest || isAdmin || quiz.CreatorId == callerId);
         }
 
         public QuizViewModel GetQuizByCode(int quizCode)
@@ -133,13 +137,22 @@ namespace Prometej_core.Services.Implementations
                 throw new NotFoundException("Quiz not found");
             }
 
-            return ToViewModel(quiz);
+            // Nobody is known to be calling, so a test is its header to everyone here.
+            return ToViewModel(quiz, withQuestions: !quiz.IsTest);
         }
 
         // The quiz with the source texts its questions are asked about, in the order they come up.
-        private QuizViewModel ToViewModel(Quiz quiz)
+        // A test's questions carry their answers, so they leave the server here only for its
+        // creator or an admin; a student gets them in a sitting, without the answers.
+        private QuizViewModel ToViewModel(Quiz quiz, bool withQuestions)
         {
             var quizViewModel = _mapper.Map<QuizViewModel>(quiz);
+            if (!withQuestions)
+            {
+                quizViewModel.Questions = [];
+                return quizViewModel;
+            }
+
             quizViewModel.SourceTexts = _mapper.Map<List<SourceTextViewModel>>(
                 quiz.Questions.Where(q => q.SourceText != null).Select(q => q.SourceText).DistinctBy(s => s!.Id).ToList());
 
@@ -152,9 +165,11 @@ namespace Prometej_core.Services.Implementations
             TrimAndCheck(questions);
             TrimAndCheckSourceTexts(sourceTexts, questions);
             EnsurePeriodExists(quiz.PeriodId);
+            EnsureTestIsPrivate(quiz.IsTest, quiz.IsPrivate);
 
             var quizEntity = _mapper.Map<Quiz>(quiz);
             quizEntity.Title = quiz.Title.Trim();
+            quizEntity.ClosesAt = quiz.IsTest ? quiz.ClosesAt?.UtcDateTime : null;
             quizEntity.CreatorId = creatorId;
             // Added through the quiz, so one save stores the quiz, its questions and its source
             // texts, or none of them.
@@ -186,10 +201,28 @@ namespace Prometej_core.Services.Implementations
             TrimAndCheck(questions ?? []);
             TrimAndCheckSourceTexts(sourceTexts, questions ?? []);
             EnsurePeriodExists(quiz.PeriodId);
+            EnsureTestIsPrivate(quiz.IsTest, quiz.IsPrivate);
+
+            var hasSittings = _sittingRepository.ReadAll().Any(s => s.QuizId == quizEntity.Id);
+            // A result says how it was played, and a sitting was started under one set of rules.
+            if (quiz.IsTest != quizEntity.IsTest
+                && (hasSittings || _quizGameRepository.ReadAll().Any(g => g.QuizId == quizEntity.Id)))
+            {
+                throw new ConflictException("A quiz's mode cannot change once it has results");
+            }
+
+            // Every student sits the same test.
+            if (quizEntity.IsTest && questions != null && hasSittings)
+            {
+                throw new ConflictException("A test's questions cannot change once it was started");
+            }
 
             quizEntity.Title = quiz.Title.Trim();
             quizEntity.IsPrivate = quiz.IsPrivate;
             quizEntity.PeriodId = quiz.PeriodId;
+            quizEntity.IsTest = quiz.IsTest;
+            quizEntity.TimeLimitMinutes = quiz.TimeLimitMinutes;
+            quizEntity.ClosesAt = quiz.IsTest ? quiz.ClosesAt?.UtcDateTime : null;
 
             List<SourceText> sourceTextEntities = [];
             if (questions != null)
@@ -268,6 +301,12 @@ namespace Prometej_core.Services.Implementations
                 throw new NotFoundException("Quiz not found");
             }
 
+            // Its questions were never sent to be played this way.
+            if (quiz.IsTest)
+            {
+                throw new ForbiddenException("A test is taken in a sitting");
+            }
+
             // A creator trying out their own quiz is a preview, not a result for the analytics.
             if (quiz.CreatorId == userId)
             {
@@ -285,34 +324,9 @@ namespace Prometej_core.Services.Implementations
             // so assigning them as navigations would make EF insert them a second time.
             // The rows follow the quiz's order, whatever order the request names its questions in.
             var chosen = request.Answers.ToDictionary(a => a.QuestionId);
-            var answers = new List<Answer>();
-            var score = 0;
-            foreach (var question in quiz.Questions.OrderBy(q => q.Position).ThenBy(q => q.Id))
-            {
-                var answer = chosen[question.Id];
-                var rows = question.Type switch
-                {
-                    QuestionTypes.Matching => MatchingRows(question, answer),
-                    QuestionTypes.Ordering => OrderingRows(question, answer),
-                    _ => ChoiceRows(question, answer),
-                };
-
-                // A row is a point to win. The title, the explanation and both answers are kept
-                // as text, so the play still reads right after the question is edited.
-                foreach (var (row, isCorrect) in rows)
-                {
-                    row.QuestionId = question.Id;
-                    row.QuestionTitle = question.QuestionTitle;
-                    row.ExploreMore = question.ExploreMore;
-                    row.SourceTextId = question.SourceTextId;
-                    row.Position = answers.Count;
-                    answers.Add(row);
-                    if (isCorrect)
-                    {
-                        score++;
-                    }
-                }
-            }
+            var (answers, score) = QuizScoring.Score(
+                quiz.Questions.OrderBy(q => q.Position).ThenBy(q => q.Id),
+                question => Complete(question, chosen[question.Id]));
 
             var user = _userRepository.ReadAll().FirstOrDefault(u => u.Id == userId);
             if (user == null)
@@ -345,56 +359,38 @@ namespace Prometej_core.Services.Implementations
             return _mapper.Map<QuizGameViewModel>(quizGame);
         }
 
-        // Right and wrong are decided here by comparing numbers. The texts stored next to each
-        // other say the same afterwards, because the texts a number can stand for all differ.
-        private static List<(Answer Row, bool IsCorrect)> ChoiceRows(Question question, AnswerSubmitRequest answer)
+        // The numbers a practice play gives for one question, which has to answer all of it.
+        private static IReadOnlyList<int?> Complete(Question question, AnswerSubmitRequest answer)
         {
-            if (answer.ChosenOption == null)
+            switch (question.Type)
             {
-                throw new BadRequestException("A choice question is answered with ChosenOption");
+                case QuestionTypes.Matching:
+                    var matches = answer.Matches;
+                    if (matches == null || matches.Count != QuizScoring.PointsOf(question) || matches.Distinct().Count() != matches.Count
+                        || matches.Any(number => number < 1 || number > QuizScoring.RightOptionsOf(question).Count))
+                    {
+                        throw new BadRequestException("A matching question is answered with Matches: a different option number for each of its pairs");
+                    }
+
+                    return matches.Select(number => (int?)number).ToList();
+
+                case QuestionTypes.Ordering:
+                    var order = answer.Order;
+                    if (order == null || !order.Order().SequenceEqual(Enumerable.Range(1, QuizScoring.PointsOf(question))))
+                    {
+                        throw new BadRequestException("An ordering question is answered with Order: the number of each of its items, once");
+                    }
+
+                    return order.Select(number => (int?)number).ToList();
+
+                default:
+                    if (answer.ChosenOption == null)
+                    {
+                        throw new BadRequestException("A choice question is answered with ChosenOption");
+                    }
+
+                    return [answer.ChosenOption];
             }
-
-            string[] options = [question.FirstAnswer!, question.SecondAnswer!, question.ThirdAnswer!, question.FourthAnswer!];
-            var row = new Answer
-            {
-                AnswerText = options[answer.ChosenOption.Value - 1],
-                CorrectAnswer = options[question.CorrectOption!.Value - 1],
-            };
-
-            return [(row, answer.ChosenOption == question.CorrectOption)];
-        }
-
-        // A row for each pair: its left item, the right-hand option chosen for it and the one
-        // that belongs to it.
-        private static List<(Answer Row, bool IsCorrect)> MatchingRows(Question question, AnswerSubmitRequest answer)
-        {
-            var pairs = question.Content!.Pairs!;
-            var rightOptions = pairs.Select(pair => pair.Right).Concat(question.Content.Extras ?? []).ToList();
-            var matches = answer.Matches;
-            if (matches == null || matches.Count != pairs.Count || matches.Distinct().Count() != matches.Count
-                || matches.Any(number => number < 1 || number > rightOptions.Count))
-            {
-                throw new BadRequestException("A matching question is answered with Matches: a different option number for each of its pairs");
-            }
-
-            return pairs.Select((pair, i) => (
-                new Answer { Item = pair.Left, AnswerText = rightOptions[matches[i] - 1], CorrectAnswer = pair.Right },
-                matches[i] == i + 1)).ToList();
-        }
-
-        // A row for each place: the item put there and the item that belongs there.
-        private static List<(Answer Row, bool IsCorrect)> OrderingRows(Question question, AnswerSubmitRequest answer)
-        {
-            var items = question.Content!.Items!;
-            var order = answer.Order;
-            if (order == null || !order.Order().SequenceEqual(Enumerable.Range(1, items.Count)))
-            {
-                throw new BadRequestException("An ordering question is answered with Order: the number of each of its items, once");
-            }
-
-            return items.Select((item, i) => (
-                new Answer { Place = i + 1, AnswerText = items[order[i] - 1], CorrectAnswer = item },
-                order[i] == i + 1)).ToList();
         }
 
         // The quiz game the caller already stored with this request's key, if there is one.
@@ -419,7 +415,10 @@ namespace Prometej_core.Services.Implementations
 
         public MyQuizGamesViewModel GetMyGames(int userId)
         {
+            _sittingService.EndExpired(s => s.UserId == userId);
+
             // Every game the caller played, also of a quiz that is private or no longer listed.
+            var now = DateTime.UtcNow;
             var games = _quizGameRepository.ReadAll().Where(g => g.UserId == userId)
                 .OrderByDescending(g => g.DatePlayed).ThenByDescending(g => g.Id)
                 .Select(g => new PlayedQuizGameViewModel
@@ -431,6 +430,8 @@ namespace Prometej_core.Services.Implementations
                     Score = g.Score,
                     MaxScore = g.Answers.Count,
                     DatePlayed = g.DatePlayed,
+                    PlayedAs = g.Quiz.IsTest ? PlayedAs.Test : g.Sitting != null ? PlayedAs.Mock : PlayedAs.Practice,
+                    ReviewAvailable = !g.Quiz.IsTest || (g.Quiz.ClosesAt != null && g.Quiz.ClosesAt <= now),
                 })
                 .ToList();
 
@@ -477,13 +478,21 @@ namespace Prometej_core.Services.Implementations
             var quizGame = _quizGameRepository.ReadAll()
                 .Include(g => g.Answers.OrderBy(a => a.Position).ThenBy(a => a.QuestionId).ThenBy(a => a.Id))
                 .Include(g => g.Quiz).ThenInclude(q => q.Period)
+                .Include(g => g.Sitting)
                 .FirstOrDefault(g => g.Id == id && g.UserId == callerId);
             if (quizGame == null)
             {
                 throw new NotFoundException("Quiz game not found");
             }
 
+            // The answers of a test are the same for the students still sitting it.
+            if (quizGame.Quiz.IsTest && !Quiz.IsClosed(quizGame.Quiz.ClosesAt))
+            {
+                throw new ConflictException("The review opens when the test is closed");
+            }
+
             var review = _mapper.Map<QuizGameReviewViewModel>(quizGame);
+            review.PlayedAs = PlayedAs.Of(quizGame.Quiz.IsTest, quizGame.Sitting != null);
             review.QuizIsListed = _quizRepository.ReadAll().Where(Quiz.IsListed).Any(q => q.Id == quizGame.QuizId);
             // The versions the answers point to, which may have been retired since.
             var sourceTextIds = quizGame.Answers.Where(a => a.SourceTextId != null).Select(a => a.SourceTextId!.Value).Distinct().ToList();
@@ -500,6 +509,7 @@ namespace Prometej_core.Services.Implementations
         {
             var quiz = _quizRepository.ReadAll().FirstOrDefault(q => q.Id == quizId);
             EnsureCreatorOrAdmin(quiz, callerId, isAdmin);
+            _sittingService.EndExpired(s => s.QuizId == quizId);
 
             var quizGames = _quizGameRepository.ReadAll()
                 .Include(g => g.Answers.OrderBy(a => a.Position).ThenBy(a => a.QuestionId).ThenBy(a => a.Id))
@@ -566,9 +576,10 @@ namespace Prometej_core.Services.Implementations
             return report;
         }
 
-        // Of two wrong answers chosen equally often, the one that sorts first.
+        // Of two wrong answers chosen equally often, the one that sorts first. A point left
+        // empty in a sitting is wrong, but nobody chose it.
         private static IGrouping<string, Answer>? MostChosenWrong(IEnumerable<Answer> answers) =>
-            answers.Where(a => a.AnswerText != a.CorrectAnswer)
+            answers.Where(a => a.AnswerText != a.CorrectAnswer && a.AnswerText != "")
                 .GroupBy(a => a.AnswerText)
                 .OrderByDescending(g => g.Count()).ThenBy(g => g.Key, StringComparer.Ordinal)
                 .FirstOrDefault();
@@ -860,6 +871,14 @@ namespace Prometej_core.Services.Implementations
             while (_quizRepository.ReadAll().Any(q => q.EntryCode == code));
 
             return code;
+        }
+
+        private static void EnsureTestIsPrivate(bool isTest, bool isPrivate)
+        {
+            if (isTest && !isPrivate)
+            {
+                throw new BadRequestException("A test is a private quiz");
+            }
         }
 
         // Without this the foreign key would refuse the id, as a server error.

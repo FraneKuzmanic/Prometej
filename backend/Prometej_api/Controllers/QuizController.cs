@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Prometej_api.Auth;
 using Prometej_core.Auth;
 using Prometej_core.Models.Dtos;
@@ -13,6 +14,9 @@ namespace Prometej_api.Controllers
     [ApiController]
     public class QuizController : ControllerBase
     {
+        // The name of the rate limiting policy for a request that carries an entry code.
+        public const string EntryCodeLimit = "entry-code";
+
         private readonly IQuizService _quizService;
 
         public QuizController(IQuizService quizService)
@@ -33,12 +37,14 @@ namespace Prometej_api.Controllers
             return Ok(_quizService.GetMyQuizzes(User.GetUserId()));
         }
 
+        [EnableRateLimiting(EntryCodeLimit)]
         [HttpGet("get/{id}")]
         public IActionResult GetQuiz(int id, [FromQuery] int? code)
         {
             return Ok(_quizService.GetQuiz(id, code, User.GetUserIdOrNull(), User.IsAdmin()));
         }
 
+        [EnableRateLimiting(EntryCodeLimit)]
         [HttpGet("getByCode/{quizCode}")]
         public IActionResult GetQuizByCode(int quizCode)
         {

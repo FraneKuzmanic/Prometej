@@ -15,6 +15,9 @@ namespace Prometej_core.Models.Base
         public int? EntryCode { get; set; }
         public int? PeriodId { get; set; }
         public string? PeriodName { get; set; }
+        public bool IsTest { get; set; }
+        public int? TimeLimitMinutes { get; set; }
+        public DateTime? ClosesAt { get; set; }
         public int QuestionCount { get; set; }
     }
 }

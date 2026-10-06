@@ -20,5 +20,7 @@ namespace Prometej_core.Models.efModels
         // Made by the client once per play, so a submit that is sent again is recognised.
         // The games stored before it have none.
         public Guid? SubmissionKey { get; set; }
+        // The sitting that ended in this game. Null for a practice play.
+        public Sitting? Sitting { get; set; }
     }
 }
