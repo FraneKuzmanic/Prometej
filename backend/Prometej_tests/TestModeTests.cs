@@ -331,5 +331,142 @@ namespace Prometej_tests
             Assert.False((await InfoOf(student, test)).GetProperty("isClosed").GetBoolean());
             Assert.Equal(HttpStatusCode.Created, (await Start(student, test.Id, test.Code)).StatusCode);
         }
+
+        private static Task<HttpResponseMessage> Copy(HttpClient client, int quizId) =>
+            client.PostAsync($"/api/quiz/copy/{quizId}", null);
+
+        [Fact]
+        public async Task A_copy_of_a_test_is_a_private_practice_quiz_without_its_results()
+        {
+            var teacher = await factory.LoginAs(ApiFactory.TeacherEmail);
+            var student = await factory.LoginAsNewStudent();
+            var test = await CreateTest(teacher, timeLimitMinutes: 45, closesAt: DateTimeOffset.UtcNow.AddDays(1));
+            await Finished(student, Id(await Started(student, test)));
+
+            var copy = await Stored(teacher, await Copy(teacher, test.Id));
+
+            var stored = await Get(teacher, copy.Id);
+            Assert.Equal("Provjera (kopija)", stored.GetProperty("title").GetString());
+            Assert.True(stored.GetProperty("isPrivate").GetBoolean());
+            Assert.False(stored.GetProperty("isTest").GetBoolean());
+            Assert.Equal(45, stored.GetProperty("timeLimitMinutes").GetInt32());
+            Assert.Equal(JsonValueKind.Null, stored.GetProperty("closesAt").ValueKind);
+            Assert.False(stored.GetProperty("questionsLocked").GetBoolean());
+            Assert.NotEqual(test.Code, copy.Code);
+            Assert.InRange(copy.Code, 10000, 99999);
+            Assert.Equal(["choice", "matching", "ordering"], stored.GetProperty("questions").EnumerateArray().Select(q => q.GetProperty("type").GetString()));
+            Assert.Empty(test.QuestionIds.Intersect(copy.QuestionIds));
+            Assert.Equal(
+                (await Get(teacher, test.Id)).GetProperty("questions")[1].GetProperty("content").GetRawText(),
+                stored.GetProperty("questions")[1].GetProperty("content").GetRawText());
+            Assert.Empty(await Games(teacher, copy.Id));
+            Assert.Empty(await Sittings(teacher, copy.Id));
+            // The copy is practice: whoever has its code reads its questions.
+            Assert.Equal(3, (await student.GetFromJsonAsync<JsonElement>($"/api/quiz/get/{copy.Id}?code={copy.Code}")).GetProperty("questions").GetArrayLength());
+        }
+
+        [Fact]
+        public async Task A_copy_leaves_out_what_was_retired_and_does_not_share_what_it_keeps()
+        {
+            var teacher = await factory.LoginAs(ApiFactory.TeacherEmail);
+            var student = await factory.LoginAsNewStudent();
+            var questions = new object[]
+            {
+                new { questionTitle = "Uz tekst", firstAnswer = "A", secondAnswer = "B", thirdAnswer = "C", fourthAnswer = "D", correctOption = 1, sourceTextNo = 1 },
+                Choice("Uklonjeno"),
+                Matching(),
+            };
+            var created = await teacher.PostAsJsonAsync("/api/quiz/create", new
+            {
+                quiz = new { title = "Izvornik", isPrivate = false, periodId = 4 },
+                questions,
+                sourceTexts = new[] { new { caption = "Autor, Djelo", body = "Prvi stih\nDrugi stih" } },
+            });
+            var original = await Stored(teacher, created);
+            var played = await student.PostAsJsonAsync("/api/quiz/submit", new
+            {
+                quizId = original.Id,
+                answers = new object[]
+                {
+                    new { questionId = original.QuestionIds[0], chosenOption = 1 },
+                    new { questionId = original.QuestionIds[1], chosenOption = 1 },
+                    new { questionId = original.QuestionIds[2], matches = new[] { 1, 2, 3, 4 } },
+                },
+            });
+            var sourceTextId = (await Get(teacher, original.Id)).GetProperty("sourceTexts")[0].GetProperty("id").GetInt32();
+            // The second question was answered, so removing it retires it.
+            var edited = await teacher.PutAsJsonAsync("/api/quiz/update", new
+            {
+                quiz = new { id = original.Id, title = "Izvornik", isPrivate = false, periodId = 4 },
+                questions = new object[]
+                {
+                    new { id = original.QuestionIds[0], questionTitle = "Uz tekst", firstAnswer = "A", secondAnswer = "B", thirdAnswer = "C", fourthAnswer = "D", correctOption = 1, sourceTextNo = 1 },
+                    Matching(original.QuestionIds[2]),
+                },
+                sourceTexts = new[] { new { id = sourceTextId, caption = "Autor, Djelo", body = "Prvi stih\nDrugi stih" } },
+            });
+            Assert.Equal(HttpStatusCode.Created, played.StatusCode);
+            Assert.Equal(HttpStatusCode.NoContent, edited.StatusCode);
+
+            var copy = await Stored(teacher, await Copy(teacher, original.Id));
+
+            var stored = await Get(teacher, copy.Id);
+            Assert.Equal(["Uz tekst", "Poveži djelo s autorom."], stored.GetProperty("questions").EnumerateArray().Select(q => q.GetProperty("questionTitle").GetString()));
+            Assert.Equal(4, stored.GetProperty("periodId").GetInt32());
+            var copiedText = Assert.Single(stored.GetProperty("sourceTexts").EnumerateArray());
+            Assert.NotEqual(sourceTextId, Id(copiedText));
+            Assert.Equal("Prvi stih\nDrugi stih", copiedText.GetProperty("body").GetString());
+            Assert.Equal(Id(copiedText), stored.GetProperty("questions")[0].GetProperty("sourceTextId").GetInt32());
+            Assert.Empty(await Games(teacher, copy.Id));
+
+            // An edit of the copy leaves the original as it was.
+            var changed = await teacher.PutAsJsonAsync("/api/quiz/update", new
+            {
+                quiz = new { id = copy.Id, title = "Kopija", isPrivate = true },
+                questions = new[] { Choice("Samo ovo") },
+            });
+            Assert.Equal(HttpStatusCode.NoContent, changed.StatusCode);
+            var originalNow = await Get(teacher, original.Id);
+            Assert.Equal(2, originalNow.GetProperty("questions").GetArrayLength());
+            Assert.Single(originalNow.GetProperty("sourceTexts").EnumerateArray());
+            Assert.Single(await Games(teacher, original.Id));
+        }
+
+        [Fact]
+        public async Task A_copys_title_is_cut_to_a_hundred_characters()
+        {
+            var teacher = await factory.LoginAs(ApiFactory.TeacherEmail);
+            var longTitle = new string('a', 100);
+            var original = await Stored(teacher, await Create(teacher, Header(isTest: false, title: longTitle), Choice()));
+
+            var copy = await Stored(teacher, await Copy(teacher, original.Id));
+
+            Assert.Equal(new string('a', 91) + " (kopija)", (await Get(teacher, copy.Id)).GetProperty("title").GetString());
+        }
+
+        [Fact]
+        public async Task Only_the_creator_or_an_admin_copies_a_quiz()
+        {
+            var teacher = await factory.LoginAs(ApiFactory.TeacherEmail);
+            var otherTeacher = await factory.LoginAs(ApiFactory.OtherTeacherEmail);
+            var admin = await factory.LoginAs(ApiFactory.AdminEmail);
+            var student = await factory.LoginAsNewStudent();
+            var original = await Stored(teacher, await Create(teacher, Header(isPrivate: false, isTest: false), Choice()));
+
+            var refused = await Copy(otherTeacher, original.Id);
+            var asStudent = await Copy(student, original.Id);
+            var missing = await Copy(teacher, 999999);
+            var byAdmin = await Copy(admin, original.Id);
+
+            Assert.Equal(HttpStatusCode.Forbidden, refused.StatusCode);
+            Assert.Equal(HttpStatusCode.Forbidden, asStudent.StatusCode);
+            Assert.Equal(HttpStatusCode.NotFound, missing.StatusCode);
+            Assert.Equal(HttpStatusCode.Created, byAdmin.StatusCode);
+            var copyId = await byAdmin.Content.ReadFromJsonAsync<int>();
+            var adminId = (await admin.GetFromJsonAsync<JsonElement>("/api/user/me")).GetProperty("id").GetInt32();
+            Assert.Equal(adminId, (await Get(admin, copyId)).GetProperty("creatorId").GetInt32());
+            // Private, so it is not the teacher's to open.
+            Assert.Equal(HttpStatusCode.NotFound, (await teacher.GetAsync($"/api/quiz/get/{copyId}")).StatusCode);
+        }
     }
 }

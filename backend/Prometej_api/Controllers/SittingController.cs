@@ -50,6 +50,15 @@ namespace Prometej_api.Controllers
             return Ok(_sittingService.Finish(id, User.GetUserId()));
         }
 
+        // Gives up a running sitting of a public quiz; it leaves no result.
+        [HttpDelete("{id}")]
+        public IActionResult Discard(int id)
+        {
+            _sittingService.Discard(id, User.GetUserId());
+
+            return NoContent();
+        }
+
         // The quiz's creator or an admin lets a student sit a test again. Who the caller is to
         // the quiz is the service's to check: the sitting is found first.
         [HttpPost("{id}/reset")]

@@ -125,7 +125,13 @@ export default function Questions({
     } else {
       const result = await dispatch(finishSitting(sitting.id));
       // Fulfilled, the store drops the Sitting and this screen is replaced by the result.
-      setSubmitFailed(finishSitting.rejected.match(result));
+      if (finishSitting.rejected.match(result)) {
+        if (result.payload === 404) {
+          onDiscardedByEdit();
+        } else {
+          setSubmitFailed(true);
+        }
+      }
     }
     setSubmitting(false);
   };

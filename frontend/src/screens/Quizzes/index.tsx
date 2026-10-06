@@ -1,5 +1,6 @@
 import {
   Box,
+  Button,
   Grid,
   MenuItem,
   Pagination,
@@ -109,6 +110,7 @@ export default function Quizzes() {
             sm={4}
             md={4}
             key={quiz.id}
+            sx={{ position: "relative" }}
             onClick={() => navigate(`/play-quiz/${quiz.id}`)}
           >
             <QuizContainer
@@ -117,6 +119,18 @@ export default function Quizzes() {
               periodName={quiz.periodName}
               questionCount={quiz.questionCount}
             />
+            {/* Over the card's corner, where a Creator's card has its Entry Code: the card
+                itself starts practice, this the same Quiz without feedback until the end. */}
+            <Button
+              size="small"
+              className="quiz-container-sit"
+              onClick={(event) => {
+                event.stopPropagation();
+                navigate(`/sitting/${quiz.id}`);
+              }}
+            >
+              Riješi kao provjeru
+            </Button>
           </Grid>
         ))}
       </Grid>

@@ -20,6 +20,7 @@ import { useEffect, useState } from "react";
 import { RootState, useAppDispatch } from "../../store/store";
 import {
   fetchMyQuizzes,
+  copyQuiz,
   deleteQuiz,
   updateQuiz,
 } from "../../store/slices/quizSlice";
@@ -58,6 +59,13 @@ export default function MyQuizzes() {
     dispatch(deleteQuiz(quizId)).then(() => {
       dispatch(fetchMyQuizzes());
     });
+  };
+
+  const handleCopy = (quizId: number) => {
+    dispatch(copyQuiz(quizId)).then(() => {
+      dispatch(fetchMyQuizzes());
+    });
+    handleClose();
   };
 
   // An update carries the Quiz's whole header, so a change to one field sends the others
@@ -182,6 +190,9 @@ export default function MyQuizzes() {
           }}
         >
           Promijeni ime
+        </MenuItem>
+        <MenuItem onClick={() => menu && handleCopy(menu.quiz.id)}>
+          Kopiraj kviz
         </MenuItem>
         <MenuItem
           onClick={() => {

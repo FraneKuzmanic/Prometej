@@ -231,6 +231,16 @@ namespace Prometej_core.Services.Implementations
             List<SourceText> sourceTextEntities = [];
             if (questions != null)
             {
+                // A running sitting holds an order made for the questions as they were. A test
+                // with one was refused above, so these are sittings of a public quiz, which
+                // their users can start again.
+                var runningIds = _sittingRepository.ReadAll()
+                    .Where(s => s.QuizId == quizEntity.Id && s.FinishedAt == null).Select(s => s.Id).ToList();
+                foreach (var sittingId in runningIds)
+                {
+                    _sittingRepository.Delete(sittingId);
+                }
+
                 RemoveQuestionsNotIn(quizEntity, questions);
                 sourceTextEntities = StoreSourceTexts(quizEntity, sourceTexts);
             }
@@ -275,6 +285,61 @@ namespace Prometej_core.Services.Implementations
 
             // The repositories share one context, so the quiz and its questions save together or not at all.
             SaveWithEntryCode(quizEntity);
+        }
+
+        // A private practice quiz with the same questions and none of the results: the way to
+        // give a test to a second class, or to practise with one that is locked.
+        public int Copy(int id, int callerId, bool isAdmin)
+        {
+            const string suffix = " (kopija)";
+            const int maxTitleLength = 100;
+
+            var source = _quizRepository.ReadAll()
+                .Include(q => q.Questions.Where(x => !x.IsRetired).OrderBy(x => x.Position).ThenBy(x => x.Id))
+                .Include(q => q.SourceTexts.Where(s => !s.IsRetired))
+                .FirstOrDefault(q => q.Id == id);
+            EnsureCreatorOrAdmin(source, callerId, isAdmin);
+
+            var sourceTexts = source.SourceTexts.ToDictionary(
+                text => text.Id, text => new SourceText { Caption = text.Caption, Body = text.Body });
+            var copy = new Quiz
+            {
+                Title = (source.Title.Length + suffix.Length > maxTitleLength
+                    ? source.Title[..(maxTitleLength - suffix.Length)].TrimEnd()
+                    : source.Title) + suffix,
+                // The copy is the caller's, also when an admin copies a teacher's quiz.
+                CreatorId = callerId,
+                Creator = null!,
+                IsPrivate = true,
+                PeriodId = source.PeriodId,
+                TimeLimitMinutes = source.TimeLimitMinutes,
+                SourceTexts = sourceTexts.Values.ToList(),
+                Questions = source.Questions.Select((question, i) => new Question
+                {
+                    QuestionTitle = question.QuestionTitle,
+                    Type = question.Type,
+                    FirstAnswer = question.FirstAnswer,
+                    SecondAnswer = question.SecondAnswer,
+                    ThirdAnswer = question.ThirdAnswer,
+                    FourthAnswer = question.FourthAnswer,
+                    CorrectOption = question.CorrectOption,
+                    // A new object: the copy must not share the stored one.
+                    Content = question.Content == null ? null : new QuestionContent
+                    {
+                        Pairs = question.Content.Pairs?.Select(pair => new MatchPair { Left = pair.Left, Right = pair.Right }).ToList(),
+                        Extras = question.Content.Extras?.ToList(),
+                        Items = question.Content.Items?.ToList(),
+                    },
+                    HintText = question.HintText,
+                    ExploreMore = question.ExploreMore,
+                    Position = i,
+                    SourceText = question.SourceTextId == null ? null : sourceTexts.GetValueOrDefault(question.SourceTextId.Value),
+                }).ToList(),
+            };
+            _quizRepository.Create(copy);
+            SaveWithEntryCode(copy);
+
+            return copy.Id;
         }
 
         public void Delete(int id, int callerId, bool isAdmin)

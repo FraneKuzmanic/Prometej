@@ -9,6 +9,7 @@ import {
 import { Box, Button, Link, Paper, Typography } from "@mui/material";
 import { RootState, useAppDispatch } from "../../../store/store";
 import {
+  discardSitting,
   fetchSittingInfo,
   startSitting,
 } from "../../../store/slices/sittingSlice";
@@ -46,6 +47,7 @@ export default function SittingScreen() {
   const [endedByServer, setEndedByServer] = useState(false);
   const [discardedByEdit, setDiscardedByEdit] = useState(false);
   const [startFailed, setStartFailed] = useState(false);
+  const [discarding, setDiscarding] = useState(false);
 
   useEffect(() => {
     if (!authenticated) return;
@@ -70,6 +72,19 @@ export default function SittingScreen() {
         setStartFailed(true);
       }
     }
+  };
+
+  // A running Sitting of a Public Quiz is given up from the start screen. Its id is the
+  // server's, so it is asked for the way a resume asks for it.
+  const discard = async () => {
+    // Nothing is shown meanwhile: the Sitting is in the store for a moment, only to be dropped.
+    setDiscarding(true);
+    const running = await dispatch(startSitting({ quizId: Number(quizId), code }));
+    if (startSitting.fulfilled.match(running)) {
+      await dispatch(discardSitting(running.payload.id));
+    }
+    dispatch(fetchSittingInfo({ quizId: Number(quizId), code }));
+    setDiscarding(false);
   };
 
   const home = (
@@ -163,6 +178,11 @@ export default function SittingScreen() {
       </>,
       <>
         {home}
+        {quiz.running && !quiz.isTest && (
+          <Button variant="outlined" onClick={() => discard()}>
+            Odustani
+          </Button>
+        )}
         {mayStart && (
           <Button variant="contained" onClick={() => start()}>
             {quiz.running ? "Nastavi" : "Započni"}
@@ -192,7 +212,7 @@ export default function SittingScreen() {
         <Typography>Provjera se nije učitala. Pokušajte ponovno.</Typography>
       );
     }
-    if (info === undefined) return null;
+    if (info === undefined || discarding) return null;
     if (info === null) {
       return panel("Provjera", <Typography>Provjera ne postoji.</Typography>);
     }

@@ -11,6 +11,27 @@ namespace Prometej_tests
         private static string[] AnswerTexts(JsonElement game) =>
             game.GetProperty("answers").EnumerateArray().Select(answer => answer.GetProperty("answerText").GetString()!).ToArray();
 
+        private const int Realizam = 4;
+
+        private static Task<HttpResponseMessage> Discard(HttpClient client, int sittingId) =>
+            client.DeleteAsync($"/api/sitting/{sittingId}");
+
+        // A public quiz, which anyone signed in may sit as a mock, without a code.
+        private static async Task<Created> CreateListed(HttpClient teacher, object[]? questions = null, int? timeLimitMinutes = null) =>
+            await Stored(teacher, await teacher.PostAsJsonAsync("/api/quiz/create", new
+            {
+                quiz = new { title = "Javni kviz", isPrivate = false, periodId = Realizam, timeLimitMinutes },
+                questions = questions ?? OneOfEach,
+            }));
+
+        private static async Task<JsonElement> StartedMock(HttpClient client, int quizId)
+        {
+            var response = await Start(client, quizId, null);
+
+            Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+            return await response.Content.ReadFromJsonAsync<JsonElement>();
+        }
+
         [Fact]
         public async Task A_sitting_needs_a_session()
         {
@@ -22,6 +43,8 @@ namespace Prometej_tests
                 await Start(nobody, 1, 12345),
                 await Save(nobody, 1, 1, 1),
                 await Finish(nobody, 1),
+                await Discard(nobody, 1),
+                await nobody.PostAsync("/api/sitting/1/reset", null),
             ];
 
             Assert.All(responses, response => Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode));
@@ -441,6 +464,159 @@ namespace Prometej_tests
             Assert.Equal(HttpStatusCode.NoContent, first.StatusCode);
             Assert.Equal(HttpStatusCode.NoContent, second.StatusCode);
             Assert.Empty(await Games(teacher, test.Id));
+        }
+
+        [Fact]
+        public async Task A_listed_quiz_is_sat_as_often_as_wanted_and_each_sitting_is_a_quiz_game()
+        {
+            var teacher = await factory.LoginAs(ApiFactory.TeacherEmail);
+            var student = await factory.LoginAsNewStudent();
+            var quiz = await CreateListed(teacher, [Choice(), Choice("Drugo")]);
+
+            var info = await (await Info(student, quiz.Id, null)).Content.ReadFromJsonAsync<JsonElement>();
+            var first = await StartedMock(student, quiz.Id);
+            await Saved(student, Id(first), quiz.QuestionIds[0], 1);
+            var firstResult = await Finished(student, Id(first));
+            var second = await StartedMock(student, quiz.Id);
+            await Saved(student, Id(second), quiz.QuestionIds[0], 1);
+            await Saved(student, Id(second), quiz.QuestionIds[1], 1);
+            var secondResult = await Finished(student, Id(second));
+
+            Assert.False(info.GetProperty("isTest").GetBoolean());
+            Assert.Equal(JsonValueKind.Null, info.GetProperty("closesAt").ValueKind);
+            Assert.DoesNotContain("correctOption", first.GetRawText());
+            Assert.Equal(1, firstResult.GetProperty("score").GetInt32());
+            Assert.True(firstResult.GetProperty("reviewAvailable").GetBoolean());
+            Assert.Equal(2, secondResult.GetProperty("score").GetInt32());
+            // A mock has no "the" result: the start screen offers another go.
+            var after = await (await Info(student, quiz.Id, null)).Content.ReadFromJsonAsync<JsonElement>();
+            Assert.Equal(JsonValueKind.Null, after.GetProperty("result").ValueKind);
+            Assert.False(after.GetProperty("running").GetBoolean());
+            var mine = await student.GetFromJsonAsync<JsonElement>("/api/quiz/getMyGames");
+            Assert.All(mine.GetProperty("games").EnumerateArray(), game =>
+            {
+                Assert.Equal("mock", game.GetProperty("playedAs").GetString());
+                Assert.True(game.GetProperty("reviewAvailable").GetBoolean());
+            });
+            Assert.Equal(2, mine.GetProperty("games").GetArrayLength());
+            // The review opens at once, and the play counts in the Period's progress.
+            var review = await student.GetFromJsonAsync<JsonElement>($"/api/quiz/getGame/{firstResult.GetProperty("gameId").GetInt32()}");
+            Assert.Equal("mock", review.GetProperty("playedAs").GetString());
+            Assert.Equal(["A", ""], AnswerTexts(review));
+            var progress = Assert.Single(mine.GetProperty("progress").EnumerateArray());
+            Assert.Equal(Realizam, progress.GetProperty("periodId").GetInt32());
+            Assert.Equal(100, progress.GetProperty("averageBestPercent").GetInt32());
+            Assert.All(await Games(teacher, quiz.Id), game => Assert.Equal("mock", game.GetProperty("playedAs").GetString()));
+            // The same quiz played as practice is labelled as that.
+            await student.PostAsJsonAsync("/api/quiz/submit", new { quizId = quiz.Id, answers = quiz.QuestionIds.Select(questionId => new { questionId, chosenOption = 1 }) });
+            Assert.Equal("practice", (await student.GetFromJsonAsync<JsonElement>("/api/quiz/getMyGames")).GetProperty("games")[0].GetProperty("playedAs").GetString());
+        }
+
+        [Fact]
+        public async Task A_mock_sitting_has_one_running_at_a_time_and_can_be_discarded()
+        {
+            var teacher = await factory.LoginAs(ApiFactory.TeacherEmail);
+            var student = await factory.LoginAsNewStudent();
+            var other = await factory.LoginAsNewStudent();
+            var quiz = await CreateListed(teacher, [Choice()]);
+            var first = await StartedMock(student, quiz.Id);
+
+            var again = await Start(student, quiz.Id, null);
+            var notTheirs = await Discard(other, Id(first));
+            var discarded = await Discard(student, Id(first));
+            var gone = await Discard(student, Id(first));
+            var second = await StartedMock(student, quiz.Id);
+
+            Assert.Equal(HttpStatusCode.OK, again.StatusCode);
+            Assert.Equal(Id(first), Id(await again.Content.ReadFromJsonAsync<JsonElement>()));
+            Assert.Equal(HttpStatusCode.NotFound, notTheirs.StatusCode);
+            Assert.Equal(HttpStatusCode.NoContent, discarded.StatusCode);
+            Assert.Equal(HttpStatusCode.NotFound, gone.StatusCode);
+            Assert.NotEqual(Id(first), Id(second));
+            Assert.Empty(await Games(teacher, quiz.Id));
+            // One that has ended is a result, and stays.
+            await Finished(student, Id(second));
+            Assert.Equal(HttpStatusCode.Conflict, (await Discard(student, Id(second))).StatusCode);
+            Assert.Single(await Games(teacher, quiz.Id));
+        }
+
+        [Fact]
+        public async Task A_private_practice_quiz_and_an_empty_quiz_cannot_be_sat()
+        {
+            var teacher = await factory.LoginAs(ApiFactory.TeacherEmail);
+            var student = await factory.LoginAsNewStudent();
+            var practice = await Stored(teacher, await Create(teacher, Header(isTest: false), Choice()));
+            var teacherId = (await teacher.GetFromJsonAsync<JsonElement>("/api/user/me")).GetProperty("id").GetInt32();
+            var empty = factory.AddLegacyQuiz(teacherId);
+
+            HttpResponseMessage[] responses =
+            [
+                await Info(student, practice.Id, null),
+                await Start(student, practice.Id, null),
+                await Info(student, empty, null),
+                await Start(student, empty, null),
+            ];
+
+            Assert.All(responses, response => Assert.Equal(HttpStatusCode.NotFound, response.StatusCode));
+        }
+
+        [Fact]
+        public async Task A_tests_sitting_cannot_be_discarded()
+        {
+            var teacher = await factory.LoginAs(ApiFactory.TeacherEmail);
+            var student = await factory.LoginAsNewStudent();
+            var test = await CreateTest(teacher, [Choice()]);
+            var sitting = await Started(student, test);
+
+            var response = await Discard(student, Id(sitting));
+
+            Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+            Assert.True((await InfoOf(student, test)).GetProperty("running").GetBoolean());
+        }
+
+        [Fact]
+        public async Task Editing_a_quizs_questions_discards_the_mock_sittings_running_on_it()
+        {
+            var teacher = await factory.LoginAs(ApiFactory.TeacherEmail);
+            var student = await factory.LoginAsNewStudent();
+            var quiz = await CreateListed(teacher, [Choice(), Matching()]);
+            var sitting = await StartedMock(student, quiz.Id);
+            object header = new { id = quiz.Id, title = "Novi naslov", isPrivate = false, periodId = Realizam };
+
+            var headerOnly = await UpdateHeader(teacher, header);
+            var kept = await Save(student, Id(sitting), quiz.QuestionIds[0], 1);
+            // The matching question is removed while the sitting holds an order made for it.
+            var edited = await teacher.PutAsJsonAsync("/api/quiz/update", new { quiz = header, questions = new[] { Choice("Izbor", quiz.QuestionIds[0]) } });
+            var lost = await Save(student, Id(sitting), quiz.QuestionIds[0], 2);
+
+            Assert.Equal(HttpStatusCode.NoContent, headerOnly.StatusCode);
+            Assert.Equal(HttpStatusCode.NoContent, kept.StatusCode);
+            Assert.Equal(HttpStatusCode.NoContent, edited.StatusCode);
+            Assert.Equal(HttpStatusCode.NotFound, lost.StatusCode);
+            Assert.Equal(HttpStatusCode.NotFound, (await Finish(student, Id(sitting))).StatusCode);
+            Assert.Empty(await Games(teacher, quiz.Id));
+            Assert.NotEqual(Id(sitting), Id(await StartedMock(student, quiz.Id)));
+        }
+
+        [Fact]
+        public async Task A_mock_sitting_keeps_the_quizs_time_limit()
+        {
+            var teacher = await factory.LoginAs(ApiFactory.TeacherEmail);
+            var student = await factory.LoginAsNewStudent();
+            var quiz = await CreateListed(teacher, [Choice()], timeLimitMinutes: 20);
+
+            var info = await (await Info(student, quiz.Id, null)).Content.ReadFromJsonAsync<JsonElement>();
+            var sitting = await StartedMock(student, quiz.Id);
+            await Saved(student, Id(sitting), quiz.QuestionIds[0], 1);
+            factory.Backdate(Id(sitting), TimeSpan.FromMinutes(21));
+            var late = await Save(student, Id(sitting), quiz.QuestionIds[0], 2);
+
+            Assert.Equal(20, info.GetProperty("timeLimitMinutes").GetInt32());
+            Assert.Equal(TimeSpan.FromMinutes(20), sitting.GetProperty("endsAt").GetDateTime() - sitting.GetProperty("startedAt").GetDateTime());
+            Assert.Equal(HttpStatusCode.Conflict, late.StatusCode);
+            var game = Assert.Single(await Games(teacher, quiz.Id));
+            Assert.Equal("mock", game.GetProperty("playedAs").GetString());
+            Assert.Equal(1, game.GetProperty("score").GetInt32());
         }
     }
 }

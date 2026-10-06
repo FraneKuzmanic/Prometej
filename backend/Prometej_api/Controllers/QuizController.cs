@@ -68,6 +68,13 @@ namespace Prometej_api.Controllers
         }
 
         [Authorize(Roles = Roles.TeacherOrAdmin)]
+        [HttpPost("copy/{id}")]
+        public IActionResult CopyQuiz(int id)
+        {
+            return StatusCode(201, _quizService.Copy(id, User.GetUserId(), User.IsAdmin()));
+        }
+
+        [Authorize(Roles = Roles.TeacherOrAdmin)]
         [HttpDelete("delete/{id}")]
         public IActionResult DeleteQuiz(int id)
         {

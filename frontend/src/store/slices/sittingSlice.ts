@@ -81,6 +81,17 @@ const finishSitting = createAsyncThunk<SittingResult, number, Rejected>(
     }
 );
 
+const discardSitting = createAsyncThunk<void, number, Rejected>(
+    'sitting/discard',
+    async (sittingId, { rejectWithValue }) => {
+        try {
+            await sittingService.discard(sittingId);
+        } catch (error) {
+            return rejectWithValue(statusOf(error));
+        }
+    }
+);
+
 const resetSitting = createAsyncThunk(
     'sitting/reset',
     async (sittingId: number) => {
@@ -117,6 +128,11 @@ const sittingSlice = createSlice({
         state.sitting = action.payload;
       }
     });
+    builder.addCase(discardSitting.fulfilled, (state, action) => {
+      if (action.meta.arg === state.sitting?.id) {
+        state.sitting = undefined;
+      }
+    });
     builder.addCase(finishSitting.fulfilled, (state, action) => {
       if (action.meta.arg === state.sitting?.id) {
         state.result = action.payload;
@@ -131,6 +147,7 @@ export {
     startSitting,
     saveSittingAnswer,
     finishSitting,
+    discardSitting,
     resetSitting,
 };
 

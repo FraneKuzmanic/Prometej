@@ -113,6 +113,15 @@ const updateQuiz = createAsyncThunk(
     }
 );
 
+// A private practice Quiz with the same Questions and none of the results.
+const copyQuiz = createAsyncThunk(
+    'quiz/copy',
+    async (quizId: number) => {
+        const response = await QuizService.copy(quizId);
+        return response.data;
+    }
+);
+
 const deleteQuiz = createAsyncThunk(
     'quiz/delete',
     async (quizId: number) => {
@@ -265,6 +274,7 @@ export {
     createQuiz,
     updateQuiz,
     deleteQuiz,
+    copyQuiz,
     fetchQuiz,
     submitQuiz,
     getQuizAnalytics,

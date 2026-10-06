@@ -12,6 +12,7 @@ export default {
   get: (quizId: number, code?: string) => axios.get(`${quiz.base}/get/${quizId}`, { params: { code } }),
   create: (data: CreateQuizPayload) => axios.post(`${quiz.base}/create`, data),
   Update: (data: UpdateQuizPayload) => axios.put(`${quiz.base}/update`, data),
+  copy: (quizId: number) => axios.post(`${quiz.base}/copy/${quizId}`),
   delete: (quizId: number) => axios.delete(`${quiz.base}/delete/${quizId}`),
   submit: (data: SubmitQuizPayload) => axios.post(`${quiz.base}/submit`, data),
   getQuizAnalytics: (quizId: number) => axios.get(`${quiz.base}/getAnalytics/${quizId}`),

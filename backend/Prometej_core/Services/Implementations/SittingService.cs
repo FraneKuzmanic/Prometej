@@ -176,6 +176,35 @@ namespace Prometej_core.Services.Implementations
             return ResultOf(sittingId);
         }
 
+        // A test is sat once and counts, so only a sitting of a public quiz can be given up.
+        public void Discard(int sittingId, int callerId)
+        {
+            EnsureOwn(sittingId, callerId);
+            EndExpired(s => s.Id == sittingId);
+
+            var sitting = _sittingRepository.ReadAll().Where(s => s.Id == sittingId)
+                .Select(s => new { s.Quiz.IsTest, s.FinishedAt }).First();
+            if (sitting.IsTest)
+            {
+                throw new ConflictException("A sitting of a test cannot be discarded");
+            }
+
+            if (sitting.FinishedAt != null)
+            {
+                throw new ConflictException("The sitting has ended");
+            }
+
+            _sittingRepository.Delete(sittingId);
+            try
+            {
+                _sittingRepository.Save();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                throw new ConflictException("The sitting has ended");
+            }
+        }
+
         // Lets a student sit a test again: the sitting goes, and its result with it. A closed
         // test still has to be reopened by its closing time before the student can start.
         public void Reset(int sittingId, int callerId, bool isAdmin)
@@ -316,17 +345,22 @@ namespace Prometej_core.Services.Implementations
             return numbers;
         }
 
-        // A test is sat by whoever has its entry code. Everything else gets the same answer as
-        // a quiz that does not exist.
+        // A test is sat by whoever has its entry code, and a quiz the public list shows by
+        // anyone, as a mock: its answers are only withheld here, since the quiz itself can be
+        // read. Everything else, a private practice quiz included, gets the same answer as a
+        // quiz that does not exist.
         private Quiz FindSittable(int quizId, int? code)
         {
             var quiz = _quizRepository.ReadAll().FirstOrDefault(q => q.Id == quizId);
-            if (quiz == null || !quiz.IsTest || code == null || quiz.EntryCode != code)
+            var sittable = quiz != null && (quiz.IsTest
+                ? code != null && quiz.EntryCode == code
+                : _quizRepository.ReadAll().Where(Quiz.IsListed).Any(q => q.Id == quizId));
+            if (!sittable)
             {
                 throw new NotFoundException("Quiz not found");
             }
 
-            return quiz;
+            return quiz!;
         }
 
         // Someone else's sitting gets the same answer as one that does not exist.

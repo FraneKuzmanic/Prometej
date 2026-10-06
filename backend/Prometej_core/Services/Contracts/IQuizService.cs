@@ -17,6 +17,7 @@ namespace Prometej_core.Services.Contracts
         QuizViewModel GetQuizByCode(int quizCode);
         int Create(QuizCreateRequest quiz, List<QuestionCreateRequest> questions, List<SourceTextRequest>? sourceTexts, int creatorId);
         void Update(QuizEditRequest quiz, List<QuestionEditRequest>? questions, List<SourceTextRequest>? sourceTexts, int callerId, bool isAdmin);
+        int Copy(int id, int callerId, bool isAdmin);
         void Delete(int id, int callerId, bool isAdmin);
         QuizGameViewModel SubmitQuiz(QuizSubmitRequest request, int userId);
         QuizAnalyticsViewModel GetQuizAnalytics(int quizId, int callerId, bool isAdmin);
