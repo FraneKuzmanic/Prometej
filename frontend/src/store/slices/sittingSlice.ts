@@ -81,6 +81,13 @@ const finishSitting = createAsyncThunk<SittingResult, number, Rejected>(
     }
 );
 
+const resetSitting = createAsyncThunk(
+    'sitting/reset',
+    async (sittingId: number) => {
+        await sittingService.reset(sittingId);
+    }
+);
+
 const sittingSlice = createSlice({
   name: "sitting",
   initialState,
@@ -124,6 +131,7 @@ export {
     startSitting,
     saveSittingAnswer,
     finishSitting,
+    resetSitting,
 };
 
 export default sittingSlice.reducer;

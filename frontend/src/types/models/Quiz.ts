@@ -221,10 +221,31 @@ export interface PlayerSummary {
     lastPlayed: string;
 }
 
+export interface SittingRow {
+    id: number;
+    userId: number;
+    userName: string;
+    startedAt: string;
+    // "expired": the time limit or the Test's closing ended it
+    state: "running" | "submitted" | "expired";
+    // the result, once the Sitting has ended
+    quizGameId: number | null;
+    score: number | null;
+    maxScore: number | null;
+}
+
 // How a Quiz was played, for its Creator: every Quiz Game, newest first, and the same
 // games counted by Question and by player.
 export interface QuizAnalytics {
     quizTitle: string;
+    // what its Creator needs to run a Test: the code to hand out and when it closes
+    isTest: boolean;
+    entryCode: number | null;
+    timeLimitMinutes: number | null;
+    closesAt: string | null;
+    isClosed: boolean;
+    // who has started a Test, newest first; empty for a Quiz that is not one
+    sittings: SittingRow[];
     games: QuizGameViewModel[];
     questions: QuestionReport[];
     players: PlayerSummary[];

@@ -126,7 +126,11 @@ namespace Prometej_core.Services.Implementations
                 throw new NotFoundException("Quiz not found");
             }
 
-            return ToViewModel(quiz!, withQuestions: !quiz!.IsTest || isAdmin || quiz.CreatorId == callerId);
+            var mayEdit = isAdmin || quiz!.CreatorId == callerId;
+            var quizViewModel = ToViewModel(quiz!, withQuestions: !quiz!.IsTest || mayEdit);
+            quizViewModel.QuestionsLocked = quiz.IsTest && mayEdit && _sittingRepository.ReadAll().Any(s => s.QuizId == id);
+
+            return quizViewModel;
         }
 
         public QuizViewModel GetQuizByCode(int quizCode)
@@ -517,13 +521,62 @@ namespace Prometej_core.Services.Implementations
                 .OrderByDescending(g => g.DatePlayed).ThenByDescending(g => g.Id)
                 .ToList();
 
+            // Every sitting of a test, newest first, also one that is still running. The name
+            // is the user's of today.
+            var sittings = _sittingRepository.ReadAll().Where(s => s.QuizId == quizId)
+                .OrderByDescending(s => s.StartedAt).ThenByDescending(s => s.Id)
+                .Select(s => new SittingRowViewModel
+                {
+                    Id = s.Id,
+                    UserId = s.UserId,
+                    UserName = s.User.FirstName + " " + s.User.LastName,
+                    StartedAt = s.StartedAt,
+                    State = s.Outcome ?? SittingRowViewModel.Running,
+                    QuizGameId = s.QuizGameId,
+                    Score = s.QuizGame == null ? null : s.QuizGame.Score,
+                    MaxScore = s.QuizGame == null ? null : s.QuizGame.Answers.Count,
+                })
+                .ToList();
+            var sittingGameIds = sittings.Where(s => s.QuizGameId != null).Select(s => s.QuizGameId!.Value).ToHashSet();
+            var games = _mapper.Map<List<QuizGameViewModel>>(quizGames);
+            foreach (var game in games)
+            {
+                game.PlayedAs = PlayedAs.Of(quiz.IsTest, sittingGameIds.Contains(game.Id));
+            }
+
             return new QuizAnalyticsViewModel
             {
                 QuizTitle = quiz.Title,
-                Games = _mapper.Map<List<QuizGameViewModel>>(quizGames),
+                IsTest = quiz.IsTest,
+                EntryCode = quiz.EntryCode,
+                TimeLimitMinutes = quiz.TimeLimitMinutes,
+                ClosesAt = quiz.ClosesAt,
+                IsClosed = quiz.IsTest && Quiz.IsClosed(quiz.ClosesAt),
+                Sittings = quiz.IsTest ? sittings : [],
+                Games = games,
                 Questions = QuestionReport(quizId, quizGames),
                 Players = PlayerSummaries(quizGames),
             };
+        }
+
+        // Closing is setting the closing time to now: one column says whether a test is closed.
+        // Its running sittings end with what they have saved, and its reviews open.
+        public void Close(int quizId, int callerId, bool isAdmin)
+        {
+            var quiz = _quizRepository.GetAll().FirstOrDefault(q => q.Id == quizId);
+            EnsureCreatorOrAdmin(quiz, callerId, isAdmin);
+            if (!quiz.IsTest)
+            {
+                throw new BadRequestException("Only a test can be closed");
+            }
+
+            if (!Quiz.IsClosed(quiz.ClosesAt))
+            {
+                quiz.ClosesAt = DateTime.UtcNow;
+                _quizRepository.Save();
+            }
+
+            _sittingService.EndExpired(s => s.QuizId == quizId);
         }
 
         // A row for every question of the quiz, retired ones too: their answers are in the old

@@ -133,11 +133,20 @@ const submitQuiz = createAsyncThunk<QuizGameViewModel, SubmitQuizPayload, { reje
     }
 );
 
+// keep: the analytics on screen stay while they are read again after a Test was closed or a
+// Sitting reset, so the screen does not go blank for a moment.
 const getQuizAnalytics = createAsyncThunk(
     'quiz/getAnalytics',
-    async (quizId: number) => {
+    async ({ quizId }: { quizId: number; keep?: boolean }) => {
         const response = await QuizService.getQuizAnalytics(quizId);
         return response.data;
+    }
+);
+
+const closeTest = createAsyncThunk(
+    'quiz/close',
+    async (quizId: number) => {
+        await QuizService.close(quizId);
     }
 );
 
@@ -189,8 +198,10 @@ const quizSlice = createSlice({
         state.quiz = action.payload; 
     });
     // Cleared first, so one quiz's plays never show under another.
-    builder.addCase(getQuizAnalytics.pending, (state) => {
-        state.analytics = undefined;
+    builder.addCase(getQuizAnalytics.pending, (state, action) => {
+        if (!action.meta.arg.keep) {
+            state.analytics = undefined;
+        }
         state.analyticsFailed = false;
     });
     builder.addCase(getQuizAnalytics.fulfilled, (state, action: PayloadAction<QuizAnalytics>) => {
@@ -198,7 +209,7 @@ const quizSlice = createSlice({
     });
     // An aborted request is one the screen has already replaced with another.
     builder.addCase(getQuizAnalytics.rejected, (state, action) => {
-        if (!action.meta.aborted) {
+        if (!action.meta.aborted && !action.meta.arg.keep) {
             state.analyticsFailed = true;
         }
     });
@@ -257,6 +268,7 @@ export {
     fetchQuiz,
     submitQuiz,
     getQuizAnalytics,
+    closeTest,
     fetchMyGames,
     fetchQuizGame,
     fetchQuizByCode,

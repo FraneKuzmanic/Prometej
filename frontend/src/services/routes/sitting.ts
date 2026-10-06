@@ -11,4 +11,6 @@ export default {
   start: (quizId: number, code?: string) => axios.post(`${sitting.base}/start/${quizId}`, null, { params: { code } }),
   saveAnswer: (sittingId: number, data: SittingAnswerRequest) => axios.put(`${sitting.base}/${sittingId}/answer`, data),
   finish: (sittingId: number) => axios.post(`${sitting.base}/${sittingId}/finish`),
+  // for the Quiz's Creator: lets the Student sit the Test again
+  reset: (sittingId: number) => axios.post(`${sitting.base}/${sittingId}/reset`),
 };

@@ -20,6 +20,21 @@
     color: #553b08;
 }
 
+.quiz-details-test{
+    padding-left: 2.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+}
+
+.quiz-details-sitting{
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
 .quiz-details-text{
     overflow-wrap: anywhere;
 }

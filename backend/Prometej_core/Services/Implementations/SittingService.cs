@@ -22,9 +22,11 @@ namespace Prometej_core.Services.Implementations
         private readonly IRepository<Quiz> _quizRepository;
         private readonly IRepository<Question> _questionRepository;
         private readonly IRepository<User> _userRepository;
+        private readonly IRepository<QuizGame> _quizGameRepository;
 
-        public SittingService(IRepository<Sitting> sittingRepository, IRepository<SittingAnswer> sittingAnswerRepository, IRepository<Quiz> quizRepository, IRepository<Question> questionRepository, IRepository<User> userRepository)
+        public SittingService(IRepository<Sitting> sittingRepository, IRepository<SittingAnswer> sittingAnswerRepository, IRepository<Quiz> quizRepository, IRepository<Question> questionRepository, IRepository<User> userRepository, IRepository<QuizGame> quizGameRepository)
         {
+            _quizGameRepository = quizGameRepository;
             _sittingRepository = sittingRepository;
             _sittingAnswerRepository = sittingAnswerRepository;
             _quizRepository = quizRepository;
@@ -172,6 +174,36 @@ namespace Prometej_core.Services.Implementations
             }
 
             return ResultOf(sittingId);
+        }
+
+        // Lets a student sit a test again: the sitting goes, and its result with it. A closed
+        // test still has to be reopened by its closing time before the student can start.
+        public void Reset(int sittingId, int callerId, bool isAdmin)
+        {
+            var sitting = _sittingRepository.GetAll().Include(s => s.Quiz).FirstOrDefault(s => s.Id == sittingId);
+            if (sitting == null)
+            {
+                throw new NotFoundException("Sitting not found");
+            }
+
+            if (!isAdmin && sitting.Quiz.CreatorId != callerId)
+            {
+                throw new ForbiddenException("Only the quiz's creator or an admin can do this");
+            }
+
+            // A sitting of a public quiz is its user's own practice; there is nothing to allow again.
+            if (!sitting.Quiz.IsTest)
+            {
+                throw new ConflictException("Only a sitting of a test can be reset");
+            }
+
+            if (sitting.QuizGameId != null)
+            {
+                _quizGameRepository.Delete(sitting.QuizGameId);
+            }
+
+            _sittingRepository.Delete(sitting.Id);
+            _sittingRepository.Save();
         }
 
         public bool EndExpired(Expression<Func<Sitting, bool>> which)

@@ -36,7 +36,8 @@ export default function EditQuiz() {
       updateQuiz({
         quiz: { id: quiz.id, ...header },
         // The lists are the whole set: a stored Question or Source Text left out is removed.
-        ...toRequest(questions, sourceTexts),
+        // A started Test's Questions cannot change, so only its header is sent.
+        ...(quiz.questionsLocked ? {} : toRequest(questions, sourceTexts)),
       })
     );
     const saved = updateQuiz.fulfilled.match(result);
@@ -57,6 +58,7 @@ export default function EditQuiz() {
       initialClosesAt={quiz.closesAt}
       initialQuestions={questions}
       initialSourceTexts={sourceTexts}
+      locked={quiz.questionsLocked}
       onSave={saveQuiz}
       onCancel={() => navigate("/my-quizzes")}
     />

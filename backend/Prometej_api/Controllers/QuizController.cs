@@ -90,6 +90,15 @@ namespace Prometej_api.Controllers
             return Ok(_quizService.GetQuizAnalytics(id, User.GetUserId(), User.IsAdmin()));
         }
 
+        [Authorize(Roles = Roles.TeacherOrAdmin)]
+        [HttpPost("close/{id}")]
+        public IActionResult CloseTest(int id)
+        {
+            _quizService.Close(id, User.GetUserId(), User.IsAdmin());
+
+            return NoContent();
+        }
+
         [Authorize]
         [HttpGet("getMyGames")]
         public IActionResult GetMyGames()

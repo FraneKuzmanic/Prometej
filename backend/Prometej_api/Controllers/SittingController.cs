@@ -49,5 +49,15 @@ namespace Prometej_api.Controllers
         {
             return Ok(_sittingService.Finish(id, User.GetUserId()));
         }
+
+        // The quiz's creator or an admin lets a student sit a test again. Who the caller is to
+        // the quiz is the service's to check: the sitting is found first.
+        [HttpPost("{id}/reset")]
+        public IActionResult Reset(int id)
+        {
+            _sittingService.Reset(id, User.GetUserId(), User.IsAdmin());
+
+            return NoContent();
+        }
     }
 }

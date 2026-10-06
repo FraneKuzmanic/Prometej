@@ -2,11 +2,17 @@ import { useParams } from "react-router-dom";
 import { Fragment, useEffect, useMemo, useState } from "react";
 import { RootState, useAppDispatch } from "../../store/store";
 import { useSelector } from "react-redux";
-import { getQuizAnalytics } from "../../store/slices/quizSlice";
+import { closeTest, getQuizAnalytics } from "../../store/slices/quizSlice";
+import { resetSitting } from "../../store/slices/sittingSlice";
 import {
   Avatar,
   Box,
   Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   IconButton,
   Paper,
   Table,
@@ -19,7 +25,8 @@ import {
 } from "@mui/material";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
-import { QuizGameViewModel } from "../../types/models/Quiz";
+import { QuizGameViewModel, SittingRow } from "../../types/models/Quiz";
+import { formatDateTime } from "../Discussion/format";
 import "./styles.css";
 import { stringToColor } from "../../components/QuizContainer/stringToColor";
 import { PieChart } from "@mui/x-charts/PieChart";
@@ -55,6 +62,15 @@ const mostChosenWrong = (row: {
     ? "—"
     : `${row.mostChosenWrongAnswer} (${row.mostChosenWrongCount})`;
 
+const sittingStates: Record<SittingRow["state"], string> = {
+  running: "u tijeku",
+  submitted: "predano",
+  expired: "isteklo vrijeme",
+};
+
+// What the confirmation dialog is about: closing the Test, or one Student's second Sitting.
+type TestAction = { kind: "close" } | { kind: "reset"; sitting: SittingRow };
+
 function PlayerName({ name }: { name: string }) {
   return (
     <TableCell component="th" scope="row">
@@ -86,6 +102,33 @@ export function QuizDetails() {
   const [openGameId, setOpenGameId] = useState<number>();
   // The matching or ordering Question whose lines are shown under its row.
   const [openQuestionId, setOpenQuestionId] = useState<number>();
+  // Kept after the dialog closes, so its text does not change while it fades out.
+  const [testAction, setTestAction] = useState<TestAction>();
+  const [testActionOpen, setTestActionOpen] = useState(false);
+  const [testActionRunning, setTestActionRunning] = useState(false);
+  const [testActionFailed, setTestActionFailed] = useState(false);
+
+  const askTestAction = (action: TestAction) => {
+    setTestAction(action);
+    setTestActionFailed(false);
+    setTestActionOpen(true);
+  };
+
+  const confirmTestAction = async () => {
+    if (!testAction || !id) return;
+    setTestActionRunning(true);
+    const result =
+      testAction.kind === "close"
+        ? await dispatch(closeTest(parseInt(id)))
+        : await dispatch(resetSitting(testAction.sitting.id));
+    setTestActionRunning(false);
+    if (result.meta.requestStatus === "rejected") {
+      setTestActionFailed(true);
+      return;
+    }
+    setTestActionOpen(false);
+    dispatch(getQuizAnalytics({ quizId: parseInt(id), keep: true }));
+  };
 
   // How many plays fall in each tenth of the percentage scale; empty tenths are left out.
   const seriesData = useMemo<SeriesData[]>(() => {
@@ -109,7 +152,7 @@ export function QuizDetails() {
 
   useEffect(() => {
     if (!id) return;
-    const request = dispatch(getQuizAnalytics(parseInt(id)));
+    const request = dispatch(getQuizAnalytics({ quizId: parseInt(id) }));
     // Leaving for another quiz drops this request, so its late answer cannot replace that quiz's plays.
     return () => request.abort();
   }, [dispatch, id]);
@@ -128,6 +171,120 @@ export function QuizDetails() {
         <Typography className="quiz-game-details-message">
           Analitika nije dostupna.
         </Typography>
+      )}
+      {analytics?.isTest && (
+        <>
+          <Box className="quiz-details-test">
+            <Typography>
+              Provjera · ulazni kod {analytics.entryCode}
+              {analytics.timeLimitMinutes &&
+                ` · ${analytics.timeLimitMinutes} min`}
+            </Typography>
+            <Typography>
+              {analytics.closesAt === null
+                ? "Bez roka"
+                : analytics.isClosed
+                ? `Zatvorena ${formatDateTime(analytics.closesAt)}`
+                : `Zatvara se: ${formatDateTime(analytics.closesAt)}`}
+            </Typography>
+            {!analytics.isClosed && (
+              <Button
+                variant="outlined"
+                onClick={() => askTestAction({ kind: "close" })}
+              >
+                Zatvori provjeru
+              </Button>
+            )}
+          </Box>
+          <Typography variant="h5" className="quiz-details-heading">
+            Pokušaji
+          </Typography>
+          {analytics.sittings.length === 0 ? (
+            <Typography className="quiz-game-details-message">
+              Još nitko nije započeo provjeru.
+            </Typography>
+          ) : (
+            <TableContainer component={Paper}>
+              <Table aria-label="Pokušaji">
+                <TableHead>
+                  <TableRow>
+                    <TableCell className="quiz-details-column">Učenik</TableCell>
+                    <TableCell className="quiz-details-column" align="right">
+                      Početak
+                    </TableCell>
+                    <TableCell className="quiz-details-column">Stanje</TableCell>
+                    <TableCell className="quiz-details-column" align="right">
+                      Rezultat
+                    </TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {analytics.sittings.map((sitting) => (
+                    <TableRow key={sitting.id}>
+                      <PlayerName name={sitting.userName} />
+                      <TableCell align="right">
+                        {formatDateTime(sitting.startedAt)}
+                      </TableCell>
+                      <TableCell>{sittingStates[sitting.state]}</TableCell>
+                      <TableCell align="right">
+                        {/* The flex box is inside the cell, as in PlayerName. */}
+                        <Box className="quiz-details-sitting">
+                          {sitting.score !== null && sitting.maxScore !== null
+                            ? `${sitting.score} / ${sitting.maxScore} ${pointsLabel(
+                                sitting.maxScore
+                              )}`
+                            : "—"}
+                          <Button
+                            size="small"
+                            onClick={() =>
+                              askTestAction({ kind: "reset", sitting })
+                            }
+                          >
+                            Dopusti ponovno
+                          </Button>
+                        </Box>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          )}
+          <Dialog
+            open={testActionOpen}
+            onClose={() => setTestActionOpen(false)}
+          >
+            <DialogTitle>
+              {testAction?.kind === "reset" ? "Novi pokušaj" : "Zatvaranje provjere"}
+            </DialogTitle>
+            <DialogContent>
+              <DialogContentText>
+                {testAction?.kind === "reset"
+                  ? `Pokušaj učenika ${testAction.sitting.userName} i njegov rezultat bit će trajno obrisani.`
+                  : `Pokušaji u tijeku (${
+                      analytics.sittings.filter(
+                        (sitting) => sitting.state === "running"
+                      ).length
+                    }) bit će predani s dosad spremljenim odgovorima. Učenici će nakon toga vidjeti točne odgovore.`}
+              </DialogContentText>
+              {testActionFailed && (
+                <Typography color="error" sx={{ marginTop: 1 }}>
+                  Radnja nije uspjela. Pokušajte ponovno.
+                </Typography>
+              )}
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setTestActionOpen(false)}>Odustani</Button>
+              <Button
+                color={testAction?.kind === "reset" ? "error" : "primary"}
+                disabled={testActionRunning}
+                onClick={() => confirmTestAction()}
+              >
+                {testAction?.kind === "reset" ? "Obriši" : "Zatvori"}
+              </Button>
+            </DialogActions>
+          </Dialog>
+        </>
       )}
       {quizGames && quizGames.length === 0 && (
         <Typography className="quiz-game-details-message">

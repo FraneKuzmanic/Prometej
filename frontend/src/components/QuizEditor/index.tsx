@@ -51,6 +51,8 @@ interface QuizEditorProps {
   initialClosesAt: string | null;
   initialQuestions: EditorQuestion[];
   initialSourceTexts: EditorSourceTexts;
+  // A started Test: its Questions are shown and cannot be changed; its header can.
+  locked?: boolean;
   // Resolves to whether the Quiz was saved; the editor stays open when it was not.
   onSave: (
     quiz: QuizCreateRequest,
@@ -83,6 +85,7 @@ export default function QuizEditor({
   initialClosesAt,
   initialQuestions,
   initialSourceTexts,
+  locked = false,
   onSave,
   onCancel,
 }: QuizEditorProps) {
@@ -290,26 +293,36 @@ export default function QuizEditor({
             : `Pitanje ${incomplete.no} nije potpuno: ${missing[incomplete.type]}`}
         </Alert>
       )}
-      <QuestionContainer
-        currentQuestion={quizQuestions[selected]}
-        selected={selected}
-        handleQuestionChange={updateQuestion}
-        sourceTextFields={
-          selectedSourceTextKey && (
-            <SourceTextFields
-              sourceText={sourceTexts[selectedSourceTextKey]}
-              onChange={(updates) => updateSourceText(selectedSourceTextKey, updates)}
-              onAddQuestion={
-                quizQuestions.filter(
-                  (question) => question.sourceTextKey === selectedSourceTextKey
-                ).length < MAX_SOURCE_TEXT_QUESTIONS
-                  ? () => addToSourceText(selectedSourceTextKey)
-                  : undefined
-              }
-            />
-          )
-        }
-      />
+      {locked && (
+        <Alert severity="info" className="quiz-editor-message">
+          Provjera je započeta, pa se pitanja više ne mogu mijenjati. Naslov i
+          vrijeme možete promijeniti.
+        </Alert>
+      )}
+      {/* A disabled fieldset disables every field inside it. */}
+      <fieldset disabled={locked} className="quiz-editor-questions">
+        <QuestionContainer
+          currentQuestion={quizQuestions[selected]}
+          selected={selected}
+          handleQuestionChange={updateQuestion}
+          sourceTextFields={
+            selectedSourceTextKey && (
+              <SourceTextFields
+                sourceText={sourceTexts[selectedSourceTextKey]}
+                onChange={(updates) => updateSourceText(selectedSourceTextKey, updates)}
+                onAddQuestion={
+                  !locked &&
+                  quizQuestions.filter(
+                    (question) => question.sourceTextKey === selectedSourceTextKey
+                  ).length < MAX_SOURCE_TEXT_QUESTIONS
+                    ? () => addToSourceText(selectedSourceTextKey)
+                    : undefined
+                }
+              />
+            )
+          }
+        />
+      </fieldset>
       <Box className="questions-nav">
         {quizQuestions.map((question, index) => (
           <Paper
@@ -339,7 +352,7 @@ export default function QuizEditor({
             <Typography className="question-container-no">
               {index + 1}.
             </Typography>
-            {quizQuestions.length > 1 && (
+            {quizQuestions.length > 1 && !locked && (
               <Box className="question-container-opt">
                 <IconButton
                   aria-label={`Mogućnosti pitanja ${index + 1}`}
@@ -363,12 +376,14 @@ export default function QuizEditor({
             Izbriši
           </MenuItem>
         </Menu>
-        <Paper
-          onClick={(event) => setAddMenuAnchor(event.currentTarget)}
-          className="question-container-add"
-        >
-          <AddIcon />
-        </Paper>
+        {!locked && (
+          <Paper
+            onClick={(event) => setAddMenuAnchor(event.currentTarget)}
+            className="question-container-add"
+          >
+            <AddIcon />
+          </Paper>
+        )}
         <Menu
           anchorEl={addMenuAnchor}
           open={addMenuAnchor !== null}
@@ -449,6 +464,8 @@ export default function QuizEditor({
             control={
               <Switch
                 checked={isPrivate}
+                // A started Test stays one: the server refuses a change of mode.
+                disabled={locked}
                 onChange={(e) => {
                   setIsPrivate(e.target.checked);
                   // Only a Private Quiz can be a Test.
@@ -462,7 +479,7 @@ export default function QuizEditor({
             control={
               <Checkbox
                 checked={isTest}
-                disabled={!isPrivate}
+                disabled={!isPrivate || locked}
                 onChange={(e) => setIsTest(e.target.checked)}
               />
             }

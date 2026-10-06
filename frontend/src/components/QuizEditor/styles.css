@@ -111,6 +111,18 @@
     overflow-y: auto;
 }
 
+/* Only there to disable its fields: it must not look like a box of its own. */
+.quiz-editor-questions{
+    border: 0;
+    margin: 0;
+    padding: 0;
+    min-width: 0;
+}
+
+.quiz-editor-questions:disabled{
+    opacity: 0.65;
+}
+
 .quiz-editor-message{
     /* in the flow above the question, so it pushes the fields down instead of covering one */
     width: fit-content;

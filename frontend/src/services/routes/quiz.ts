@@ -15,6 +15,7 @@ export default {
   delete: (quizId: number) => axios.delete(`${quiz.base}/delete/${quizId}`),
   submit: (data: SubmitQuizPayload) => axios.post(`${quiz.base}/submit`, data),
   getQuizAnalytics: (quizId: number) => axios.get(`${quiz.base}/getAnalytics/${quizId}`),
+  close: (quizId: number) => axios.post(`${quiz.base}/close/${quizId}`),
   getMyGames: () => axios.get(`${quiz.base}/getMyGames`),
   getGame: (gameId: number) => axios.get(`${quiz.base}/getGame/${gameId}`),
   getByCode: (quizCode: string) => axios.get(`${quiz.base}/getByCode/${quizCode}`),

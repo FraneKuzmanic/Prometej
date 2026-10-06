@@ -5,9 +5,33 @@ namespace Prometej_core.Models.ViewModels
     public class QuizAnalyticsViewModel
     {
         public required string QuizTitle { get; set; }
+        // What its creator needs to run a test: the code to hand out and when it closes.
+        public bool IsTest { get; set; }
+        public int? EntryCode { get; set; }
+        public int? TimeLimitMinutes { get; set; }
+        public DateTime? ClosesAt { get; set; }
+        public bool IsClosed { get; set; }
+        // Who has started a test, newest first. Empty for a quiz that is not a test.
+        public required List<SittingRowViewModel> Sittings { get; set; }
         public required List<QuizGameViewModel> Games { get; set; }
         public required List<QuestionReportViewModel> Questions { get; set; }
         public required List<PlayerSummaryViewModel> Players { get; set; }
+    }
+
+    public class SittingRowViewModel
+    {
+        public const string Running = "running";
+
+        public int Id { get; set; }
+        public int UserId { get; set; }
+        public required string UserName { get; set; }
+        public DateTime StartedAt { get; set; }
+        // "running", or the sitting's outcome: one of SittingOutcomes.
+        public required string State { get; set; }
+        // The result, once the sitting has ended.
+        public int? QuizGameId { get; set; }
+        public int? Score { get; set; }
+        public int? MaxScore { get; set; }
     }
 
     public class QuestionReportViewModel
