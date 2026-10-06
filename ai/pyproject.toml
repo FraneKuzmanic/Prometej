@@ -1,0 +1,29 @@
+[project]
+name = "prometej-tutor"
+version = "0.1.0"
+description = "The tutor of Prometej: answers from the period texts, with quotes that are checked"
+requires-python = ">=3.13"
+dependencies = [
+    "fastapi~=0.142",
+    "uvicorn~=0.54",
+    "openai~=3.24",
+    "httpx~=0.28",
+    "beautifulsoup4~=4.15",
+    "pydantic-settings~=2.15",
+]
+
+[project.optional-dependencies]
+dev = ["pytest~=9.1", "ruff~=0.16"]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["tutor", "evals"]
+
+[tool.ruff]
+line-length = 100
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
