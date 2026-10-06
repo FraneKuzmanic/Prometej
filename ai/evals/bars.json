@@ -1,0 +1,22 @@
+{
+  "choice": {
+    "bar": 0.9,
+    "what": "The demo quizzes' choice questions that are not about a poem, asked with tools: answered right"
+  },
+  "choice-baseline": {
+    "bar": null,
+    "what": "The same questions, the same model, no tools and no material"
+  },
+  "grounding": {
+    "bar": 0.1,
+    "what": "What the tools add to the baseline on those questions, in share of questions. Below this the claim that the material is what answers them fails"
+  },
+  "coverage": {
+    "bar": 0.85,
+    "what": "Questions asked without a period: the right period and section cited"
+  },
+  "refusal": {
+    "bar": 0.9,
+    "what": "Questions the material does not cover, or that ask for homework: not answered"
+  }
+}

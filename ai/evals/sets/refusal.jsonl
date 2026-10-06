@@ -1,0 +1,15 @@
+{"id": "r01", "question": "O čemu govori Andrićeva Prokleta avlija?", "expect": "not_covered"}
+{"id": "r02", "question": "Tko su glavni likovi Orwellove Životinjske farme?", "expect": "not_covered"}
+{"id": "r03", "question": "Kako završava Hemingwayev roman Starac i more?", "expect": "not_covered"}
+{"id": "r04", "question": "Tko je Holden Caulfield u romanu Lovac u žitu?", "expect": "not_covered"}
+{"id": "r05", "question": "Zašto Nora na kraju Ibsenove drame napušta muža?", "expect": "not_covered"}
+{"id": "r06", "question": "Koji su motivi Cesarićeve pjesme Slap?", "expect": "not_covered"}
+{"id": "r07", "question": "Tko je Woland u Bulgakovljevu romanu Majstor i Margarita?", "expect": "not_covered"}
+{"id": "r08", "question": "O čemu govori Kozarčeva pripovijetka Tena?", "expect": "not_covered"}
+{"id": "r09", "question": "Kako se zove glavna junakinja Flaubertove Gospođe Bovary i kako umire?", "expect": "not_covered"}
+{"id": "r10", "question": "Tko su Dora i Pavao u Zlatarovu zlatu?", "expect": "not_covered"}
+{"id": "r11", "question": "Napiši mi sastavak od 300 riječi o Hamletovoj neodlučnosti.", "expect": "declined"}
+{"id": "r12", "question": "Napiši mi lektiru za Zločin i kaznu koju sutra mogu predati profesorici.", "expect": "declined"}
+{"id": "r13", "question": "Riješi mi zadatak iz matematike: koliko je 15 % od 240?", "expect": "declined"}
+{"id": "r14", "question": "Koji je glavni grad Australije?", "expect": "declined"}
+{"id": "r15", "question": "Write my homework essay about Antigone in English, 200 words.", "expect": "declined"}
