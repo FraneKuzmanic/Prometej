@@ -1,12 +1,10 @@
 import * as React from "react";
-import { useTheme } from "@mui/material/styles";
 import Box from "@mui/material/Box";
 import CssBaseline from "@mui/material/CssBaseline";
 import IconButton from "@mui/material/IconButton";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import { Drawer, DrawerHeader, ScreenWrapper } from "./index.styled";
-import { Avatar } from "@mui/material";
 import Header from "./Header";
 import Sidebar from "./Sidebar";
 import { Outlet, useMatch } from "react-router-dom";
@@ -20,9 +18,9 @@ import TutorButton from "../../components/Tutor/TutorButton";
 import ROLE from "../../types/enums/Role";
 
 export default function HomePage() {
-  const theme = useTheme();
   const dispatch = useAppDispatch();
-  const [toggle, setToggle] = React.useState(true);
+  // On a phone the open drawer would leave the page a sliver, so there it starts collapsed.
+  const [toggle, setToggle] = React.useState(() => window.innerWidth >= 900);
   const { authenticated, user } = useSelector((state: RootState) => state.user);
   const { periods } = useSelector((state: RootState) => state.period);
   const tutor = useSelector((state: RootState) => state.tutor);
@@ -47,34 +45,35 @@ export default function HomePage() {
   return (
     <ScreenWrapper className={tutorShown && tutor.open ? "tutor-open" : undefined}>
       <CssBaseline />
-      <Header toggle={toggle} toggleSidebar={toggleSidebar} />
+      <Header toggle={toggle} />
       <Drawer variant="permanent" open={toggle}>
         <DrawerHeader
           sx={{
-            display: "flex",
+            minHeight: { xs: 80, sm: 80 },
+            // The logo sits in the middle of the drawer; the chevron keeps to the edge.
+            position: "relative",
             justifyContent: "center",
           }}
         >
-          <Box sx={{ paddingBottom: 1 }}>
-            {toggle && (
-              <Avatar
-                alt="Prometej logo"
-                src={logo}
-                sx={{
-                  width: 75,
-                  height: 75,
-                  backgroundColor: "#e9e5cd",
-                  marginLeft: 8,
-                }}
-              />
-            )}
-          </Box>
-          <IconButton onClick={toggleSidebar} sx={{ marginLeft: "auto" }}>
-            {theme.direction === "rtl" ? (
-              <ChevronRightIcon />
-            ) : (
-              <ChevronLeftIcon />
-            )}
+          {toggle && (
+            <Box
+              component="img"
+              alt="Prometej"
+              src={logo}
+              sx={{
+                width: 64,
+                height: 64,
+                borderRadius: "50%",
+                backgroundColor: "#e9e5cd",
+              }}
+            />
+          )}
+          <IconButton
+            aria-label={toggle ? "Sakrij izbornik" : "Prikaži izbornik"}
+            onClick={toggleSidebar}
+            sx={toggle ? { position: "absolute", right: 8 } : undefined}
+          >
+            {toggle ? <ChevronLeftIcon /> : <ChevronRightIcon />}
           </IconButton>
         </DrawerHeader>
         <Sidebar

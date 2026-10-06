@@ -10,42 +10,34 @@ export const ScreenWrapper = styled(Box)`
   height: 100vh;
 `;
 
-export const Search = styled('div')(({ theme }) => ({
-  position: 'relative',
-  borderRadius: theme.shape.borderRadius,
-  backgroundColor: alpha(theme.palette.common.white, 0.15),
-  '&:hover': {
-    backgroundColor: alpha(theme.palette.common.white, 0.25),
-  },
-  marginRight: theme.spacing(2),
-  marginLeft: 0,
+// The icon and the clear button are adornments of the one input, so a click anywhere on the
+// field lands in it.
+export const SearchField = styled(InputBase)(({ theme }) => ({
   width: '100%',
-  [theme.breakpoints.up('sm')]: {
-    marginLeft: theme.spacing(3),
-    width: '500px',
-  },
-}));
-
-export const SearchIconWrapper = styled('div')(({ theme }) => ({
-  padding: theme.spacing(0, 2),
-  height: '100%',
-  position: 'absolute',
-  pointerEvents: 'none',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-}));
-
-export const StyledInputBase = styled(InputBase)(({ theme }) => ({
+  maxWidth: 480,
+  height: 40,
+  padding: theme.spacing(0, 0.5, 0, 1.5),
+  gap: theme.spacing(1),
+  borderRadius: theme.shape.borderRadius,
   color: 'inherit',
+  cursor: 'text',
+  backgroundColor: alpha(theme.palette.common.white, 0.14),
+  transition: 'background-color 140ms ease-out, box-shadow 140ms ease-out',
+  '&:hover': {
+    backgroundColor: alpha(theme.palette.common.white, 0.2),
+  },
+  // The page's brown focus ring would not show on the brown header.
+  '&.Mui-focused': {
+    backgroundColor: alpha(theme.palette.common.white, 0.24),
+    boxShadow: `0 0 0 2px ${alpha(theme.palette.common.white, 0.6)}`,
+  },
   '& .MuiInputBase-input': {
-    padding: theme.spacing(1, 1, 1, 0),
-    // vertical padding + font size from searchIcon
-    paddingLeft: `calc(1em + ${theme.spacing(4)})`,
-    transition: theme.transitions.create('width'),
-    width: '100%',
-    [theme.breakpoints.up('md')]: {
-      width: '20ch',
+    padding: 0,
+    height: '100%',
+    outline: 'none',
+    '&::placeholder': {
+      color: alpha(theme.palette.common.white, 0.82),
+      opacity: 1,
     },
   },
 }));
@@ -94,7 +86,15 @@ export const AppBar = styled(MuiAppBar, {
     easing: theme.transitions.easing.sharp,
     duration: theme.transitions.duration.leavingScreen,
   }),
-  backgroundColor: '#553b08',
+  backgroundColor: theme.palette.primary.main,
+  boxShadow: '0 1px 2px rgba(42, 33, 21, 0.18), 0 4px 14px rgba(60, 40, 10, 0.12)',
+  // Beside the drawer in both of its widths, never under it.
+  ...(!open && {
+    width: `calc(100% - ${theme.spacing(7)} - 1px)`,
+    [theme.breakpoints.up('sm')]: {
+      width: `calc(100% - ${theme.spacing(8)} - 1px)`,
+    },
+  }),
   ...(open && {
     width: `calc(100% - ${drawerWidth}px)`,
     transition: theme.transitions.create(['width', 'margin'], {
