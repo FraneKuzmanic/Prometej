@@ -29,8 +29,9 @@ ask about the wording of the text itself.
 - Each question has four answers: one right by the text, three wrong but plausible. All four \
 differ, and none is "all of the above" or "none of the above".
 - The place of the right answer varies from question to question.
-- For each question give the quote: the one or two whole sentences of the text that make the \
-right answer right, copied exactly, character for character, at most 300 characters.
+- For each question give the quote: the one or two sentences of the text that make the right \
+answer right, copied exactly, character for character. Whole sentences only: never cut one \
+short and never put an ellipsis in its place. At most 400 characters.
 - If the text is too short for {MAX_DRAFTS} good questions, write fewer.
 """
 

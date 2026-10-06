@@ -18,5 +18,21 @@
   "refusal": {
     "bar": 0.9,
     "what": "Questions the material does not cover, or that ask for homework: not answered"
+  },
+  "drafts-valid": {
+    "bar": 0.95,
+    "what": "Question drafts, five asked for from the first work of each period: the app's own rules for a question accept the draft. One that fails is never offered"
+  },
+  "drafts-quote": {
+    "bar": 0.95,
+    "what": "The draft's quote is in the section, word for word. One that fails is never offered"
+  },
+  "drafts-agrees": {
+    "bar": 0.85,
+    "what": "Of the drafts offered: the model, given only the section and the question, picks the answer the draft marks. A miss is a warning on the draft"
+  },
+  "drafts-usable": {
+    "bar": 0.7,
+    "what": "Thirty of the drafts offered, rated by a person: usable as it is or after a small edit"
   }
 }

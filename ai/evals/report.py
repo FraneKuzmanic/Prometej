@@ -55,15 +55,49 @@ def table(bars: dict, records: list[dict]) -> str:
     return "\n".join(lines)
 
 
+def drafts_table(bars: dict, run: dict, rated: dict | None) -> str:
+    totals = run["summary"]
+    rows = [
+        ("The app's rules accept the draft", "drafts-valid", totals["valid"], totals["written"]),
+        ("The quote is in the section", "drafts-quote", totals["quote_found"], totals["written"]),
+        (
+            "A second reading picks the same answer",
+            "drafts-agrees",
+            totals["agrees"],
+            totals["kept"],
+        ),
+    ]
+    if rated is not None:
+        rows.append(("Rated usable by a person", "drafts-usable", rated["usable"], rated["rated"]))
+
+    lines = ["| Drafts | Of | Bar | Result | |", "| --- | --- | --- | --- | --- |"]
+    for name, key, part, whole in rows:
+        bar = bars[key]["bar"]
+        share = part / whole if whole else 0.0
+        lines.append(
+            f"| {name} | {whole} | at least {percent(bar)} | {part} ({percent(share)}) | "
+            f"{verdict(share, bar)} |"
+        )
+    return "\n".join(lines)
+
+
 def main() -> None:
     sys.stdout.reconfigure(encoding="utf-8")
     bars = json.loads((HERE / "bars.json").read_text(encoding="utf-8"))
-    records = [
+    recorded = [
         json.loads(file.read_text(encoding="utf-8"))
         for file in sorted((HERE / "results").glob("*.json"))
     ]
-    records = [r for r in records if r.get("set") in ORDER and r.get("limit") is None]
+    records = [r for r in recorded if r.get("set") in ORDER and r.get("limit") is None]
     print(table(bars, records))
+
+    runs = [r for r in recorded if r.get("set") == "drafts"]
+    if runs:
+        rated = next((r for r in recorded if r.get("set") == "drafts-rated"), None)
+        print()
+        print(drafts_table(bars, runs[-1], rated))
+        records += runs[-1:]
+
     tokens = sum(r["summary"]["prompt_tokens"] + r["summary"]["completion_tokens"] for r in records)
     print(f"\nTokens, all recorded runs: {tokens}")
 
