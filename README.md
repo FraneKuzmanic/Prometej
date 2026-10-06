@@ -193,12 +193,12 @@ recorded, also those that are never offered to a teacher.
 | The app's rules accept the draft | 60 | at least 95.0% | 60 (100.0%) | pass |
 | The quote is in the section | 60 | at least 95.0% | 59 (98.3%) | pass |
 | A second reading picks the same answer | 59 | at least 85.0% | 59 (100.0%) | pass |
-| Rated usable by a person | 30 | at least 70.0% | not rated yet | |
+| Rated usable by a person | 30 | at least 70.0% | 30 (100.0%) | pass |
 
 One run, on 6 October 2026, about 80,000 tokens. The last row is the only one a script
-cannot fill: thirty of the offered drafts, drawn with a fixed seed, wait in
-`ai/evals/results/drafts-to-rate.md` to be rated by one person, me, as usable as they are or
-after a small edit. Until then that bar is open, not met.
+cannot fill: thirty of the offered drafts, drawn with a fixed seed, rated by one person, me,
+as usable as they are or after a small edit (`ai/evals/results/drafts-to-rate.md`). It is
+the weakest row of the table: one rater, who also built the feature and is not a teacher.
 
 - **The app's rules accept the draft**: four answers that all differ, one marked, within the
   length limits. The rules are the API's; they are written once more in Python, and one file

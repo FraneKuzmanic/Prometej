@@ -20,7 +20,7 @@ id: p1-1
 
 > Tema: u Ilijadi Ahilejev gnjev i njegove posljedice; u Odiseji Odisejev povratak kući i obračun s proscima
 
-ocjena: 
+ocjena: da
 
 ## 2. Antika · Homer: Ilijada i Odiseja
 
@@ -35,7 +35,7 @@ id: p1-2
 
 > Stih: heksametar; Ilijada ima gotovo 16 000, a Odiseja nešto više od 12 000 stihova, svaka u 24 pjevanja
 
-ocjena: 
+ocjena: da
 
 ## 3. Srednji vijek · Biblija
 
@@ -50,7 +50,7 @@ id: p2-5
 
 > Starozavjetna je i knjiga Judita, iz koje je građu za svoj ep uzeo Marko Marulić.
 
-ocjena: 
+ocjena: da
 
 ## 4. Renesansa · Marko Marulić: Judita
 
@@ -65,7 +65,7 @@ id: p3-5
 
 > Mjesto radnje: grad Betulija i asirski tabor pred njim
 
-ocjena: 
+ocjena: da
 
 ## 5. Realizam · Fjodor Mihajlovič Dostojevski: Zločin i kazna
 
@@ -80,7 +80,7 @@ id: p4-1
 
 > To je iskustvo opisao u Zapisima iz mrtvoga doma.
 
-ocjena: 
+ocjena: da
 
 ## 6. Realizam · Fjodor Mihajlovič Dostojevski: Zločin i kazna
 
@@ -95,7 +95,7 @@ id: p4-2
 
 > Tema: ubojstvo koje počini siromašni student i njegova duševna patnja nakon zločina
 
-ocjena: 
+ocjena: da
 
 ## 7. Realizam · Fjodor Mihajlovič Dostojevski: Zločin i kazna
 
@@ -110,7 +110,7 @@ id: p4-4
 
 > Sonja Marmeladova je ponižena, ali čista i duboko pobožna djevojka; vjerom i ljubavlju vodi Raskoljnikova pokajanju.
 
-ocjena: 
+ocjena: da
 
 ## 8. Realizam · Fjodor Mihajlovič Dostojevski: Zločin i kazna
 
@@ -125,7 +125,7 @@ id: p4-5
 
 > Da dokaže sebi da pripada takvima, sjekirom ubija staru lihvaricu Aljonu Ivanovnu, a zatim i njezinu sestru Lizavetu, koja se slučajno zatekla u stanu.
 
-ocjena: 
+ocjena: da
 
 ## 9. Romantizam · Ivan Mažuranić: Smrt Smail-age Čengića
 
@@ -140,7 +140,7 @@ id: p5-3
 
 > Povod je spjevu stvaran događaj: Smail-aga Čengić poginuo je 1836. u sukobu s Crnogorcima.
 
-ocjena: 
+ocjena: da
 
 ## 10. Romantizam · Ivan Mažuranić: Smrt Smail-age Čengića
 
@@ -155,7 +155,7 @@ id: p5-5
 
 > Četa i raja pravi su junak spjeva: pojedinačnoga glavnog lika nema, opisan je narod koji trpi i bori se.
 
-ocjena: 
+ocjena: da
 
 ## 11. Modernizam · Charles Baudelaire: Cvjetovi zla
 
@@ -170,7 +170,7 @@ id: p6-3
 
 > Spleen i ideal. To su dva pola cijele zbirke. Spleen je mračna strana, očaj i praznina velegradskoga života, a ideal čežnja za ljepotom i savršenstvom.
 
-ocjena: 
+ocjena: da
 
 ## 12. Modernizam · Charles Baudelaire: Cvjetovi zla
 
@@ -185,7 +185,7 @@ id: p6-5
 
 > Žena je u njega i izvor ljepote i izvor zla.
 
-ocjena: 
+ocjena: da
 
 ## 13. Humanizam i predrenesansa · Dante Alighieri: Božanstvena komedija
 
@@ -200,7 +200,7 @@ id: p7-2
 
 > Književna vrsta: alegorijski ep, spjev
 
-ocjena: 
+ocjena: da
 
 ## 14. Humanizam i predrenesansa · Dante Alighieri: Božanstvena komedija
 
@@ -215,7 +215,7 @@ id: p7-5
 
 > Tema: pjesnikov put kroz pakao, čistilište i raj
 
-ocjena: 
+ocjena: da
 
 ## 15. Barok · Ivan Gundulić: Dubravka
 
@@ -230,7 +230,7 @@ id: p8-2
 
 > Grdan je bogat i ružan; utjelovljuje novac koji želi kupiti ono što mu ne pripada.
 
-ocjena: 
+ocjena: da
 
 ## 16. Barok · Ivan Gundulić: Dubravka
 
@@ -245,7 +245,7 @@ id: p8-3
 
 > Mjesto radnje: Dubrava, pastirska zemlja koja predstavlja Dubrovnik
 
-ocjena: 
+ocjena: da
 
 ## 17. Barok · Ivan Gundulić: Dubravka
 
@@ -260,7 +260,7 @@ id: p8-5
 
 > Dubravka se čita kao alegorija: Dubrava je Dubrovnik, a priča o Grdanu upozorava da vlast mora ostati u rukama onih kojima po pravdi pripada.
 
-ocjena: 
+ocjena: da
 
 ## 18. Klasicizam · Molière: Škrtac
 
@@ -275,7 +275,7 @@ id: p9-1
 
 > Tema: opsjednutost novcem koja razara obitelj
 
-ocjena: 
+ocjena: da
 
 ## 19. Klasicizam · Molière: Škrtac
 
@@ -290,7 +290,7 @@ id: p9-2
 
 > Harpagon je škrt, sumnjičav i bešćutan starac; novac mu je važniji od djece.
 
-ocjena: 
+ocjena: da
 
 ## 20. Klasicizam · Molière: Škrtac
 
@@ -305,7 +305,7 @@ id: p9-3
 
 > Uzor je Molièreu bila Plautova komedija o ćupu s blagom, prema kojoj je i Marin Držić napisao Skup.
 
-ocjena: 
+ocjena: da
 
 ## 21. Klasicizam · Molière: Škrtac
 
@@ -320,7 +320,7 @@ id: p9-4
 
 > Mladi se parovi vjenčaju, a Harpagon ostaje sa svojim novcem.
 
-ocjena: 
+ocjena: da
 
 ## 22. Predromantizam · Johann Wolfgang Goethe: Patnje mladoga Werthera
 
@@ -335,7 +335,7 @@ id: p10-1
 
 > Književna vrsta: sentimentalni roman u pismima (epistolarni roman)
 
-ocjena: 
+ocjena: da
 
 ## 23. Predromantizam · Johann Wolfgang Goethe: Patnje mladoga Werthera
 
@@ -350,7 +350,7 @@ id: p10-2
 
 > Da pobjegne od svoje strasti, prihvaća službu u drugome gradu.
 
-ocjena: 
+ocjena: da
 
 ## 24. Predromantizam · Johann Wolfgang Goethe: Patnje mladoga Werthera
 
@@ -365,7 +365,7 @@ id: p10-4
 
 > Ideja: osjećajan pojedinac ne nalazi mjesta u svijetu pravila i obzira; strast bez mjere vodi u propast
 
-ocjena: 
+ocjena: da
 
 ## 25. Ekspresionizam · Antun Branko Šimić: Preobraženja i druge pjesme
 
@@ -380,7 +380,7 @@ id: p11-3
 
 > Zbirka: Preobraženja (1920.), jedina knjiga pjesama koju je objavio; ima 48 pjesama, većinom kratkih
 
-ocjena: 
+ocjena: da
 
 ## 26. Ekspresionizam · Antun Branko Šimić: Preobraženja i druge pjesme
 
@@ -395,7 +395,7 @@ id: p11-5
 
 > Teme: Bog, ljubav, smrt, tijelo i poezija; u kasnijim pjesmama siromaštvo
 
-ocjena: 
+ocjena: da
 
 ## 27. Suvremena književnost · Miroslav Krleža: Gospoda Glembajevi
 
@@ -410,7 +410,7 @@ id: p12-1
 
 > Tema: propast ugledne zagrebačke bankarske obitelji
 
-ocjena: 
+ocjena: da
 
 ## 28. Suvremena književnost · Miroslav Krleža: Gospoda Glembajevi
 
@@ -426,7 +426,7 @@ id: p12-2
 > Književni rod: drama
 Književna vrsta: psihološka drama u tri čina
 
-ocjena: 
+ocjena: da
 
 ## 29. Suvremena književnost · Miroslav Krleža: Gospoda Glembajevi
 
@@ -441,7 +441,7 @@ id: p12-3
 
 > Leone Glembay: slikar, osjetljiv i ironičan; prezire obitelj, a na kraju i sam postaje ubojica.
 
-ocjena: 
+ocjena: da
 
 ## 30. Suvremena književnost · Miroslav Krleža: Gospoda Glembajevi
 
@@ -456,4 +456,4 @@ id: p12-4
 
 > Barunica Castelli: Ignjatova druga žena; u kuću je ušla zbog novca i ne priznaje krivnju ni za čiju smrt
 
-ocjena: 
+ocjena: da
