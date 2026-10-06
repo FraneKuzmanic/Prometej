@@ -1,5 +1,6 @@
 import { useCallback, useRef, useState } from "react";
 import {
+  Alert,
   Box,
   Button,
   Dialog,
@@ -58,9 +59,12 @@ export default function Questions({
     )
   );
   const [current, setCurrent] = useState(0);
-  const [saveState, setSaveState] = useState<"saved" | "saving" | "failed">(
-    "saved"
-  );
+  // "idle" until the first answer is given: nothing was saved yet.
+  const [saveState, setSaveState] = useState<
+    "idle" | "saved" | "saving" | "failed"
+  >("idle");
+  // The server has ended the Sitting and its result could not be read.
+  const [resultFailed, setResultFailed] = useState(false);
   const [submitOpen, setSubmitOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitFailed, setSubmitFailed] = useState(false);
@@ -72,6 +76,21 @@ export default function Questions({
   const unsent = useRef(new Map<number, number[]>());
   const sending = useRef<Promise<void> | null>(null);
 
+  // The Sitting is over on the server: its time ran out or its Test was closed. Asking to
+  // finish it is how its result is read.
+  const readResult = useCallback(async () => {
+    onEndedByServer();
+    setResultFailed(false);
+    const result = await dispatch(finishSitting(sitting.id));
+    if (finishSitting.rejected.match(result)) {
+      if (result.payload === 404) {
+        onDiscardedByEdit();
+      } else {
+        setResultFailed(true);
+      }
+    }
+  }, [dispatch, sitting.id, onEndedByServer, onDiscardedByEdit]);
+
   const sendUnsent = async () => {
     setSaveState("saving");
     while (unsent.current.size > 0) {
@@ -82,9 +101,7 @@ export default function Questions({
       );
       if (saveSittingAnswer.rejected.match(result)) {
         if (result.payload === 409) {
-          // Its time ran out or its Test was closed. The result is read the way it is asked for.
-          onEndedByServer();
-          dispatch(finishSitting(sitting.id));
+          readResult();
         } else if (result.payload === 404) {
           onDiscardedByEdit();
         } else {
@@ -136,11 +153,6 @@ export default function Questions({
     setSubmitting(false);
   };
 
-  const handleZero = useCallback(() => {
-    onEndedByServer();
-    dispatch(finishSitting(sitting.id));
-  }, [dispatch, sitting.id, onEndedByServer]);
-
   const question = sitting.questions[current];
   const given = answers[question.questionId];
   const sourceText = sitting.sourceTexts.find(
@@ -169,7 +181,7 @@ export default function Questions({
             <Countdown
               endsAt={sitting.endsAt}
               offset={serverOffset}
-              onZero={handleZero}
+              onZero={readResult}
             />
           )}
         </Box>
@@ -222,6 +234,18 @@ export default function Questions({
         )}
         {question.type === "ordering" && (
           <OrderingAnswer key={question.questionId} {...answerProps} />
+        )}
+        {resultFailed && (
+          <Alert
+            severity="warning"
+            action={
+              <Button color="inherit" size="small" onClick={() => readResult()}>
+                Pokušaj ponovno
+              </Button>
+            }
+          >
+            Vrijeme je isteklo, a rezultat se nije učitao.
+          </Alert>
         )}
         <Box className="sitting-save-state" aria-live="polite">
           {saveState === "saved" && (

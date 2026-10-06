@@ -8,6 +8,7 @@ import {
   Avatar,
   Box,
   Button,
+  Chip,
   Dialog,
   DialogActions,
   DialogContent,
@@ -71,7 +72,8 @@ const sittingStates: Record<SittingRow["state"], string> = {
 // What the confirmation dialog is about: closing the Test, or one Student's second Sitting.
 type TestAction = { kind: "close" } | { kind: "reset"; sitting: SittingRow };
 
-function PlayerName({ name }: { name: string }) {
+// label: said beside the name, for a play that was a Sitting of a Public Quiz.
+function PlayerName({ name, label }: { name: string; label?: string }) {
   return (
     <TableCell component="th" scope="row">
       {/* The flex box is inside the cell: a cell that is itself flex loses its row's border. */}
@@ -86,6 +88,7 @@ function PlayerName({ name }: { name: string }) {
         >
           {name}
         </Typography>
+        {label && <Chip size="small" label={label} sx={{ marginLeft: 1 }} />}
       </Box>
     </TableCell>
   );
@@ -487,7 +490,14 @@ export function QuizDetails() {
                             )}
                           </IconButton>
                         </TableCell>
-                        <PlayerName name={quizGame.userName} />
+                        <PlayerName
+                          name={quizGame.userName}
+                          label={
+                            quizGame.playedAs === "mock"
+                              ? "Kao provjera"
+                              : undefined
+                          }
+                        />
                         <TableCell align="right">
                           {formatDate(quizGame.datePlayed)}
                         </TableCell>

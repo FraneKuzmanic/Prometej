@@ -64,6 +64,8 @@ export default function GameReview() {
             {formatDate(gameReview.datePlayed)} · {gameReview.score} /{" "}
             {gameReview.answers.length} {pointsLabel(gameReview.answers.length)}
             {gameReview.periodName && ` · ${gameReview.periodName}`}
+            {gameReview.playedAs === "test" && " · Provjera"}
+            {gameReview.playedAs === "mock" && " · Kao provjera"}
           </Typography>
           {groups.map((answers, index) => {
             const { id, sourceTextId } = answers[0];

@@ -132,9 +132,12 @@ namespace Prometej_core.Services.Implementations
         public void SaveAnswer(int sittingId, SittingAnswerRequest request, int callerId)
         {
             EnsureOwn(sittingId, callerId);
-            EndExpired(s => s.Id == sittingId);
+            if (!EndExpired(s => s.Id == sittingId))
+            {
+                throw new ConflictException("The sitting has ended");
+            }
 
-            // Read after the line above, which may have ended it.
+            // Read after the lines above, which may have ended it.
             var stored = _sittingAnswerRepository.GetAll()
                 .Include(a => a.Question)
                 .Where(a => a.SittingId == sittingId && a.Sitting.FinishedAt == null)
@@ -180,10 +183,15 @@ namespace Prometej_core.Services.Implementations
         public void Discard(int sittingId, int callerId)
         {
             EnsureOwn(sittingId, callerId);
-            EndExpired(s => s.Id == sittingId);
+            if (!EndExpired(s => s.Id == sittingId))
+            {
+                throw new ConflictException("The sitting has ended");
+            }
 
+            // Gone already if the same discard was sent twice at once.
             var sitting = _sittingRepository.ReadAll().Where(s => s.Id == sittingId)
-                .Select(s => new { s.Quiz.IsTest, s.FinishedAt }).First();
+                .Select(s => new { s.Quiz.IsTest, s.FinishedAt }).FirstOrDefault()
+                ?? throw new NotFoundException("Sitting not found");
             if (sitting.IsTest)
             {
                 throw new ConflictException("A sitting of a test cannot be discarded");
@@ -232,7 +240,15 @@ namespace Prometej_core.Services.Implementations
             }
 
             _sittingRepository.Delete(sitting.Id);
-            _sittingRepository.Save();
+            try
+            {
+                _sittingRepository.Save();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                // The student handed it in, or its time ran out, between the read and the delete.
+                throw new ConflictException("The sitting has just changed");
+            }
         }
 
         public bool EndExpired(Expression<Func<Sitting, bool>> which)
@@ -300,6 +316,11 @@ namespace Prometej_core.Services.Implementations
             {
                 return false;
             }
+            catch (Exception ex) when (PostgresErrors.IsDeadlock(ex))
+            {
+                // An edit of the quiz's questions was deleting this sitting at the same moment.
+                return false;
+            }
 
             return true;
         }
@@ -352,8 +373,11 @@ namespace Prometej_core.Services.Implementations
         private Quiz FindSittable(int quizId, int? code)
         {
             var quiz = _quizRepository.ReadAll().FirstOrDefault(q => q.Id == quizId);
+            // A quiz stored before quizzes had to have questions can be made a test, and has
+            // nothing to sit.
             var sittable = quiz != null && (quiz.IsTest
                 ? code != null && quiz.EntryCode == code
+                    && _questionRepository.ReadAll().Any(q => q.QuizId == quizId && !q.IsRetired)
                 : _quizRepository.ReadAll().Where(Quiz.IsListed).Any(q => q.Id == quizId));
             if (!sittable)
             {

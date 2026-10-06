@@ -63,8 +63,9 @@ option 1, nothing, option 3: Judita right, Planine unanswered, Osman right.
 ## Consequences
 
 - A read can write. The request that notices an expired sitting ends it, so a `GET` may store
-  a play. Two requests that notice at once are held apart by a row version on the sitting:
-  the second save fails whole and stores nothing.
+  a play. Two requests that notice at once cannot both store one: ending a sitting is a single
+  save that checks the sitting's row version and deletes its saved answers, so the second
+  save fails whole and stores nothing.
 - There is no grace at the deadline. An answer that arrives after it is refused.
 - A test's questions are locked from its first sitting, so every student sits the same test.
   Its title, time limit and closing time stay editable.

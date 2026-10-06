@@ -284,7 +284,15 @@ namespace Prometej_core.Services.Implementations
             }
 
             // The repositories share one context, so the quiz and its questions save together or not at all.
-            SaveWithEntryCode(quizEntity);
+            try
+            {
+                SaveWithEntryCode(quizEntity);
+            }
+            catch (Exception ex) when (ex is DbUpdateConcurrencyException || PostgresErrors.IsDeadlock(ex))
+            {
+                // A sitting this save deletes was handed in at the same moment.
+                throw new ConflictException("The quiz was being sat while it was saved");
+            }
         }
 
         // A private practice quiz with the same questions and none of the results: the way to

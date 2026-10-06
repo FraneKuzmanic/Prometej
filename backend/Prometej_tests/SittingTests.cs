@@ -561,6 +561,37 @@ namespace Prometej_tests
         }
 
         [Fact]
+        public async Task A_test_without_questions_cannot_be_sat()
+        {
+            var teacher = await factory.LoginAs(ApiFactory.TeacherEmail);
+            var student = await factory.LoginAsNewStudent();
+            var teacherId = (await teacher.GetFromJsonAsync<JsonElement>("/api/user/me")).GetProperty("id").GetInt32();
+            const int code = 10001;
+            var empty = factory.AddLegacyQuiz(teacherId, isPrivate: true, entryCode: code);
+
+            var madeTest = await UpdateHeader(teacher, Header(empty));
+
+            Assert.Equal(HttpStatusCode.NoContent, madeTest.StatusCode);
+            Assert.Equal(HttpStatusCode.NotFound, (await Info(student, empty, code)).StatusCode);
+            Assert.Equal(HttpStatusCode.NotFound, (await Start(student, empty, code)).StatusCode);
+        }
+
+        [Fact]
+        public async Task A_discard_sent_several_times_at_once_is_answered_without_a_server_error()
+        {
+            var teacher = await factory.LoginAs(ApiFactory.TeacherEmail);
+            var student = await factory.LoginAsNewStudent();
+            var quiz = await CreateListed(teacher, [Choice()]);
+            var sitting = await StartedMock(student, quiz.Id);
+
+            var responses = await Task.WhenAll(Enumerable.Range(0, 6).Select(_ => Discard(student, Id(sitting))));
+
+            Assert.Contains(responses, response => response.StatusCode == HttpStatusCode.NoContent);
+            Assert.All(responses, response => Assert.True((int)response.StatusCode < 500, response.StatusCode.ToString()));
+            Assert.Empty(await Games(teacher, quiz.Id));
+        }
+
+        [Fact]
         public async Task A_tests_sitting_cannot_be_discarded()
         {
             var teacher = await factory.LoginAs(ApiFactory.TeacherEmail);

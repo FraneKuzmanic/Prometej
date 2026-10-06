@@ -103,7 +103,7 @@ A few things worth knowing before reading the code:
   topic only while it has no replies
   ([0006](docs/adr/0006-a-post-outlives-its-authors-account.md)). Who may delete a post is
   the server's answer, sent with the post. One account can post five times a minute.
-- **Entry codes cannot be swept.** A request that carries a code is limited to sixty a minute
+- **Entry codes are rate limited.** A request that carries a code is limited to sixty a minute
   for an account, or for an address when nobody is signed in.
 
 Decisions with a longer story are in [`docs/adr`](docs/adr):
