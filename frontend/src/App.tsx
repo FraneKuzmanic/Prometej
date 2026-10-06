@@ -1,6 +1,8 @@
 import { useEffect } from "react";
 import { Provider } from "react-redux";
 import { RouterProvider } from "react-router-dom";
+import { ThemeProvider } from "@mui/material";
+import theme from "./theme";
 import appRouter from "./screens/router";
 import { store } from "./store/store";
 import configureAxios from "./services/axios";
@@ -16,7 +18,9 @@ function App() {
 
   return (
     <Provider store={store}>
-      <RouterProvider router={appRouter} />
+      <ThemeProvider theme={theme}>
+        <RouterProvider router={appRouter} />
+      </ThemeProvider>
     </Provider>
   );
 }
