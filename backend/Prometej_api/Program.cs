@@ -8,6 +8,7 @@ using Prometej_api.Auth;
 using Prometej_api.Controllers;
 using Prometej_api.ErrorHandling;
 using Prometej_api.Seed;
+using Prometej_api.Tutor;
 using Prometej_core.DataAccessLayer;
 using Prometej_core.Models.efModels;
 using Prometej_core.Services.Contracts;
@@ -55,6 +56,7 @@ builder.Services.AddScoped<IQuizService, QuizService>();
 builder.Services.AddScoped<IDiscussionService, DiscussionService>();
 builder.Services.AddScoped<ISittingService, SittingService>();
 builder.Services.AddSingleton<TokenService>();
+builder.Services.AddHttpClient<ITutorClient, TutorClient>();
 
 #endregion Service DI
 
@@ -144,6 +146,10 @@ builder.Services.AddRateLimiter(options =>
         return RateLimitPartition.GetFixedWindowLimiter(key,
             _ => new FixedWindowRateLimiterOptions { PermitLimit = 60, Window = TimeSpan.FromMinutes(1) });
     });
+    // A question to the tutor costs a call to a language model, and anyone may ask one.
+    options.AddPolicy(TutorController.TutorLimit, httpContext => RateLimitPartition.GetFixedWindowLimiter(
+        httpContext.User.FindFirstValue("sub") ?? httpContext.Connection.RemoteIpAddress?.ToString() ?? "",
+        _ => new FixedWindowRateLimiterOptions { PermitLimit = 10, Window = TimeSpan.FromMinutes(1) }));
 });
 
 #endregion Rate limiting
