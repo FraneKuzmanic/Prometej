@@ -20,8 +20,6 @@ The interface is in Croatian. The app is not deployed yet, so for now it runs lo
 - [Getting started](#getting-started)
 - [Tests](#tests)
 - [How it works](#how-it-works)
-- [How the tutor is measured](#how-the-tutor-is-measured)
-- [Sample content](#sample-content)
 
 ## Features
 
@@ -237,68 +235,3 @@ A few decisions that explain most of the code:
   is looked up word for word in the section it names before anything is shown. A failed
   answer goes back to the model once. After a second failure the student gets a fixed
   message instead of an answer.
-
-## How the tutor is measured
-
-I wrote the pass bars down before the first run. The commit that holds them
-(`ai/evals/bars.json`, together with the sets) is older than the one that holds the results.
-A script scores every run and no model judges another.
-
-| Set | Items | Bar | Result |
-| --- | --- | --- | --- |
-| A. Quiz questions, with tools | 24 | at least 90% | 24 (100%) |
-| A. The same questions, no tools (baseline) | 24 | | 20 (83.3%) |
-| A. What the tools add | | at least 10 points | +16.7 points |
-| B. "Where is this covered?" | 36 | at least 85% | 36 (100%) |
-| C. Not covered, or homework | 15 | at least 90% | 15 (100%) |
-
-- **Set A** is the 24 four-option questions of the sample quizzes that are not about a
-  poem. The tutor gets the question with its options and has to pick one, through the same
-  loop and quote check as in the app. The baseline is the same model with no tools and no
-  material.
-- **Set B** asks about something without naming the period. An item passes when a checked
-  citation is in the expected period and section.
-- **Set C** is ten questions about works the material does not cover and five requests for
-  an essay or homework. An item passes when the tutor does not answer.
-
-One run of each set on 6 October 2026, with GPT-4.1 at temperature 0. Two answers in set A
-needed the one retry, and none failed the quote check twice. The four runs used about
-487,000 tokens, and a typical answer took about five seconds.
-
-Question drafts had their own bars, also committed before their run. Five drafts were
-requested from the first work of each of the twelve periods:
-
-| Check | Of | Bar | Result |
-| --- | --- | --- | --- |
-| The app's own rules accept the draft | 60 | at least 95% | 60 (100%) |
-| The supporting quote is in the section | 60 | at least 95% | 59 (98.3%) |
-| A second reading picks the same answer | 59 | at least 85% | 59 (100%) |
-| Rated usable by a person | 30 | at least 70% | 30 (100%) |
-
-What these numbers do not show:
-
-- The quote is checked, the tutor's own wording around it is not. Set A is the only measure
-  of whether an explanation is right, and it has 24 questions.
-- The sets are small, and I wrote them as well as the prompt. Three results of 100% mostly
-  mean that these sets are too easy to find where the tutor fails.
-- It is one model and one run. A second run could differ by an item or two.
-- Nothing here measures a conversation with follow-up questions, or a student trying to
-  talk the tutor out of its rules.
-- The drafts were rated by one person, me. I built the feature and I am not a teacher.
-
-`ai/evals/results` holds every recorded run, item by item.
-
-## Sample content
-
-Every period comes with study material in the same seven chapters: name and time frame,
-social and historical context, features of the period, European literature, Croatian
-literature, the works, and a summary. Three periods (Renesansa, Realizam, Modernizam) also
-have a sample quiz of thirteen questions.
-
-The choice of works follows the NCVVO exam catalogue. The facts come from Hrvatska
-enciklopedija, lektire.hr, Croatian Wikipedia and Leksikon Marina Držića, and the text was
-written for this project. The poems used in the quizzes (by Hanibal Lucić, Silvije Strahimir
-Kranjčević and Antun Gustav Matoš) are in the public domain and are quoted from Croatian
-Wikisource.
-
-This is sample material and **it has not been reviewed by a teacher**.
