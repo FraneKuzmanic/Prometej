@@ -1,77 +1,67 @@
-import Card from "@mui/material/Card";
-import CardContent from "@mui/material/CardContent";
-import CardHeader from "@mui/material/CardHeader";
-import Typography from "@mui/material/Typography";
-import { Avatar, CardActionArea } from "@mui/material";
-import { stringToColor } from "./stringToColor";
+import { Card, CardActionArea, IconButton, Typography } from "@mui/material";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
+import QuizOutlinedIcon from "@mui/icons-material/QuizOutlined";
+import { QuizBaseModel } from "../../types/models/Quiz";
+import "./styles.css";
 
 interface Props {
-  name: string;
-  authorName: string;
-  entryCode?: number;
-  // a Test, said beside its Entry Code
-  isTest?: boolean;
-  periodName: string | null;
-  questionCount: number;
+  quiz: QuizBaseModel;
+  // the painting of the Quiz's Period, if it has one
+  image?: string | null;
+  // A Creator's own card says how the Quiz is given out instead of who made it.
+  own?: boolean;
+  onOpen: () => void;
+  onMenu: (anchor: HTMLElement) => void;
 }
 
 // "1 pitanje", "21 pitanje", and "pitanja" for every other number.
 const questionsLabel = (count: number) =>
   `${count} ${count % 10 === 1 && count % 100 !== 11 ? "pitanje" : "pitanja"}`;
 
-export default function QuizContainer(props: Props) {
+export default function QuizContainer({ quiz, image, own, onOpen, onMenu }: Props) {
   return (
-    <Card>
-      <CardActionArea>
-        <CardHeader
-          title={<Typography variant="h6">{props.name}</Typography>}
-          subheader={[props.periodName, questionsLabel(props.questionCount)]
-            .filter(Boolean)
-            .join(" · ")}
-        />
-        <CardContent
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            marginTop: 4,
-            position: "relative",
-          }}
-        >
-          <Avatar sx={{ bgcolor: stringToColor(props.authorName) }}>
-            {props.authorName[0].toUpperCase()}
-          </Avatar>
-          <Typography
-            sx={{ marginLeft: 1.5, fontSize: 14 }}
-            gutterBottom
-            variant="h6"
-            component="div"
-          >
-            {props.authorName}
+    <Card className="quiz-card">
+      <CardActionArea className="quiz-card-open" onClick={onOpen}>
+        <span className={image ? "quiz-card-image" : "quiz-card-image plain"}>
+          {image ? <img src={`/${image}`} alt="" /> : <QuizOutlinedIcon />}
+        </span>
+        <span className="quiz-card-text">
+          <Typography variant="h6" component="h2" className="quiz-card-title">
+            {quiz.title}
           </Typography>
-          {props.entryCode && (
-            <Typography
-              variant="h6"
-              sx={{
-                fontSize: 14,
-                position: "absolute",
-                bottom: 0,
-                right: 0,
-                padding: 1,
-              }}
-            >
-              {props.isTest && (
-                <span className="quiz-container-test">Provjera · </span>
-              )}
-              Ulazni kod:
-              <span
-                style={{ color: "#553b08", marginLeft: 5, fontStyle: "italic" }}
-              >
-                {props.entryCode}
+          <span className="quiz-card-meta">
+            {[quiz.periodName, questionsLabel(quiz.questionCount)]
+              .filter(Boolean)
+              .join(" · ")}
+          </span>
+          {own ? (
+            <span className="quiz-card-foot">
+              <span className="quiz-card-tag">
+                {quiz.isTest ? "Provjera" : quiz.isPrivate ? "Privatni" : "Javni"}
               </span>
-            </Typography>
+              {quiz.entryCode && (
+                <span className="quiz-card-code">
+                  Ulazni kod: <strong>{quiz.entryCode}</strong>
+                </span>
+              )}
+            </span>
+          ) : (
+            <span className="quiz-card-foot">
+              <span className="quiz-card-creator">{quiz.creatorName}</span>
+            </span>
           )}
-        </CardContent>
+        </span>
       </CardActionArea>
+      <span className="quiz-container-opt">
+        <IconButton
+          size="small"
+          aria-label={`Mogućnosti kviza ${quiz.title}`}
+          aria-haspopup="true"
+          onClick={(event) => onMenu(event.currentTarget)}
+        >
+          <MoreVertIcon />
+        </IconButton>
+      </span>
     </Card>
   );
 }

@@ -1,5 +1,15 @@
-import { Button, Paper, TextField, Typography } from "@mui/material";
-import { useState } from "react";
+import {
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  IconButton,
+  TextField,
+} from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
+import { FormEvent, useState } from "react";
 import { useAppDispatch } from "../../store/store";
 import { fetchQuizByCode } from "../../store/slices/quizSlice";
 import { useNavigate } from "react-router-dom";
@@ -15,11 +25,13 @@ export default function JoinQuiz({ setOpenJoinQuizDialog }: JoinQuizProps) {
   const [error, setError] = useState<string>("");
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  const close = () => setOpenJoinQuizDialog(false);
 
-  const joinQuiz = () => {
+  const joinQuiz = (event: FormEvent) => {
+    event.preventDefault();
     dispatch(fetchQuizByCode(quizCode)).then((resultAction) => {
       if (fetchQuizByCode.fulfilled.match(resultAction)) {
-        setOpenJoinQuizDialog(false);
+        close();
         const { id, isTest } = resultAction.payload;
         // A Test is sat, not played: its Questions come only with a Sitting.
         navigate(`/${isTest ? "sitting" : "play-quiz"}/${id}?code=${quizCode}`);
@@ -34,49 +46,43 @@ export default function JoinQuiz({ setOpenJoinQuizDialog }: JoinQuizProps) {
   };
 
   return (
-    <Paper elevation={10} className="join-quiz-form">
-      <Typography sx={{ fontWeight: "bold", marginTop: "1rem" }} variant="h5">
-        Pridruži se kvizu
-      </Typography>
-      <Typography sx={{ marginTop: "3.5rem" }} variant="h5">
-        Unesite kod
-      </Typography>
-      <TextField
-        sx={{ marginTop: "0.5rem" }}
-        type="text"
-        placeholder="Privatni kod..."
-        fullWidth
-        required
-        value={quizCode}
-        onChange={(e) => {
-          setQuizCode(e.target.value);
-          setError("");
-        }}
-        error={error !== ""}
-        helperText={error}
-      />
-      <Button
-        variant="contained"
-        onClick={() => joinQuiz()}
-        style={{
-          backgroundColor: "#553b08",
-          marginTop: "2rem",
-          width: "80%",
-        }}
-      >
-        Pridruži se
-      </Button>
-      <Button
-        variant="contained"
-        style={{
-          backgroundColor: "#553b08",
-          marginTop: "1rem",
-          width: "80%",
-        }}
-        onClick={() => setOpenJoinQuizDialog(false)}
-      >
-        Odustani
-      </Button>
-    </Paper>
+    <Dialog
+      open
+      onClose={close}
+      maxWidth="xs"
+      fullWidth
+      PaperProps={{ component: "form", onSubmit: joinQuiz, className: "join-quiz-form" }}
+    >
+      <DialogTitle>Pridruži se kvizu</DialogTitle>
+      <IconButton className="join-quiz-close" aria-label="Zatvori" onClick={close}>
+        <CloseIcon />
+      </IconButton>
+      <DialogContent>
+        <DialogContentText>
+          Upišite ulazni kod od pet znamenki koji ste dobili od nastavnika.
+        </DialogContentText>
+        <TextField
+          className="join-quiz-code"
+          label="Ulazni kod"
+          autoFocus
+          fullWidth
+
+          value={quizCode}
+          onChange={(e) => {
+            setQuizCode(e.target.value);
+            setError("");
+          }}
+          inputProps={{ inputMode: "numeric", autoComplete: "off", maxLength: 10 }}
+          error={error !== ""}
+          helperText={error || " "}
+        />
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={close}>Odustani</Button>
+        <Button type="submit" variant="contained" disabled={!quizCode.trim()}>
+          Pridruži se
+        </Button>
+      </DialogActions>
+    </Dialog>
   );
 }

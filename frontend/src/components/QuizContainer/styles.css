@@ -1,0 +1,158 @@
+.quiz-grid{
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(330px, 100%), 1fr));
+    gap: 1.25rem;
+}
+
+.quiz-card.MuiCard-root{
+    position: relative;
+    display: flex;
+    border-radius: 10px;
+    transition: transform 220ms var(--ease-out), box-shadow 220ms var(--ease-out),
+        border-color 220ms ease-out;
+}
+
+.quiz-card.MuiCard-root:hover,
+.quiz-card.MuiCard-root:focus-within{
+    transform: translateY(-2px);
+    border-color: #d3c7ab;
+    box-shadow: var(--shadow-raised);
+}
+
+.quiz-card-open.MuiCardActionArea-root{
+    display: flex;
+    align-items: stretch;
+    min-height: 8.25rem;
+    font-family: var(--font-sans);
+    text-align: left;
+}
+
+/* The brown wash of a hovered action area would sit over the painting. */
+.quiz-card-open .MuiCardActionArea-focusHighlight{
+    display: none;
+}
+
+.quiz-card-image{
+    display: block;
+    flex: 0 0 6.75rem;
+    overflow: hidden;
+    background-color: var(--parchment);
+}
+
+.quiz-card-image img{
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 20%;
+    transition: transform 600ms var(--ease-out);
+}
+
+.quiz-card:hover .quiz-card-image img{
+    transform: scale(1.05);
+}
+
+.quiz-card-image.plain{
+    display: grid;
+    place-items: center;
+    color: #a08b5f;
+}
+
+.quiz-card-image.plain .MuiSvgIcon-root{
+    font-size: 2.25rem;
+}
+
+.quiz-card-text{
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
+    padding: 0.9rem 2.75rem 0.9rem 1.1rem;
+}
+
+.quiz-card-title.MuiTypography-root{
+    font-size: 1.12rem;
+    line-height: 1.3;
+    overflow-wrap: anywhere;
+}
+
+.quiz-card-meta{
+    margin-top: 0.25rem;
+    color: var(--ink-muted);
+    font-size: 0.92rem;
+}
+
+.quiz-card-foot{
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem 0.75rem;
+    margin-top: auto;
+    padding-top: 0.75rem;
+    font-size: 0.9rem;
+}
+
+.quiz-card-creator{
+    color: var(--ink);
+    font-weight: 600;
+    overflow-wrap: anywhere;
+}
+
+.quiz-card-tag{
+    padding: 0.1rem 0.55rem;
+    border-radius: 999px;
+    background-color: var(--parchment);
+    color: var(--brown);
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.quiz-card-code{
+    color: var(--ink-muted);
+}
+
+.quiz-card-code strong{
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.04em;
+}
+
+.quiz-container-opt{
+    position: absolute;
+    top: 0.4rem;
+    right: 0.3rem;
+}
+
+.quiz-container-opt .MuiIconButton-root{
+    color: var(--ink-muted);
+}
+
+.quiz-pagination{
+    display: flex;
+    justify-content: center;
+    margin-top: 1.75rem;
+}
+
+/* On a phone the painting gives way to the title, which should not break inside a word. */
+@media (max-width: 480px){
+    .quiz-card-image{
+        flex-basis: 4.5rem;
+    }
+
+    .quiz-card-text{
+        padding-left: 0.9rem;
+    }
+}
+
+@media (prefers-reduced-motion: reduce){
+    .quiz-card.MuiCard-root,
+    .quiz-card-image img{
+        transition: none;
+    }
+
+    .quiz-card.MuiCard-root:hover,
+    .quiz-card.MuiCard-root:focus-within,
+    .quiz-card:hover .quiz-card-image img{
+        transform: none;
+    }
+}

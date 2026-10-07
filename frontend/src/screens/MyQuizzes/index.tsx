@@ -1,22 +1,29 @@
 import {
-  Box,
   Button,
   Dialog,
   DialogActions,
   DialogContent,
   DialogContentText,
   DialogTitle,
-  Grid,
-  IconButton,
+  Divider,
+  ListItemIcon,
   Menu,
   MenuItem,
   Pagination,
-  Paper,
   TextField,
-  Typography,
 } from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
+import BarChartOutlinedIcon from "@mui/icons-material/BarChartOutlined";
+import ContentCopyOutlinedIcon from "@mui/icons-material/ContentCopyOutlined";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import DriveFileRenameOutlineIcon from "@mui/icons-material/DriveFileRenameOutline";
+import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
+import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
+import PublicOutlinedIcon from "@mui/icons-material/PublicOutlined";
+import QuizOutlinedIcon from "@mui/icons-material/QuizOutlined";
 import QuizContainer from "../../components/QuizContainer";
-import { useEffect, useState } from "react";
+import { EmptyState, Page, PageHeader } from "../../components/Page";
+import { FormEvent, useEffect, useState } from "react";
 import { RootState, useAppDispatch } from "../../store/store";
 import {
   fetchMyQuizzes,
@@ -24,17 +31,17 @@ import {
   deleteQuiz,
   updateQuiz,
 } from "../../store/slices/quizSlice";
+import { fetchPeriods } from "../../store/slices/periodSlice";
 import { useSelector } from "react-redux";
 import { QuizBaseModel, QuizEditRequest } from "../../types/models/Quiz";
-import "./styles.css";
-import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { useNavigate } from "react-router-dom";
+
+const postsPerPage = 9;
 
 export default function MyQuizzes() {
   const [currentPage, setCurrentPage] = useState(1);
-  // Two rows: a third row of cards does not fit on a 720 px high screen.
-  const [postsPerPage] = useState(6);
   const { quizzes } = useSelector((state: RootState) => state.quiz);
+  const { periods } = useSelector((state: RootState) => state.period);
   const { user } = useSelector((state: RootState) => state.user);
   const dispatch = useAppDispatch();
   // One menu for all the cards; it remembers which Quiz it was opened for. Closing clears
@@ -43,7 +50,7 @@ export default function MyQuizzes() {
     anchor: HTMLElement | null;
     quiz: QuizBaseModel;
   } | null>(null);
-  const [inputDrawer, setInputDrawer] = useState<boolean>(false);
+  const [renameOpen, setRenameOpen] = useState<boolean>(false);
   const [quizTitle, setQuizTitle] = useState<string>("");
   const [currentQuiz, setCurrentQuiz] = useState<QuizBaseModel | null>(null);
   // Kept after the dialog closes, so its text does not change while it fades out.
@@ -91,19 +98,26 @@ export default function MyQuizzes() {
     handleClose();
   };
 
-  const handleNameChange = () => {
+  const handleNameChange = (event: FormEvent) => {
+    event.preventDefault();
+    if (!quizTitle.trim()) return;
     if (currentQuiz && user) {
       const updatedQuiz = { ...headerOf(currentQuiz), title: quizTitle.trim() };
       dispatch(updateQuiz({ quiz: updatedQuiz })).then(() => {
         dispatch(fetchMyQuizzes());
       });
     }
-    setInputDrawer(false);
+    setRenameOpen(false);
   };
 
   useEffect(() => {
     if (user) dispatch(fetchMyQuizzes());
   }, [dispatch, user]);
+
+  // The cards show the painting of a Quiz's Period.
+  useEffect(() => {
+    if (!periods) dispatch(fetchPeriods());
+  }, [dispatch, periods]);
 
   const indexOfLastPost = currentPage * postsPerPage;
   const indexOfFirstPost = indexOfLastPost - postsPerPage;
@@ -116,66 +130,76 @@ export default function MyQuizzes() {
   };
 
   return (
-    <Box
-      sx={{
-        flexGrow: 1,
-        height: "90%",
-        position: "relative",
-        overflowY: "hidden",
-      }}
-    >
-      <Grid
-        container
-        spacing={{ xs: 2, md: 3 }}
-        columns={{ xs: 4, sm: 8, md: 12 }}
+    <Page>
+      <PageHeader
+        title="Moji kvizovi"
+        lead="Kvizovi koje ste sastavili. Kartica otvara uređivanje, a izbornik na njoj rezultate i ostale mogućnosti."
       >
+        <Button
+          variant="contained"
+          startIcon={<AddIcon />}
+          onClick={() => navigate("/make-quiz")}
+        >
+          Novi kviz
+        </Button>
+      </PageHeader>
+      {quizzes?.length === 0 && (
+        <EmptyState
+          icon={<QuizOutlinedIcon />}
+          title="Još nemate nijedan kviz."
+          action={
+            <Button variant="contained" onClick={() => navigate("/make-quiz")}>
+              Sastavi prvi kviz
+            </Button>
+          }
+        >
+          Sastavite kviz za vježbu ili provjeru: javni vide svi, a privatni otvara samo
+          razred kojemu date ulazni kod.
+        </EmptyState>
+      )}
+      <div className="quiz-grid">
         {myQuizzes.map((quiz: QuizBaseModel) => (
-          <Grid
-            item
-            xs={2}
-            sm={4}
-            md={4}
+          <QuizContainer
             key={quiz.id}
-            sx={{ position: "relative" }}
-            onClick={(event) => {
-              const target = event.target as HTMLElement;
-              if (!target.closest(".quiz-container-opt")) {
-                navigate(`/edit-quiz/${quiz.id}`);
-              }
-            }}
-          >
-            <QuizContainer
-              name={quiz.title}
-              authorName={quiz.creatorName}
-              entryCode={quiz.entryCode}
-              isTest={quiz.isTest}
-              periodName={quiz.periodName}
-              questionCount={quiz.questionCount}
-            />
-            <Box className="quiz-container-opt">
-              <IconButton
-                aria-label={`Mogućnosti kviza ${quiz.title}`}
-                aria-haspopup="true"
-                onClick={(event) => {
-                  event.stopPropagation();
-                  setMenu({ anchor: event.currentTarget, quiz });
-                }}
-              >
-                <MoreVertIcon />
-              </IconButton>
-            </Box>
-          </Grid>
+            quiz={quiz}
+            own
+            image={periods?.find((period) => period.id === quiz.periodId)?.image}
+            onOpen={() => navigate(`/edit-quiz/${quiz.id}`)}
+            onMenu={(anchor) => setMenu({ anchor, quiz })}
+          />
         ))}
-      </Grid>
+      </div>
       <Menu
         id="basic-menu"
         anchorEl={menu?.anchor}
         open={Boolean(menu?.anchor)}
         onClose={handleClose}
       >
+        <MenuItem onClick={() => menu && navigate(`/edit-quiz/${menu.quiz.id}`)}>
+          <ListItemIcon>
+            <EditOutlinedIcon fontSize="small" />
+          </ListItemIcon>
+          Uredi
+        </MenuItem>
+        <MenuItem
+          onClick={() => menu && navigate(`/quiz-details/${menu.quiz.id}`)}
+        >
+          <ListItemIcon>
+            <BarChartOutlinedIcon fontSize="small" />
+          </ListItemIcon>
+          Analitika kviza
+        </MenuItem>
+        <Divider />
         {/* A Test is a Private Quiz; it is made practice again in the editor first. */}
         {!menu?.quiz.isTest && (
           <MenuItem onClick={() => menu && toggleVisibility(menu.quiz)}>
+            <ListItemIcon>
+              {menu?.quiz.isPrivate ? (
+                <PublicOutlinedIcon fontSize="small" />
+              ) : (
+                <LockOutlinedIcon fontSize="small" />
+              )}
+            </ListItemIcon>
             {menu?.quiz.isPrivate ? "Učini javnim" : "Učini privatnim"}
           </MenuItem>
         )}
@@ -184,17 +208,25 @@ export default function MyQuizzes() {
             if (menu) {
               setCurrentQuiz(menu.quiz);
               setQuizTitle(menu.quiz.title);
-              setInputDrawer(true);
+              setRenameOpen(true);
             }
             handleClose();
           }}
         >
+          <ListItemIcon>
+            <DriveFileRenameOutlineIcon fontSize="small" />
+          </ListItemIcon>
           Promijeni ime
         </MenuItem>
         <MenuItem onClick={() => menu && handleCopy(menu.quiz.id)}>
+          <ListItemIcon>
+            <ContentCopyOutlinedIcon fontSize="small" />
+          </ListItemIcon>
           Kopiraj kviz
         </MenuItem>
+        <Divider />
         <MenuItem
+          className="menu-item-danger"
           onClick={() => {
             if (menu) {
               setQuizToDelete(menu.quiz);
@@ -203,12 +235,10 @@ export default function MyQuizzes() {
             handleClose();
           }}
         >
-          Izbriši
-        </MenuItem>
-        <MenuItem
-          onClick={() => menu && navigate(`/quiz-details/${menu.quiz.id}`)}
-        >
-          Detalji
+          <ListItemIcon>
+            <DeleteOutlineIcon fontSize="small" />
+          </ListItemIcon>
+          Obriši
         </MenuItem>
       </Menu>
       <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
@@ -231,59 +261,47 @@ export default function MyQuizzes() {
           </Button>
         </DialogActions>
       </Dialog>
-      <Pagination
-        page={currentPage}
-        count={quizzes ? Math.ceil(quizzes.length / postsPerPage) : 1}
-        onChange={(_event, value: number) => handlePageChange(value)}
-        className="pagination"
-        sx={{
-          position: "absolute",
-          bottom: 0,
-          left: "50%",
-          transform: "translateX(-50%)",
+      {quizzes && quizzes.length > postsPerPage && (
+        <Pagination
+          page={currentPage}
+          color="primary"
+          count={Math.ceil(quizzes.length / postsPerPage)}
+          onChange={(_event, value: number) => handlePageChange(value)}
+          className="pagination quiz-pagination"
+        />
+      )}
+      <Dialog
+        open={renameOpen}
+        onClose={() => setRenameOpen(false)}
+        maxWidth="xs"
+        fullWidth
+        PaperProps={{
+          component: "form",
+          onSubmit: handleNameChange,
+          className: "title-input",
         }}
-      />
-      {inputDrawer && (
-        <Paper elevation={24} className="title-input">
-          <Typography sx={{ marginTop: "1rem" }} variant="h5">
-            Unesite naslov kviza
-          </Typography>
+      >
+        <DialogTitle>Promijeni ime kviza</DialogTitle>
+        <DialogContent>
           <TextField
-            sx={{ marginTop: "3.5rem" }}
-            type="text"
+            sx={{ marginTop: 1 }}
+            label="Naslov kviza"
             placeholder="Naslov kviza"
+            InputLabelProps={{ shrink: true }}
+            autoFocus
             fullWidth
-            required
             inputProps={{ maxLength: 100 }}
             value={quizTitle}
             onChange={(e) => setQuizTitle(e.target.value)}
           />
-          <Button
-            variant="contained"
-            onClick={() => {
-              quizTitle.trim() ? handleNameChange() : null;
-            }}
-            style={{
-              backgroundColor: "#553b08",
-              marginTop: "2rem",
-              width: "80%",
-            }}
-          >
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setRenameOpen(false)}>Odustani</Button>
+          <Button type="submit" variant="contained" disabled={!quizTitle.trim()}>
             Spremi
           </Button>
-          <Button
-            variant="contained"
-            style={{
-              backgroundColor: "#553b08",
-              marginTop: "1rem",
-              width: "80%",
-            }}
-            onClick={() => setInputDrawer(false)}
-          >
-            Odustani
-          </Button>
-        </Paper>
-      )}
-    </Box>
+        </DialogActions>
+      </Dialog>
+    </Page>
   );
 }
