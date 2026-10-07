@@ -10,6 +10,13 @@
   --ink-muted: #6a5d49;
   --brown: #553b08;
   --parchment: #e9e5cd;
+  --right: #2e7d32;
+  --right-tint: #e6f2e4;
+  --wrong: #c62828;
+  --wrong-tint: #fbeae8;
+  --shadow-card: 0 1px 2px rgba(60, 40, 10, 0.05), 0 4px 12px rgba(60, 40, 10, 0.05);
+  --shadow-raised: 0 2px 4px rgba(60, 40, 10, 0.06), 0 14px 30px rgba(60, 40, 10, 0.13);
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 body, #root {
@@ -32,6 +39,79 @@ body {
 :focus-visible {
   outline: 2px solid var(--brown);
   outline-offset: 2px;
+}
+
+/* An icon on a disc: beside a heading, at the head of a section or an empty state. */
+.icon-disc {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 50%;
+  background-color: var(--parchment);
+  color: var(--brown);
+}
+
+.icon-disc-paper {
+  background-color: var(--paper);
+}
+
+.initials {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  background-color: var(--parchment);
+  color: var(--brown);
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.initials.small {
+  width: 2rem;
+  height: 2rem;
+  font-size: 0.78rem;
+}
+
+/* The way back to the list a screen was opened from, above its heading. */
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: 0.35rem;
+  margin-left: -0.15rem;
+  color: var(--ink-muted);
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 140ms ease-out;
+}
+
+.back-link:hover {
+  color: var(--brown);
+}
+
+.back-link .MuiSvgIcon-root {
+  transition: transform 220ms var(--ease-out);
+}
+
+.back-link:hover .MuiSvgIcon-root {
+  transform: translateX(-3px);
+}
+
+/* A menu's destructive item. */
+.MuiMenuItem-root.menu-item-danger,
+.MuiMenuItem-root.menu-item-danger .MuiListItemIcon-root {
+  color: var(--wrong);
+}
+
+.MuiMenuItem-root.menu-item-danger:hover {
+  background-color: var(--wrong-tint);
 }
 
 * {

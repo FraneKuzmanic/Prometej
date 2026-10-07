@@ -85,6 +85,51 @@ export const theme = createTheme({
         },
       },
     },
+    MuiDialogTitle: {
+      styleOverrides: { root: { padding: "20px 24px 12px", fontSize: "1.3rem" } },
+    },
+    MuiDialogActions: {
+      styleOverrides: { root: { padding: "8px 20px 18px", gap: 4 } },
+    },
+    // A table is a white sheet with a quiet head; its rows answer the pointer.
+    MuiTableCell: {
+      styleOverrides: {
+        root: { borderBottomColor: rule, fontSize: "0.95rem" },
+        head: {
+          backgroundColor: "#fbf9f3",
+          color: inkMuted,
+          fontSize: "0.82rem",
+          fontWeight: 600,
+          lineHeight: 1.3,
+          whiteSpace: "nowrap",
+        },
+      },
+    },
+    MuiTableRow: {
+      styleOverrides: {
+        root: {
+          "&:last-child > td, &:last-child > th": { borderBottom: 0 },
+          "&.MuiTableRow-hover:hover": { backgroundColor: alpha(brown, 0.04) },
+        },
+      },
+    },
+    MuiChip: {
+      styleOverrides: {
+        root: { fontWeight: 600 },
+        filled: { backgroundColor: "#e9e5cd", color: brown },
+      },
+    },
+    // Information is said in the app's own tone; only a warning and an error take a colour.
+    MuiAlert: {
+      styleOverrides: {
+        root: { borderRadius: 8, alignItems: "center" },
+        standardInfo: {
+          backgroundColor: "#f1ecd9",
+          color: ink,
+          "& .MuiAlert-icon": { color: brown },
+        },
+      },
+    },
     MuiOutlinedInput: {
       styleOverrides: {
         root: { backgroundColor: paper },

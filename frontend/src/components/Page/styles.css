@@ -1,0 +1,106 @@
+.page{
+    width: 100%;
+    max-width: 1180px;
+    margin: 0 auto;
+    padding-bottom: 2rem;
+}
+
+.page-narrow{
+    max-width: 760px;
+}
+
+.page-header{
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1rem 2rem;
+    margin: 0.5rem 0 1.75rem;
+}
+
+.page-header-text{
+    min-width: 0;
+}
+
+.page-header h1{
+    font-size: 2rem;
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+}
+
+.page-header-lead.MuiTypography-root{
+    margin-top: 0.35rem;
+    max-width: 68ch;
+    color: var(--ink-muted);
+    text-wrap: pretty;
+}
+
+.page-header-actions{
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+/* A section of a screen: a heading with the surface it names under it. */
+.page-section{
+    margin-top: 2.5rem;
+}
+
+.page-section > h2{
+    margin: 0 0 0.75rem;
+    font-family: var(--font-serif);
+    font-size: 1.3rem;
+    font-weight: 600;
+    line-height: 1.3;
+}
+
+.page-section-note{
+    margin: -0.4rem 0 0.9rem;
+    color: var(--ink-muted);
+    font-size: 0.95rem;
+}
+
+.empty-state{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: 30rem;
+    margin: 4rem auto;
+    padding: 0 1rem;
+    text-align: center;
+}
+
+.empty-state-icon{
+    display: grid;
+    place-items: center;
+    width: 5.5rem;
+    height: 5.5rem;
+    margin-bottom: 1.5rem;
+    border-radius: 50%;
+    background-color: var(--parchment);
+    color: var(--brown);
+}
+
+.empty-state-icon .MuiSvgIcon-root{
+    font-size: 2.6rem;
+}
+
+.empty-state h2{
+    text-wrap: balance;
+}
+
+.empty-state-text.MuiTypography-root{
+    margin-top: 0.6rem;
+    color: var(--ink-muted);
+    line-height: 1.55;
+    text-wrap: pretty;
+}
+
+.empty-state-action{
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+}
