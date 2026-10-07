@@ -154,6 +154,7 @@ builder.Services.AddRateLimiter(options =>
 
 #endregion Rate limiting
 
+builder.Services.AddHealthChecks();
 builder.Services.AddExceptionHandler<DomainExceptionHandler>();
 builder.Services.AddProblemDetails();
 
@@ -162,7 +163,9 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<DataContext>();
-    if (!app.Environment.IsProduction())
+    // In production the schema changes only when the deployment says so: a single instance
+    // may migrate itself, several starting at once must not.
+    if (!app.Environment.IsProduction() || app.Configuration.GetValue<bool>("Database:MigrateOnStartup"))
     {
         db.Database.Migrate();
     }
@@ -177,6 +180,8 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+// "/" is the client's page too.
+app.UseDefaultFiles();
 app.UseStaticFiles();
 
 app.UseRouting();
@@ -191,6 +196,14 @@ app.UseAuthorization();
 app.UseRateLimiter();
 
 app.MapControllers();
+
+// What a host's health check asks. It reads nothing, so it does not wake the database.
+app.MapHealthChecks("/healthz");
+
+// A deployed app serves the built client from wwwroot. Its screens are addresses only the
+// client knows, so any address that is not the API's gets the client's page; an unknown
+// address under api/ stays a 404.
+app.MapFallbackToFile("{*path:regex(^(?!api/).*$)}", "index.html");
 
 app.Run();
 

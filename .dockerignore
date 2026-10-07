@@ -1,0 +1,13 @@
+# Everything the image is not built from. The secrets first: no .env reaches a layer.
+.env
+.env.*
+.git
+.vscode
+ai
+docs
+**/node_modules
+**/dist
+**/bin
+**/obj
+backend/Prometej_tests
+*.md

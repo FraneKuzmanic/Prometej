@@ -1,0 +1,36 @@
+# Render blueprint: one web service built from the Dockerfile. The database is not Render's:
+# its connection string is given as a secret. A value marked "sync: false" is typed into the
+# dashboard when the blueprint is created and is never in this file.
+services:
+  - type: web
+    name: prometej
+    runtime: docker
+    plan: free
+    region: frankfurt
+    dockerfilePath: ./Dockerfile
+    # Answers without touching the database, so a health check does not keep it awake.
+    healthCheckPath: /healthz
+    envVars:
+      # The service is behind Render's proxy: the visitor's address and "https" arrive in
+      # forwarded headers.
+      - key: ASPNETCORE_FORWARDEDHEADERS_ENABLED
+        value: "true"
+      - key: Database__MigrateOnStartup
+        value: "true"
+      - key: Seed__DemoContent
+        value: "true"
+      - key: ConnectionStrings__DefaultConnection
+        sync: false
+      # The base64 of at least 32 random bytes.
+      - key: Jwt__Key
+        sync: false
+      - key: Seed__Users__0__Email
+        sync: false
+      - key: Seed__Users__0__Password
+        sync: false
+      - key: Seed__Users__0__FirstName
+        value: Admin
+      - key: Seed__Users__0__LastName
+        value: Prometej
+      - key: Seed__Users__0__Role
+        value: admin
