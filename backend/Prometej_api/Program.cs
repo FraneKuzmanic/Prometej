@@ -150,6 +150,18 @@ builder.Services.AddRateLimiter(options =>
     options.AddPolicy(TutorController.TutorLimit, httpContext => RateLimitPartition.GetFixedWindowLimiter(
         httpContext.User.FindFirstValue("sub") ?? httpContext.Connection.RemoteIpAddress?.ToString() ?? "",
         _ => new FixedWindowRateLimiterOptions { PermitLimit = 10, Window = TimeSpan.FromMinutes(1) }));
+    // The limit above slows one visitor down; an account is free to register and addresses
+    // are many. Where the model is paid for, "Tutor:DailyLimit" caps what all visitors
+    // together may ask in a day. Read per request, as the tests supply configuration late.
+    options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
+    {
+        var dailyLimit = httpContext.RequestServices.GetRequiredService<IConfiguration>().GetValue<int?>("Tutor:DailyLimit");
+        var reachesTheModel = HttpMethods.IsPost(httpContext.Request.Method) && httpContext.Request.Path.StartsWithSegments("/api/tutor");
+        return dailyLimit is null || !reachesTheModel
+            ? RateLimitPartition.GetNoLimiter("")
+            : RateLimitPartition.GetFixedWindowLimiter("tutor-day",
+                _ => new FixedWindowRateLimiterOptions { PermitLimit = dailyLimit.Value, Window = TimeSpan.FromDays(1) });
+    });
 });
 
 #endregion Rate limiting

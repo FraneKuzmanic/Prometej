@@ -238,6 +238,29 @@ namespace Prometej_tests
         }
 
         [Fact]
+        public async Task With_a_daily_limit_every_visitor_together_asks_that_often_and_no_more()
+        {
+            var stub = new StubTutor();
+            var api = Configured(stub).WithWebHostBuilder(builder =>
+                builder.ConfigureAppConfiguration((_, config) => config.AddInMemoryCollection(
+                    new Dictionary<string, string?> { ["Tutor:DailyLimit"] = "2" })));
+            var student = await NewStudent(api);
+            var other = await NewStudent(api);
+
+            var first = await Ask(student, new { question = "Pitanje?" });
+            var second = await Ask(other, new { question = "Pitanje?" });
+            var third = await Ask(Anonymous(api), new { question = "Pitanje?" });
+
+            Assert.Equal(HttpStatusCode.OK, first.StatusCode);
+            Assert.Equal(HttpStatusCode.OK, second.StatusCode);
+            Assert.Equal(HttpStatusCode.TooManyRequests, third.StatusCode);
+            Assert.Equal(2, stub.Asked.Count);
+            // The rest of the app is not counted, and neither is asking whether there is a tutor.
+            Assert.True(await Available(other));
+            Assert.Equal(HttpStatusCode.OK, (await other.GetAsync("/api/period")).StatusCode);
+        }
+
+        [Fact]
         public async Task The_eleventh_question_in_a_minute_is_refused_and_another_account_still_asks()
         {
             var stub = new StubTutor();

@@ -28,6 +28,19 @@ services:
         sync: false
       - key: Seed__Users__0__Password
         sync: false
+      # The tutor's language model (GPT-4.1 on Azure OpenAI). Without the key no tutor is
+      # started and the app shows none.
+      - key: AZURE_OPENAI_ENDPOINT
+        sync: false
+      - key: AZURE_OPENAI_KEY
+        sync: false
+      - key: AZURE_OPENAI_DEPLOYMENT
+        sync: false
+      - key: AZURE_OPENAI_API_VERSION
+        sync: false
+      # What every visitor together may ask the tutor in a day: the model is paid for.
+      - key: Tutor__DailyLimit
+        value: "100"
       - key: Seed__Users__0__FirstName
         value: Admin
       - key: Seed__Users__0__LastName

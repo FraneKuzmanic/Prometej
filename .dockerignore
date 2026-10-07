@@ -3,7 +3,6 @@
 .env.*
 .git
 .vscode
-ai
 docs
 **/node_modules
 **/dist
@@ -11,3 +10,14 @@ docs
 **/obj
 backend/Prometej_tests
 *.md
+
+# Of the tutor only its code is installed: no test, no recorded eval run, no certificate.
+ai/.venv
+ai/.certs
+ai/tests
+ai/evals/results
+ai/evals/sets
+ai/**/__pycache__
+ai/*.egg-info
+ai/.pytest_cache
+ai/.ruff_cache

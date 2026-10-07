@@ -1,0 +1,2 @@
+# Run inside a Linux container: a carriage return at a line's end would break it.
+*.sh text eol=lf
