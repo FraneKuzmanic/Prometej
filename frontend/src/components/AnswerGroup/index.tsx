@@ -1,4 +1,6 @@
 import { Box, Typography } from "@mui/material";
+import CheckIcon from "@mui/icons-material/Check";
+import CloseIcon from "@mui/icons-material/Close";
 import { AnswerViewModel } from "../../types/models/Quiz";
 import "./styles.css";
 
@@ -29,8 +31,12 @@ export default function AnswerGroup({
   const body = dense ? "body2" : "body1";
 
   return (
-    <>
-      <Typography variant={dense ? "subtitle2" : "h6"}>
+    <Box className={dense ? "answer-group dense" : "answer-group"}>
+      <Typography
+        variant={dense ? "subtitle2" : "h6"}
+        component="h3"
+        className="answer-group-title"
+      >
         {number}. {first.questionTitle}
       </Typography>
       {answers.map((answer) => {
@@ -38,20 +44,28 @@ export default function AnswerGroup({
         // A point left empty in a Sitting has no chosen text.
         const answerText = answer.answerText === "" ? "Bez odgovora" : answer.answerText;
         return (
-          <Box key={answer.id}>
+          <Box key={answer.id} className="answer-group-point">
             <Typography
               variant={body}
               className={correct ? "answer-group-correct" : "answer-group-wrong"}
             >
-              {answer.item !== null
-                ? `${answer.item} → ${answerText}`
-                : answer.place !== null
-                ? `${answer.place}. mjesto: ${answerText}`
-                : `${answerLabel}: ${answerText}`}
+              {correct ? (
+                <CheckIcon fontSize="small" titleAccess="Točno" />
+              ) : (
+                <CloseIcon fontSize="small" titleAccess="Netočno" />
+              )}
+              <span>
+                {answer.item !== null
+                  ? `${answer.item} → ${answerText}`
+                  : answer.place !== null
+                  ? `${answer.place}. mjesto: ${answerText}`
+                  : `${answerLabel}: ${answerText}`}
+              </span>
             </Typography>
             {!correct && (
-              <Typography variant={body}>
-                Točan odgovor: {answer.correctAnswer}
+              <Typography variant={body} className="answer-group-right">
+                <CheckIcon fontSize="small" aria-hidden="true" />
+                <span>Točan odgovor: {answer.correctAnswer}</span>
               </Typography>
             )}
           </Box>
@@ -63,6 +77,6 @@ export default function AnswerGroup({
           <Typography>{first.exploreMore}</Typography>
         </Box>
       )}
-    </>
+    </Box>
   );
 }

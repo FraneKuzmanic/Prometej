@@ -1,12 +1,16 @@
 import { Fragment, useEffect } from "react";
 import { useSelector } from "react-redux";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link as RouterLink, useNavigate, useParams } from "react-router-dom";
 import { Box, Button, Paper, Typography } from "@mui/material";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import LockClockOutlinedIcon from "@mui/icons-material/LockClockOutlined";
+import SearchOffIcon from "@mui/icons-material/SearchOff";
 import { RootState, useAppDispatch } from "../../../store/store";
 import { fetchQuizGame } from "../../../store/slices/quizSlice";
 import { pointsLabel } from "../../../types/points";
 import AnswerGroup from "../../../components/AnswerGroup";
 import { groupAnswers } from "../../../components/AnswerGroup/group";
+import { EmptyState, Page } from "../../../components/Page";
 import "../styles.css";
 
 const formatDate = (date: string) =>
@@ -38,35 +42,59 @@ export default function GameReview() {
   const groups = groupAnswers(gameReview?.answers ?? []);
 
   const backToResults = (
-    <Button onClick={() => navigate("/my-results")}>Natrag na rezultate</Button>
+    <Button variant="outlined" onClick={() => navigate("/my-results")}>
+      Natrag na rezultate
+    </Button>
   );
+  const maxScore = gameReview?.answers.length ?? 0;
 
   return (
-    <Box className="my-results-wrapper">
+    <Page narrow>
+      <RouterLink className="back-link game-review-back" to="/my-results">
+        <ArrowBackIcon fontSize="small" /> Moji rezultati
+      </RouterLink>
       {gameReviewFailed && (
-        <Box>
-          <Typography>Rezultat ne postoji.</Typography>
-          {backToResults}
-        </Box>
+        <EmptyState
+          icon={<SearchOffIcon />}
+          title="Rezultat ne postoji."
+          action={backToResults}
+        />
       )}
       {gameReviewLocked && (
-        <Box>
-          <Typography>Odgovori će biti vidljivi kad provjera završi.</Typography>
-          {backToResults}
-        </Box>
+        <EmptyState
+          icon={<LockClockOutlinedIcon />}
+          title="Odgovori će biti vidljivi kad provjera završi."
+          action={backToResults}
+        >
+          Nastavnik odgovore otvara zatvaranjem provjere. Vaš rezultat već je u popisu.
+        </EmptyState>
       )}
       {gameReview && (
         <>
-          <Typography variant="h4" className="my-results-title">
-            {gameReview.quizTitle}
-          </Typography>
-          <Typography>
-            {formatDate(gameReview.datePlayed)} · {gameReview.score} /{" "}
-            {gameReview.answers.length} {pointsLabel(gameReview.answers.length)}
-            {gameReview.periodName && ` · ${gameReview.periodName}`}
-            {gameReview.playedAs === "test" && " · Provjera"}
-            {gameReview.playedAs === "mock" && " · Kao provjera"}
-          </Typography>
+          <Paper className="game-review-head">
+            <Box className="game-review-head-text">
+              <Typography variant="h4" component="h1" className="my-results-title">
+                {gameReview.quizTitle}
+              </Typography>
+              <Typography className="game-review-meta">
+                {formatDate(gameReview.datePlayed)} · {gameReview.score} /{" "}
+                {gameReview.answers.length} {pointsLabel(gameReview.answers.length)}
+                {gameReview.periodName && ` · ${gameReview.periodName}`}
+                {gameReview.playedAs === "test" && " · Provjera"}
+                {gameReview.playedAs === "mock" && " · Kao provjera"}
+              </Typography>
+            </Box>
+            {maxScore > 0 && (
+              <Box className="game-review-score" aria-hidden="true">
+                <span className="game-review-percent">
+                  {Math.round((gameReview.score / maxScore) * 100)} %
+                </span>
+                <span className="my-results-meter">
+                  <span style={{ width: `${(gameReview.score / maxScore) * 100}%` }} />
+                </span>
+              </Box>
+            )}
+          </Paper>
           {groups.map((answers, index) => {
             const { id, sourceTextId } = answers[0];
             // Shown once, above the first of the Questions that were asked about it.
@@ -80,7 +108,7 @@ export default function GameReview() {
                 {sourceText && (
                   <details className="game-review-source">
                     <summary>Polazni tekst</summary>
-                    <Typography variant="subtitle1">
+                    <Typography variant="subtitle1" className="game-review-source-caption">
                       {sourceText.caption}
                     </Typography>
                     <Typography className="game-review-source-body">
@@ -103,7 +131,6 @@ export default function GameReview() {
             {gameReview.quizIsListed && (
               <Button
                 variant="contained"
-                sx={{ backgroundColor: "#553b08" }}
                 onClick={() => navigate(`/play-quiz/${gameReview.quizId}`)}
               >
                 Igraj ponovno
@@ -117,10 +144,10 @@ export default function GameReview() {
                 Ponovi gradivo: {gameReview.periodName}
               </Button>
             )}
-            {backToResults}
+            <Button onClick={() => navigate("/my-results")}>Natrag na rezultate</Button>
           </Box>
         </>
       )}
-    </Box>
+    </Page>
   );
 }

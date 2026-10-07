@@ -1,15 +1,73 @@
-.answer-group-correct.MuiTypography-root{
-    color: #4F6F52;
+.answer-group-title.MuiTypography-root{
+    margin-bottom: 0.6rem;
+    font-size: 1.1rem;
+    line-height: 1.35;
+}
+
+.answer-group.dense .answer-group-title.MuiTypography-root{
+    margin-bottom: 0.4rem;
+    font-family: var(--font-sans);
+    font-size: 0.92rem;
+}
+
+.answer-group-point{
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+.answer-group-point + .answer-group-point{
+    margin-top: 0.5rem;
+}
+
+/* What was answered and, under a wrong answer, what was right: green must read as green. */
+.answer-group-correct.MuiTypography-root,
+.answer-group-wrong.MuiTypography-root,
+.answer-group-right.MuiTypography-root{
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    padding: 0.45rem 0.75rem;
+    border-radius: 8px;
+    font-weight: 600;
+}
+
+.answer-group.dense .answer-group-correct.MuiTypography-root,
+.answer-group.dense .answer-group-wrong.MuiTypography-root,
+.answer-group.dense .answer-group-right.MuiTypography-root{
+    padding: 0.3rem 0.6rem;
+}
+
+.answer-group-correct .MuiSvgIcon-root,
+.answer-group-wrong .MuiSvgIcon-root,
+.answer-group-right .MuiSvgIcon-root{
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+}
+
+.answer-group-correct.MuiTypography-root,
+.answer-group-right.MuiTypography-root{
+    background-color: var(--right-tint);
+    color: #1e5a23;
 }
 
 .answer-group-wrong.MuiTypography-root{
-    color: #fd3737;
+    background-color: var(--wrong-tint);
+    color: #9f1f1f;
 }
 
 .answer-group-explore{
-    margin-top: 15px;
-    padding: 10px 20px;
-    border-left: 3px solid #78C1F3;
+    margin-top: 0.9rem;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    background-color: var(--page);
     white-space: pre-line;
     overflow-wrap: anywhere;
+}
+
+.answer-group-explore .MuiTypography-subtitle2{
+    margin-bottom: 0.15rem;
+    color: var(--brown);
+    font-weight: 700;
 }

@@ -1,24 +1,24 @@
-.my-results-wrapper{
-    padding: 1rem 2.5rem 2rem 2.5rem;
-}
-
-.my-results-title.MuiTypography-root{
-    margin: 20px 0px 20px 0px;
-    color: #553b08;
-}
-
-.my-results-heading.MuiTypography-root{
-    margin: 2rem 0 1rem 0;
-    color: #553b08;
-}
-
-.my-results-column{
-    font-weight: bold !important;
-    color: #553b08 !important;
+.page-section.my-results-first{
+    margin-top: 0;
 }
 
 .my-results-row{
     cursor: pointer;
+}
+
+.my-results-period{
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-weight: 600;
+}
+
+.my-results-period img{
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 8px;
+    object-fit: cover;
+    object-position: center 20%;
 }
 
 .my-results-quiz{
@@ -26,27 +26,134 @@
     flex-wrap: wrap;
     align-items: center;
     gap: 8px;
+    font-weight: 600;
 }
 
-.game-review-answer{
+/* A result with its share drawn before it; the numbers line up in their column. */
+.my-results-score{
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.my-results-meter{
+    display: block;
+    flex-shrink: 0;
+    width: 5rem;
+    height: 6px;
+    overflow: hidden;
+    border-radius: 999px;
+    background-color: var(--rule);
+}
+
+.my-results-meter span{
+    display: block;
+    height: 100%;
+    border-radius: 999px;
+    background-color: var(--brown);
+}
+
+.my-results-open.MuiTableCell-root{
+    color: var(--ink-muted);
+}
+
+.my-results-open .MuiSvgIcon-root{
+    display: block;
+    transition: transform 200ms var(--ease-out);
+}
+
+.my-results-row:hover .my-results-open .MuiSvgIcon-root{
+    transform: translateX(3px);
+    color: var(--brown);
+}
+
+@media (max-width: 700px){
+    .my-results-meter{
+        display: none;
+    }
+}
+
+/* The review of one Quiz Game. */
+.game-review-back{
+    margin: 0.5rem 0 1rem;
+}
+
+.game-review-head.MuiPaper-root{
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem 2rem;
+    padding: 1.5rem 1.75rem;
+}
+
+.game-review-head-text{
+    flex: 1;
+    min-width: 14rem;
+}
+
+.my-results-title.MuiTypography-root{
+    font-size: 1.75rem;
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+}
+
+.game-review-meta.MuiTypography-root{
+    margin-top: 0.35rem;
+    color: var(--ink-muted);
+}
+
+.game-review-score{
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.4rem;
+}
+
+.game-review-percent{
+    font-family: var(--font-serif);
+    font-size: 2rem;
+    font-weight: 600;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+}
+
+.game-review-score .my-results-meter{
+    width: 7rem;
+}
+
+.game-review-answer.MuiPaper-root{
     margin-top: 1rem;
-    padding: 15px 20px;
-}
-
-.game-review-answer{
+    padding: 1.1rem 1.5rem 1.25rem;
     overflow-wrap: anywhere;
 }
 
 .game-review-source{
     margin-top: 1.5rem;
+    padding: 0.9rem 1.5rem;
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    background-color: #fbf9f3;
 }
 
 .game-review-source summary{
     cursor: pointer;
-    font-weight: bold;
+    font-weight: 600;
+    color: var(--brown);
+}
+
+.game-review-source-caption.MuiTypography-root{
+    margin-top: 0.75rem;
+    font-weight: 600;
 }
 
 .game-review-source-body.MuiTypography-root{
+    margin-top: 0.5rem;
+    font-family: var(--font-serif);
+    line-height: 1.7;
     white-space: pre-wrap;
     overflow-wrap: anywhere;
 }
