@@ -8,6 +8,7 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
+  InputAdornment,
   MenuItem,
   Paper,
   Select,
@@ -24,6 +25,9 @@ import { RootState, useAppDispatch } from "../../store/store";
 import { fetchUsers, setUserRole } from "../../store/slices/userSlice";
 import { UserAccount } from "../../types/models/User";
 import ROLE, { roleLabels } from "../../types/enums/Role";
+import SearchIcon from "@mui/icons-material/Search";
+import { Page, PageHeader } from "../../components/Page";
+import Initials from "../../components/Initials";
 import "./styles.css";
 
 const collator = new Intl.Collator("hr");
@@ -79,46 +83,61 @@ export default function Users() {
   };
 
   return (
-    <Box className="users-wrapper">
-      <Typography variant="h3" className="users-title">
-        Korisnici
-      </Typography>
-      {usersFailed && (
-        <Typography>Korisnici se nisu učitali. Pokušajte ponovno.</Typography>
-      )}
-      {users && (
-        <>
+    <Page>
+      <PageHeader
+        title="Korisnici"
+        lead="Svi računi i njihove uloge. Registracijom nastaje učenik; nastavnika i administratora postavljate ovdje."
+      >
+        {users && (
           <TextField
             className="users-filter"
             size="small"
             label="Pretraži korisnike"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon fontSize="small" />
+                </InputAdornment>
+              ),
+            }}
           />
+        )}
+      </PageHeader>
+      {usersFailed && (
+        <Typography>Korisnici se nisu učitali. Pokušajte ponovno.</Typography>
+      )}
+      {users && (
+        <>
           {rows.length === 0 ? (
-            <Typography>Nema korisnika za prikaz.</Typography>
+            <Typography color="text.secondary">Nema korisnika za prikaz.</Typography>
           ) : (
             <TableContainer component={Paper}>
               <Table aria-label="Korisnici">
                 <TableHead>
                   <TableRow>
-                    <TableCell className="users-column">
-                      Ime i prezime
-                    </TableCell>
-                    <TableCell className="users-column">
-                      Email adresa
-                    </TableCell>
-                    <TableCell className="users-column" align="right">
-                      Kvizovi
-                    </TableCell>
-                    <TableCell className="users-column">Uloga</TableCell>
+                    <TableCell>Ime i prezime</TableCell>
+                    <TableCell>Email adresa</TableCell>
+                    <TableCell align="right">Kvizovi</TableCell>
+                    <TableCell>Uloga</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {rows.map((account) => (
-                    <TableRow key={account.id}>
+                    <TableRow key={account.id} hover>
                       <TableCell component="th" scope="row">
-                        {account.firstName} {account.lastName}
+                        {/* The flex box is inside the cell: a cell that is itself flex
+                            loses its row's bottom border. */}
+                        <Box className="users-name">
+                          <Initials
+                            name={`${account.firstName} ${account.lastName}`}
+                            small
+                          />
+                          <span>
+                            {account.firstName} {account.lastName}
+                          </span>
+                        </Box>
                       </TableCell>
                       <TableCell>{account.email}</TableCell>
                       <TableCell align="right">{account.quizCount}</TableCell>
@@ -128,6 +147,7 @@ export default function Users() {
                         ) : (
                           <Select
                             size="small"
+                            className="users-role"
                             value={account.role}
                             inputProps={{
                               "aria-label": `Uloga: ${account.firstName} ${account.lastName}`,
@@ -174,9 +194,11 @@ export default function Users() {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setDialogOpen(false)}>Odustani</Button>
-          <Button onClick={handleConfirm}>Potvrdi</Button>
+          <Button variant="contained" onClick={handleConfirm}>
+            Potvrdi
+          </Button>
         </DialogActions>
       </Dialog>
-    </Box>
+    </Page>
   );
 }
