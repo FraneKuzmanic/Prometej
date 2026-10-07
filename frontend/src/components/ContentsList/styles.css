@@ -1,6 +1,6 @@
 .contents-list{
     font-family: var(--font-sans);
-    font-size: 0.9rem;
+    font-size: 0.92rem;
     margin-bottom: 1.5rem;
 }
 
@@ -10,9 +10,22 @@
     margin: 0 0 0.5rem 0;
 }
 
+.contents-list-title{
+    padding-left: 0.75rem;
+    color: var(--ink-muted);
+    font-size: 0.85rem;
+}
+
 .contents-list summary{
     cursor: pointer;
-    padding: 0.5rem 0;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    background-color: var(--paper);
+}
+
+.contents-list details[open] summary{
+    margin-bottom: 0.5rem;
 }
 
 .contents-list ol{
@@ -22,35 +35,35 @@
 }
 
 .contents-list ol ol{
-    font-size: 0.85rem;
+    margin: 0.1rem 0 0.35rem 0.75rem;
+    padding-left: 0.5rem;
+    border-left: 1px solid var(--rule);
+    font-size: 0.86rem;
 }
 
 .contents-list a{
     display: block;
-    padding: 0.3rem 0.75rem;
-    border-left: 3px solid var(--rule);
+    padding: 0.32rem 0.75rem;
+    border-radius: 6px;
     color: var(--ink-muted);
     text-decoration: none;
     overflow-wrap: anywhere;
+    transition: background-color 140ms ease-out, color 140ms ease-out;
 }
 
-.contents-list ol ol a{
-    padding-left: 1.5rem;
-}
-
-.contents-list a:hover,
-.contents-list a:focus-visible{
-    text-decoration: underline;
+.contents-list a:hover{
+    background-color: rgba(85, 59, 8, 0.06);
+    color: var(--ink);
 }
 
 .contents-list a:focus-visible{
-    outline: 2px solid #553b08;
+    outline: 2px solid var(--brown);
     outline-offset: -2px;
 }
 
 .contents-list a[aria-current]{
-    border-left-color: #553b08;
-    color: #553b08;
+    background-color: var(--parchment);
+    color: var(--brown);
     font-weight: 600;
 }
 

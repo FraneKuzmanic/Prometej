@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import { Link as RouterLink, useNavigate, useParams } from "react-router-dom";
 import {
   Box,
   Button,
@@ -9,13 +8,14 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
-  Link,
-  Paper,
+  IconButton,
   TextField,
+  Tooltip,
   Typography,
 } from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import { RootState, useAppDispatch } from "../../../store/store";
-import { fetchPeriods } from "../../../store/slices/periodSlice";
 import {
   createReply,
   deleteReply,
@@ -23,20 +23,31 @@ import {
   fetchTopic,
 } from "../../../store/slices/discussionSlice";
 import PostAuthor from "../PostAuthor";
+import Initials from "../../../components/Initials";
 import PostError, { PostErrorKind } from "../PostError";
 import SignInPrompt from "../SignInPrompt";
-import "../styles.css";
+import { repliesLabel } from "../format";
 
 type PendingDelete = { kind: "topic" } | { kind: "reply"; id: number };
 
-// One Topic of a Period's Discussion with the Replies under it, the oldest first.
-export default function Topic() {
-  const { id, topicId: topicParam } = useParams<{
-    id: string;
-    topicId: string;
-  }>();
-  const topicId = Number(topicParam);
-  const { periods } = useSelector((state: RootState) => state.period);
+interface TopicThreadProps {
+  topicId: number;
+  periodId: number;
+  // Not under its row of the list (opened from a link): it shows its own title and author.
+  standalone?: boolean;
+  onClose: () => void;
+  onDeleted: () => void;
+}
+
+// One Topic, open in its Period's Discussion: its text and the Replies under it, the oldest
+// first, and the field to add one.
+export default function TopicThread({
+  topicId,
+  periodId,
+  standalone,
+  onClose,
+  onDeleted,
+}: TopicThreadProps) {
   const { authenticated } = useSelector((state: RootState) => state.user);
   const { topic: storedTopic, topicFailed, requestedTopicId } = useSelector(
     (state: RootState) => state.discussion
@@ -44,7 +55,6 @@ export default function Topic() {
   // The store may still hold the Topic opened before this one until the fetch below starts.
   const topic = requestedTopicId === topicId ? storedTopic : undefined;
   const dispatch = useAppDispatch();
-  const navigate = useNavigate();
   const [replyText, setReplyText] = useState("");
   const [sending, setSending] = useState(false);
   const [postError, setPostError] = useState<PostErrorKind | undefined>();
@@ -58,34 +68,24 @@ export default function Topic() {
   >();
 
   useEffect(() => {
-    if (!periods) dispatch(fetchPeriods());
-  }, [dispatch, periods]);
-
-  useEffect(() => {
     if (!Number.isInteger(topicId)) return;
     const request = dispatch(fetchTopic({ id: topicId }));
     // Leaving for another Topic drops this request, so its late answer cannot replace that Topic.
     return () => request.abort();
   }, [dispatch, topicId]);
 
-  const discussionPath = `/learning/${id}/discussion`;
-  const periodName = periods?.find((period) => period.id === Number(id))?.name;
-  const backToDiscussion = (
-    <Link component={RouterLink} to={discussionPath} underline="hover">
-      ← Rasprava{periodName ? `: ${periodName}` : ""}
-    </Link>
-  );
-
   // A Topic has one Period: under another Period's address there is no such Topic.
   const missing =
     !Number.isInteger(topicId) ||
     topic === null ||
-    (topic && topic.periodId !== Number(id));
+    (topic && topic.periodId !== periodId);
   if (missing) {
     return (
-      <Box className="discussion-wrapper">
-        {backToDiscussion}
-        <Typography className="discussion-actions">Tema ne postoji.</Typography>
+      <Box className="discussion-thread discussion-thread-missing">
+        <Typography>Tema ne postoji.</Typography>
+        <Button size="small" onClick={onClose}>
+          Zatvori
+        </Button>
       </Box>
     );
   }
@@ -118,7 +118,7 @@ export default function Topic() {
       dispatch(deleteTopic(topicId)).then((result) => {
         setDeleting(false);
         if (deleteTopic.fulfilled.match(result)) {
-          navigate(discussionPath);
+          onDeleted();
         } else {
           setDeleteError(result.payload === 409 ? "conflict" : "other");
           dispatch(fetchTopic({ id: topicId, keep: true }));
@@ -140,88 +140,102 @@ export default function Topic() {
   const replyCount = topic?.replies.length ?? 0;
 
   return (
-    <Box className="discussion-wrapper">
-      {backToDiscussion}
+    <Box className="discussion-thread">
       {topicFailed && (
-        <Typography className="discussion-actions">
+        <Typography className="discussion-note">
           Tema se nije učitala. Pokušajte ponovno.
         </Typography>
       )}
       {topic && (
         <>
-          <Typography variant="h4" className="discussion-title">
-            {topic.title}
-          </Typography>
-          <Paper className="discussion-post">
-            <Box className="discussion-post-header">
-              <PostAuthor
-                name={topic.authorName}
-                role={topic.authorRole}
-                date={topic.createdAt}
-              />
-              {topic.canDelete && (
-                <Button
+          {standalone && (
+            <Box className="discussion-thread-head">
+              <Initials name={topic.authorName} />
+              <span className="discussion-row-text">
+                <span className="discussion-row-title">{topic.title}</span>
+                <PostAuthor
+                  name={topic.authorName}
+                  role={topic.authorRole}
+                  date={topic.createdAt}
+                />
+              </span>
+              <Tooltip title="Zatvori temu">
+                <IconButton aria-label="Zatvori temu" onClick={onClose}>
+                  <CloseIcon />
+                </IconButton>
+              </Tooltip>
+            </Box>
+          )}
+          <Box className="discussion-post discussion-post-first">
+            <Typography className="discussion-text">{topic.body}</Typography>
+            {topic.canDelete && (
+              <Tooltip title="Obriši temu">
+                <IconButton
                   size="small"
-                  color="error"
+                  className="discussion-delete"
                   aria-label="Obriši temu"
                   onClick={() => openDialog({ kind: "topic" })}
                 >
-                  Obriši
-                </Button>
-              )}
-            </Box>
-            <Typography className="discussion-body">{topic.body}</Typography>
-          </Paper>
-          <Typography variant="h5" className="discussion-heading">
-            Odgovori ({replyCount})
+                  <DeleteOutlineIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            )}
+          </Box>
+          <Typography className="discussion-replies-title" component="h3">
+            {replyCount === 0
+              ? "Još nema odgovora"
+              : `${replyCount} ${repliesLabel(replyCount)}`}
           </Typography>
-          {replyCount === 0 && <Typography>Još nema odgovora.</Typography>}
-          {topic.replies.map((reply) => (
-            <Paper key={reply.id} className="discussion-post">
-              <Box className="discussion-post-header">
-                <PostAuthor
-                  name={reply.authorName}
-                  role={reply.authorRole}
-                  date={reply.createdAt}
+          <Box className="discussion-replies">
+            {topic.replies.map((reply) => (
+              <Box key={reply.id} className="discussion-reply">
+                <Initials name={reply.authorName} small />
+                <Box className="discussion-post">
+                  <PostAuthor
+                    name={reply.authorName}
+                    role={reply.authorRole}
+                    date={reply.createdAt}
+                  />
+                  <Typography className="discussion-text">{reply.body}</Typography>
+                  {reply.canDelete && (
+                    <Tooltip title="Obriši odgovor">
+                      <IconButton
+                        size="small"
+                        className="discussion-delete"
+                        aria-label="Obriši odgovor"
+                        onClick={() => openDialog({ kind: "reply", id: reply.id })}
+                      >
+                        <DeleteOutlineIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                  )}
+                </Box>
+              </Box>
+            ))}
+            {authenticated === false && <SignInPrompt />}
+            {authenticated && (
+              <Box className="discussion-form discussion-reply-form">
+                <TextField
+                  label="Vaš odgovor"
+                  multiline
+                  minRows={2}
+                  value={replyText}
+                  onChange={(e) => setReplyText(e.target.value)}
+                  inputProps={{ maxLength: 2000 }}
                 />
-                {reply.canDelete && (
+                {postError && <PostError error={postError} />}
+                <Box className="discussion-form-buttons">
                   <Button
-                    size="small"
-                    color="error"
-                    aria-label="Obriši odgovor"
-                    onClick={() => openDialog({ kind: "reply", id: reply.id })}
+                    variant="contained"
+                    disabled={sending || !replyText.trim()}
+                    onClick={handleReply}
                   >
-                    Obriši
+                    Odgovori
                   </Button>
-                )}
+                </Box>
               </Box>
-              <Typography className="discussion-body">{reply.body}</Typography>
-            </Paper>
-          ))}
-          {authenticated === false && <SignInPrompt />}
-          {authenticated && (
-            <Box className="discussion-form">
-              <TextField
-                label="Vaš odgovor"
-                multiline
-                minRows={3}
-                value={replyText}
-                onChange={(e) => setReplyText(e.target.value)}
-                inputProps={{ maxLength: 2000 }}
-              />
-              {postError && <PostError error={postError} />}
-              <Box className="discussion-form-buttons">
-                <Button
-                  variant="contained"
-                  sx={{ backgroundColor: "#553b08" }}
-                  disabled={sending || !replyText.trim()}
-                  onClick={handleReply}
-                >
-                  Odgovori
-                </Button>
-              </Box>
-            </Box>
-          )}
+            )}
+          </Box>
         </>
       )}
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>

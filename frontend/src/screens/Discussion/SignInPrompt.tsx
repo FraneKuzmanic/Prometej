@@ -4,7 +4,7 @@ import { Link as RouterLink } from "react-router-dom";
 // Shown where the form would be: reading needs no account, writing does.
 export default function SignInPrompt() {
   return (
-    <Typography className="discussion-actions">
+    <Typography className="discussion-signin">
       <Link component={RouterLink} to="/login">
         Prijavite se
       </Link>{" "}

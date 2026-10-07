@@ -12,12 +12,12 @@ interface PostAuthorProps {
 // Who wrote a Topic or a Reply and when. A Teacher's and an Admin's post says so.
 export default function PostAuthor({ name, role, date }: PostAuthorProps) {
   return (
-    <Box className="discussion-author">
+    <Box className="discussion-author" component="span">
       <Typography component="span" className="discussion-author-name">
         {name ?? "Obrisani korisnik"}
       </Typography>
       {(role === ROLE.Teacher || role === ROLE.Admin) && (
-        <Chip size="small" label={roleLabels[role]} />
+        <Chip size="small" component="span" label={roleLabels[role]} className="discussion-role" />
       )}
       <Typography component="span" className="discussion-date">
         {formatDateTime(date)}

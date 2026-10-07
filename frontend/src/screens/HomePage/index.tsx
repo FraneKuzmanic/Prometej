@@ -15,7 +15,6 @@ import logo from "/logo.svg";
 import JoinQuiz from "../../components/JoinQuiz";
 import Tutor from "../../components/Tutor";
 import TutorButton from "../../components/Tutor/TutorButton";
-import ROLE from "../../types/enums/Role";
 
 export default function HomePage() {
   const dispatch = useAppDispatch();
@@ -92,10 +91,7 @@ export default function HomePage() {
       {tutorShown && (
         <>
           {!tutor.open && (
-            <TutorButton
-              shifted={Boolean(onPeriod) && user?.role === ROLE.Admin}
-              onClick={() => dispatch(openTutor())}
-            />
+            <TutorButton onClick={() => dispatch(openTutor())} />
           )}
           <Tutor periodId={tutorPeriod?.id ?? null} periodName={tutorPeriod?.name} />
         </>

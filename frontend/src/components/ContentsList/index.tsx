@@ -7,7 +7,13 @@ import "./styles.css";
 // under the fixed header, and a little below where a click on an entry puts it.
 const READING_LINE = 100;
 
-export default function ContentsList({ entries }: { entries: ContentsEntry[] }) {
+interface ContentsListProps {
+  entries: ContentsEntry[];
+  // told which entry was chosen, for one that has to be opened before it can be read
+  onGoTo?: (id: string) => void;
+}
+
+export default function ContentsList({ entries, onGoTo }: ContentsListProps) {
   const wide = useMediaQuery("(min-width:1200px)");
   const [current, setCurrent] = useState<string>();
   const details = useRef<HTMLDetailsElement>(null);
@@ -61,6 +67,7 @@ export default function ContentsList({ entries }: { entries: ContentsEntry[] }) 
     // The folded list closes first: closing it moves the text, and the scroll has to
     // aim at where the heading is afterwards.
     if (details.current) details.current.open = false;
+    onGoTo?.(id);
     requestAnimationFrame(() =>
       document
         .getElementById(id)

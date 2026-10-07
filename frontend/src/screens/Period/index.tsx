@@ -1,4 +1,4 @@
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { Link as RouterLink, useLocation, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import { useEffect, useMemo, useState } from "react";
@@ -9,45 +9,32 @@ import {
   editPeriodContent,
 } from "../../store/slices/periodSlice";
 import { useSelector } from "react-redux";
-import {
-  Box,
-  Button,
-  Container,
-  SpeedDial,
-  SpeedDialAction,
-  SpeedDialIcon,
-  Typography,
-} from "@mui/material";
-import BorderColorIcon from "@mui/icons-material/BorderColor";
-import SaveIcon from "@mui/icons-material/Save";
-import CancelIcon from "@mui/icons-material/Cancel";
+import { Box, Button, Typography } from "@mui/material";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
+import ForumOutlinedIcon from "@mui/icons-material/ForumOutlined";
+import MenuBookOutlinedIcon from "@mui/icons-material/MenuBookOutlined";
+import QuizOutlinedIcon from "@mui/icons-material/QuizOutlined";
 import "./styles.css";
-import "react-quill/dist/quill.snow.css";
 import { PeriodContentEditRequest } from "../../types/models/Period";
 import ROLE from "../../types/enums/Role";
 import ContentsList from "../../components/ContentsList";
-import { withHeadingIds } from "../../components/ContentsList/headings";
+import { ContentsEntry, withHeadingIds } from "../../components/ContentsList/headings";
+import { EmptyState, Page } from "../../components/Page";
+import Discussion from "../Discussion";
 
+// What the seeded texts are made of, and no more: a colour or a size chosen by hand would
+// part a text from the look of the others.
 const toolbarOptions = [
-  ["bold", "italic", "underline", "strike"], // toggled buttons
-  ["blockquote", "code-block"],
-  ["link", "image", "video", "formula"],
-
-  [{ header: 1 }, { header: 2 }], // custom button values
-  [{ list: "ordered" }, { list: "bullet" }, { list: "check" }],
-  [{ script: "sub" }, { script: "super" }], // superscript/subscript
-  [{ indent: "-1" }, { indent: "+1" }], // outdent/indent
-  [{ direction: "rtl" }], // text direction
-
-  [{ size: ["small", false, "large", "huge"] }], // custom dropdown
-  [{ header: [1, 2, 3, 4, 5, 6, false] }],
-
-  [{ color: [] }, { background: [] }], // dropdown with defaults from theme
-  [{ align: [] }],
-
-  ["clean"], // remove formatting button
+  [{ header: [1, 2, 3, 4, false] }],
+  ["bold", "italic", "underline"],
+  ["blockquote"],
+  [{ list: "ordered" }, { list: "bullet" }],
+  ["link", "image"],
+  ["clean"],
 ];
 
+// Wider than the toolbar: a text written before it was narrowed keeps what it has.
 const formats = [
   "font",
   "header",
@@ -71,6 +58,9 @@ const formats = [
   "video",
 ];
 
+const DISCUSSION_ID = "rasprava";
+const discussionEntry: ContentsEntry = { id: DISCUSSION_ID, text: "Rasprava", level: 2 };
+
 export default function Period() {
   const { id } = useParams<{ id: string }>();
   const { periods, periodsFailed, periodContent, periodContentFailed } = useSelector(
@@ -82,9 +72,19 @@ export default function Period() {
   const [value, setValue] = useState("");
   const [text, setText] = useState("");
   const [isEdit, setIsEdit] = useState(false);
-  const { html, entries } = useMemo(() => withHeadingIds(text), [text]);
+  const { html, entries, title } = useMemo(() => {
+    const parsed = withHeadingIds(text);
+    // A text that opens with a heading of the first level is headed by it on the page too.
+    const first = new DOMParser().parseFromString(text, "text/html").body.firstElementChild;
+    return { ...parsed, title: first?.tagName === "H1" ? first.textContent?.trim() : undefined };
+  }, [text]);
   const { hash, key } = useLocation();
+  const [searchParams] = useSearchParams();
   const periodsLoaded = periods !== undefined;
+  // Open when the address names the Discussion or one of its Topics.
+  const [discussionOpen, setDiscussionOpen] = useState(
+    () => hash === `#${DISCUSSION_ID}` || searchParams.has("topic")
+  );
 
   // Fetched whenever the screen opens, not only once: the number of a Period's Quizzes can
   // have changed. One answer holds every Period, so going from one to another needs no more.
@@ -113,7 +113,9 @@ export default function Period() {
     if (!hash || isEdit || !periodsLoaded) return;
     // Taken as written: a heading's id is plain letters, and decoding a mistyped address throws.
     const heading = document.getElementById(hash.slice(1));
-    if (!heading?.closest(".content")) return;
+    if (!heading) return;
+    if (!heading.closest(".content") && heading.id !== DISCUSSION_ID) return;
+    if (heading.id === DISCUSSION_ID) setDiscussionOpen(true);
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     heading.scrollIntoView({ behavior: reducedMotion ? "auto" : "smooth", block: "start" });
   }, [hash, key, html, isEdit, periodsLoaded]);
@@ -145,6 +147,17 @@ export default function Period() {
     setValue(text);
   };
 
+  const openDiscussion = () => {
+    setDiscussionOpen(true);
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    // After the section has opened: its height changes where the scroll has to end.
+    requestAnimationFrame(() =>
+      document
+        .getElementById(DISCUSSION_ID)
+        ?.scrollIntoView({ behavior: reducedMotion ? "auto" : "smooth", block: "start" })
+    );
+  };
+
   // Until the list is here the page cannot tell an empty Period from one that does not exist.
   if (!periods) {
     return periodsFailed ? (
@@ -161,10 +174,23 @@ export default function Period() {
     return <Typography>Gradivo se nije učitalo. Pokušajte ponovno.</Typography>;
   }
 
-  return (
-    <Box className="content-wrapper">
-      {isEdit ? (
-        <>
+  const isAdmin = user?.role === ROLE.Admin;
+
+  if (isEdit) {
+    return (
+      <Page>
+        <Box className="period-edit-bar">
+          <Typography variant="h5" component="h1">
+            Uređivanje gradiva: {period.name}
+          </Typography>
+          <Box className="period-edit-buttons">
+            <Button onClick={handleCancel}>Odustani</Button>
+            <Button variant="contained" onClick={() => submitContent()}>
+              Spremi
+            </Button>
+          </Box>
+        </Box>
+        <Box className="period-editor">
           <ReactQuill
             modules={{ toolbar: toolbarOptions }}
             formats={formats}
@@ -172,87 +198,107 @@ export default function Period() {
             value={value}
             onChange={setValue}
           />
-          <SpeedDial
-            ariaLabel="SpeedDial basic example"
-            sx={{
-              position: "fixed",
-              bottom: 16,
-              right: 16,
-            }}
-            className="speed-dial"
-            icon={<SpeedDialIcon />}
-          >
-            <SpeedDialAction
-              key={"Spremi"}
-              icon={<SaveIcon />}
-              tooltipTitle={"Spremi"}
-              onClick={() => submitContent()}
-            />
-            <SpeedDialAction
-              key={"Odustani"}
-              icon={<CancelIcon />}
-              tooltipTitle={"Odustani"}
-              onClick={() => handleCancel()}
-            />
-          </SpeedDial>
-        </>
-      ) : (
-        <Container>
-          {user?.role === ROLE.Admin && (
-            <SpeedDial
-              ariaLabel="SpeedDial basic example"
-              sx={{
-                position: "fixed",
-                bottom: 16,
-                right: 16,
-              }}
-              className="speed-dial"
-              icon={<SpeedDialIcon />}
-            >
-              <SpeedDialAction
-                key={"Uredi"}
-                icon={<BorderColorIcon />}
-                tooltipTitle={"Uredi"}
-                onClick={() => setIsEdit(true)}
-              />
-            </SpeedDial>
-          )}
-          <Box className="period-actions">
-            <Button
-              variant="outlined"
-              sx={{ color: "#553b08", borderColor: "#553b08" }}
-              onClick={() => navigate(`/learning/${period.id}/discussion`)}
-            >
-              Rasprava ({period.topicCount})
-            </Button>
-          </Box>
-          {periodContent === null && text === "" ? (
-            <Typography>Za ovo razdoblje još nema gradiva.</Typography>
-          ) : (
-            <Box className={entries.length > 1 ? "period-layout" : undefined}>
-              <ContentsList entries={entries} />
-              <Box
-                className="content"
-                dangerouslySetInnerHTML={{
-                  __html: html,
-                }}
-              />
-            </Box>
-          )}
-          {period.quizCount > 0 && (
-            <Box className="period-quizzes">
+        </Box>
+      </Page>
+    );
+  }
+
+  const empty = periodContent === null && text === "";
+  // The page's own heading already says the Period's name.
+  const repeatsName = title === period.name;
+
+  return (
+    <Page>
+      <Box component="header" className="period-hero">
+        <Box className="period-hero-text">
+          <RouterLink className="back-link" to="/learning">
+            <ArrowBackIcon fontSize="small" /> Razdoblja
+          </RouterLink>
+          <Typography variant="h3" component="h1">
+            {period.name}
+          </Typography>
+          <Typography className="period-hero-time">{period.timeFrame}</Typography>
+          <Typography className="period-hero-description">{period.description}</Typography>
+          <Box className="period-hero-actions">
+            {period.quizCount > 0 && (
               <Button
                 variant="contained"
-                style={{ backgroundColor: "#553b08" }}
+                startIcon={<QuizOutlinedIcon />}
                 onClick={() => navigate(`/quizzes?period=${period.id}`)}
               >
                 Provjeri znanje
               </Button>
-              <Typography>Kvizova za ovo razdoblje: {period.quizCount}</Typography>
+            )}
+            <Button
+              variant="outlined"
+              startIcon={<ForumOutlinedIcon />}
+              onClick={openDiscussion}
+            >
+              Rasprava
+            </Button>
+            {isAdmin && (
+              <Button startIcon={<EditOutlinedIcon />} onClick={() => setIsEdit(true)}>
+                Uredi gradivo
+              </Button>
+            )}
+          </Box>
+        </Box>
+        {period.image && (
+          <Box className="period-hero-image">
+            <img src={`/${period.image}`} alt="" />
+          </Box>
+        )}
+      </Box>
+      <Box className={entries.length > 1 ? "period-layout" : undefined}>
+        <ContentsList
+          entries={entries.length > 1 ? [...entries, discussionEntry] : entries}
+          onGoTo={(entryId) => entryId === DISCUSSION_ID && setDiscussionOpen(true)}
+        />
+        <Box className="period-main">
+          {empty ? (
+            <Box className="period-empty">
+              <EmptyState
+                icon={<MenuBookOutlinedIcon />}
+                title="Za ovo razdoblje još nema gradiva."
+                action={
+                  isAdmin && (
+                    <Button variant="contained" onClick={() => setIsEdit(true)}>
+                      Napiši gradivo
+                    </Button>
+                  )
+                }
+              />
+            </Box>
+          ) : (
+            <Box
+              className={repeatsName ? "content content-titled" : "content"}
+              dangerouslySetInnerHTML={{
+                __html: html,
+              }}
+            />
+          )}
+          {period.quizCount > 0 && (
+            <Box className="period-quizzes">
+              <span className="icon-disc icon-disc-paper">
+                <QuizOutlinedIcon />
+              </span>
+              <Box className="period-quizzes-text">
+                <Typography variant="h5" component="h2">
+                  Pročitano? Provjerite koliko ste zapamtili.
+                </Typography>
+                <Typography>Kvizova za ovo razdoblje: {period.quizCount}</Typography>
+              </Box>
+              <Button
+                variant="contained"
+                onClick={() => navigate(`/quizzes?period=${period.id}`)}
+              >
+                Otvori kvizove
+              </Button>
             </Box>
           )}
-        </Container>
-      )}
-    </Box>
+          <Discussion period={period} open={discussionOpen} onToggle={setDiscussionOpen} />
+        </Box>
+      </Box>
+    </Page>
   );
 }
