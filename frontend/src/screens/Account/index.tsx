@@ -26,6 +26,8 @@ import {
   UserNameEditRequest,
 } from "../../types/models/User";
 import { roleLabels } from "../../types/enums/Role";
+import { Page } from "../../components/Page";
+import Initials from "../../components/Initials";
 import "./styles.css";
 
 export default function Account() {
@@ -89,22 +91,32 @@ export default function Account() {
   const passwordErrors = passwordForm.formState.errors;
 
   return (
-    <Box className="account-wrapper">
-      <Typography variant="h3" className="account-title">
-        Moj račun
-      </Typography>
-      {user && (
-        <Typography>
-          {user.email} · {roleLabels[user.role]}
-        </Typography>
-      )}
+    <Page narrow>
+      <Box className="account-head">
+        <Initials name={user ? `${user.firstName} ${user.lastName}` : null} />
+        <Box className="account-head-text">
+          <Typography variant="h4" component="h1" className="account-title">
+            Moj račun
+          </Typography>
+          {user && (
+            <Typography className="account-identity">
+              {user.email} · {roleLabels[user.role]}
+            </Typography>
+          )}
+        </Box>
+      </Box>
       <Paper className="account-section">
-        <Typography variant="h5" className="account-heading">
-          Ime i prezime
-        </Typography>
+        <Box className="account-section-head">
+          <Typography variant="h5" component="h2" className="account-heading">
+            Ime i prezime
+          </Typography>
+          <Typography className="account-note">
+            Ovo ime vide nastavnici uz vaše rezultate i svi uz vaše objave u raspravama.
+          </Typography>
+        </Box>
         <Box
           component="form"
-          className="account-form"
+          className="account-form account-form-pair"
           noValidate
           onSubmit={nameForm.handleSubmit(onNameSubmit, () =>
             setNameResult(undefined)
@@ -139,26 +151,31 @@ export default function Account() {
             helperText={nameErrors.lastName?.message}
           />
           {nameResult === "ok" && (
-            <Alert severity="success">Ime je promijenjeno.</Alert>
+            <Alert severity="success" className="account-form-wide">
+              Ime je promijenjeno.
+            </Alert>
           )}
           {nameResult === "failed" && (
-            <Alert severity="error">
+            <Alert severity="error" className="account-form-wide">
               Ime nije promijenjeno. Pokušajte ponovno.
             </Alert>
           )}
-          <Button
-            type="submit"
-            variant="contained"
-            sx={{ backgroundColor: "#553b08", alignSelf: "flex-start" }}
-          >
-            Spremi
-          </Button>
+          <Box className="account-form-wide account-form-actions">
+            <Button type="submit" variant="contained">
+              Spremi
+            </Button>
+          </Box>
         </Box>
       </Paper>
       <Paper className="account-section">
-        <Typography variant="h5" className="account-heading">
-          Lozinka
-        </Typography>
+        <Box className="account-section-head">
+          <Typography variant="h5" component="h2" className="account-heading">
+            Lozinka
+          </Typography>
+          <Typography className="account-note">
+            Najmanje 8 znakova. Promjena lozinke odjavljuje vas na svim drugim uređajima.
+          </Typography>
+        </Box>
         <Box
           component="form"
           className="account-form"
@@ -203,7 +220,7 @@ export default function Account() {
             {...passwordForm.register("repeatedPassword", {
               validate: (value) =>
                 passwordForm.watch("newPassword") === value ||
-                "Lozinke se ne preklapaju",
+                "Lozinke se ne podudaraju",
             })}
             label="Ponovite novu lozinku"
             id="repeatedPassword"
@@ -226,22 +243,22 @@ export default function Account() {
               Lozinka nije promijenjena. Pokušajte ponovno.
             </Alert>
           )}
-          <Button
-            type="submit"
-            variant="contained"
-            sx={{ backgroundColor: "#553b08", alignSelf: "flex-start" }}
-          >
-            Promijeni lozinku
-          </Button>
+          <Box className="account-form-actions">
+            <Button type="submit" variant="contained">
+              Promijeni lozinku
+            </Button>
+          </Box>
         </Box>
       </Paper>
-      <Paper className="account-section">
-        <Typography variant="h5" className="account-heading">
-          Brisanje računa
-        </Typography>
-        <Typography sx={{ marginBottom: 2 }}>
-          Brisanje računa je trajno: s računom se brišu i vaši rezultati.
-        </Typography>
+      <Paper className="account-section account-danger">
+        <Box className="account-section-head">
+          <Typography variant="h5" component="h2" className="account-heading">
+            Brisanje računa
+          </Typography>
+          <Typography className="account-note">
+            Brisanje računa je trajno: s računom se brišu i vaši rezultati.
+          </Typography>
+        </Box>
         <Button
           color="error"
           variant="outlined"
@@ -278,6 +295,6 @@ export default function Account() {
           </Button>
         </DialogActions>
       </Dialog>
-    </Box>
+    </Page>
   );
 }
