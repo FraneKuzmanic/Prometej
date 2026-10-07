@@ -1,10 +1,74 @@
+.search-result.MuiPaper-root{
+    margin-bottom: 1.25rem;
+    padding: 1.25rem 1.5rem 1rem;
+}
+
+.search-result-head{
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    margin-bottom: 0.25rem;
+}
+
+.search-result-head img{
+    width: 3rem;
+    height: 3rem;
+    border-radius: 8px;
+    object-fit: cover;
+    object-position: center 20%;
+}
+
 .search-passage{
-    margin-bottom: 12px;
+    padding: 0.9rem 0;
+    border-bottom: 1px solid var(--rule);
     overflow-wrap: anywhere;
 }
 
-.more-of-button.MuiButton-root{
-    padding: 0;
-    color: #b60000;
-    margin-top: 7px;
+.search-passage h3{
+    margin-bottom: 0.2rem;
+    color: var(--brown);
+    font-family: var(--font-sans);
+    font-size: 0.9rem;
+    font-weight: 700;
+}
+
+.search-passage p{
+    max-width: 72ch;
+    line-height: 1.6;
+}
+
+/* The words that were searched for, where they were found. */
+.search-passage mark{
+    padding: 0.05em 0.15em;
+    border-radius: 3px;
+    background-color: #f5e3a3;
+    color: inherit;
+    font-weight: 600;
+}
+
+.search-result-foot{
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem 1rem;
+    padding-top: 0.9rem;
+}
+
+.more-of-button{
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    margin-left: auto;
+    color: var(--brown);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.more-of-button .MuiSvgIcon-root{
+    transition: transform 220ms var(--ease-out);
+}
+
+.more-of-button:hover .MuiSvgIcon-root{
+    transform: translateX(4px);
 }
