@@ -107,7 +107,8 @@ export default function Tutor({ periodId, periodName }: TutorProps) {
           <img src={TUTOR_AVATAR} alt="" />
           <Box className="tutor-head-names">
             <Typography className="tutor-name">Prometej</Typography>
-            <Typography className="tutor-context">{periodName ?? "Sva razdoblja"}</Typography>
+            {/* Named only on a Period's page, where the questions are about that Period. */}
+            {periodName && <Typography className="tutor-context">{periodName}</Typography>}
           </Box>
           <Button
             size="small"
@@ -128,8 +129,7 @@ export default function Tutor({ periodId, periodName }: TutorProps) {
           {messages.length === 0 && (
             <Box className="tutor-empty">
               <Typography>
-                Ja sam Prometej. Pitaj me o gradivu: odgovaram samo iz tekstova o razdobljima i
-                pokažem ti gdje piše.
+                Ja sam Prometej. Pitaj me o gradivu što god te zanima.
               </Typography>
               <Box className="tutor-examples">
                 {(periodId === null ? OTHER_EXAMPLES : PERIOD_EXAMPLES).map((example) => (
