@@ -96,7 +96,9 @@ export default function Header({ toggle }: HeaderProps) {
 
   const handleLogout = (): void => {
     handleCloseUserMenu();
-    dispatch(attemptLogout()).then(() => navigate("/learning"));
+    // A full load, not a route change: the app starts over as a visitor's, with nothing of
+    // the signed-out User's left in the store or on the screen.
+    dispatch(attemptLogout()).then(() => window.location.assign("/learning"));
   };
 
   const signedIn = authenticated && user !== undefined;
