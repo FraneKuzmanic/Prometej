@@ -2,18 +2,24 @@ import {
   Alert,
   Box,
   Button,
+  ButtonBase,
   Checkbox,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Divider,
   FormControlLabel,
   IconButton,
   LinearProgress,
+  ListItemIcon,
+  ListItemText,
   Menu,
   MenuItem,
-  Paper,
-  SpeedDial,
-  SpeedDialAction,
-  SpeedDialIcon,
   Switch,
   TextField,
+  ToggleButton,
+  ToggleButtonGroup,
   Tooltip,
   Typography,
 } from "@mui/material";
@@ -35,9 +41,14 @@ import {
   newQuestion,
 } from "./questions";
 import AddIcon from "@mui/icons-material/Add";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import ArticleOutlinedIcon from "@mui/icons-material/ArticleOutlined";
+import AutoAwesomeOutlinedIcon from "@mui/icons-material/AutoAwesomeOutlined";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import FormatListNumberedIcon from "@mui/icons-material/FormatListNumbered";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
-import SaveIcon from "@mui/icons-material/Save";
-import CancelIcon from "@mui/icons-material/Cancel";
+import RadioButtonCheckedIcon from "@mui/icons-material/RadioButtonChecked";
+import SyncAltIcon from "@mui/icons-material/SyncAlt";
 import { useSelector } from "react-redux";
 import { RootState, useAppDispatch } from "../../store/store";
 import { fetchPeriods } from "../../store/slices/periodSlice";
@@ -70,6 +81,38 @@ const MAX_SOURCE_TEXT_QUESTIONS = 10;
 // The server's limits for a time limit, in minutes.
 const MIN_TIME_LIMIT = 1;
 const MAX_TIME_LIMIT = 300;
+
+// The three kinds, as the editor names and describes them where one is chosen.
+const kinds: {
+  type: QuestionType;
+  name: string;
+  short: string;
+  about: string;
+  icon: JSX.Element;
+}[] = [
+  {
+    type: "choice",
+    name: "Pitanje s četiri odgovora",
+    short: "Četiri odgovora",
+    about: "Jedan točan odgovor od četiri ponuđena",
+    icon: <RadioButtonCheckedIcon fontSize="small" />,
+  },
+  {
+    type: "matching",
+    name: "Povezivanje",
+    short: "Povezivanje",
+    about: "Tri do pet parova, bod za svaki točan par",
+    icon: <SyncAltIcon fontSize="small" />,
+  },
+  {
+    type: "ordering",
+    name: "Redanje",
+    short: "Redanje",
+    about: "Tri do šest pojmova koje treba poredati",
+    icon: <FormatListNumberedIcon fontSize="small" />,
+  },
+];
+const kindOf = (type: QuestionType) => kinds.find((kind) => kind.type === type)!;
 
 // What a Question of each type still needs, said after "Pitanje {n} nije potpuno: ".
 const missing: Record<QuestionType, string> = {
@@ -267,17 +310,11 @@ export default function QuizEditor({
     setMenu(null);
   };
 
-  // A Question can be added in the middle of the strip, so the strip follows the selected one.
+  // A Question can be added in the middle of the list, so the list follows the selected one.
   useEffect(() => {
-    const container = document.querySelector(".questions-nav");
-    if (!container) return;
-    if (selected === quizQuestions.length - 1) {
-      container.scrollLeft = container.scrollWidth;
-    } else {
-      container
-        .querySelector(".question-nav-container.selected")
-        ?.scrollIntoView({ block: "nearest", inline: "nearest" });
-    }
+    document
+      .querySelector(".questions-nav .question-nav-container.selected")
+      ?.scrollIntoView({ block: "nearest", inline: "nearest" });
   }, [quizQuestions.length, selected]);
 
   // "Tekst 1", "Tekst 2": the Source Texts numbered in the order the Questions use them.
@@ -301,119 +338,130 @@ export default function QuizEditor({
     setIncomplete(null);
   };
 
+  // A Question that is not stored yet can still become another kind: its title and its two
+  // explanations stay, the rest is the new kind's. One asked about a Source Text is a
+  // choice Question, and a stored one keeps its type for good.
+  const current = quizQuestions[selected];
+  const kindIsOpen =
+    !locked && current !== undefined && current.id === undefined && !current.sourceTextKey;
+  const changeKind = (type: QuestionType) =>
+    updateQuestion(selected, {
+      ...newQuestion(type),
+      questionTitle: current.questionTitle,
+      hintText: current.hintText,
+      exploreMore: current.exploreMore,
+    });
+
   return (
     <Box className="quiz-screen-wrapper">
-      {incomplete !== null && (
-        <Alert severity="warning" className="quiz-editor-message">
-          {incomplete.sourceText
-            ? `Polazni tekst uz pitanje ${incomplete.no} nije potpun: unesite autora i naslov te tekst.`
-            : `Pitanje ${incomplete.no} nije potpuno: ${missing[incomplete.type]}`}
-        </Alert>
-      )}
-      {locked && (
-        <Alert severity="info" className="quiz-editor-message">
-          Provjera je započeta, pa se pitanja više ne mogu mijenjati. Naslov i
-          vrijeme možete promijeniti.
-        </Alert>
-      )}
-      {/* A disabled fieldset disables every field inside it. */}
-      <fieldset disabled={locked} className="quiz-editor-questions">
-        <QuestionContainer
-          currentQuestion={quizQuestions[selected]}
-          selected={selected}
-          handleQuestionChange={updateQuestion}
-          sourceTextFields={
-            selectedSourceTextKey && (
-              <SourceTextFields
-                sourceText={sourceTexts[selectedSourceTextKey]}
-                onChange={(updates) => updateSourceText(selectedSourceTextKey, updates)}
-                onAddQuestion={
-                  !locked &&
-                  quizQuestions.filter(
-                    (question) => question.sourceTextKey === selectedSourceTextKey
-                  ).length < MAX_SOURCE_TEXT_QUESTIONS
-                    ? () => addToSourceText(selectedSourceTextKey)
-                    : undefined
-                }
-              />
-            )
-          }
-        />
-      </fieldset>
-      <Box className="questions-nav">
+      <Box component="header" className="quiz-editor-bar">
+        <Tooltip title="Natrag">
+          <IconButton aria-label="Natrag" onClick={() => onCancel()}>
+            <ArrowBackIcon />
+          </IconButton>
+        </Tooltip>
+        <Typography variant="h6" component="h1" className="quiz-editor-name">
+          {quizTitle.trim() || "Novi kviz"}
+        </Typography>
+        <Box className="quiz-editor-actions">
+          <Button onClick={() => onCancel()}>Odustani</Button>
+          <Button variant="contained" onClick={() => handleSave()}>
+            Spremi
+          </Button>
+        </Box>
+      </Box>
+      <Box component="nav" className="questions-nav" aria-label="Pitanja">
         {quizQuestions.map((question, index) => (
-          <Paper
+          <Box
             className={`question-nav-container ${
               selected === index ? "selected" : ""
             } ${question.sourceTextKey ? "with-source-text" : ""}`}
-            onClick={() => setSelected(index)}
             key={index}
           >
-            {question.sourceTextKey && (
-              <Typography className="question-container-source-text">
-                Tekst {sourceTextNumbers.get(question.sourceTextKey)}
-              </Typography>
-            )}
-            <Tooltip
-              title={
-                <Typography sx={{ fontSize: 14 }}>
-                  {question.questionTitle}
-                </Typography>
-              }
-              placement="top"
+            <ButtonBase
+              className="question-nav-open"
+              aria-current={selected === index ? "true" : undefined}
+              onClick={() => setSelected(index)}
             >
-              <Typography className="question-container-title">
-                {question.questionTitle}
-              </Typography>
-            </Tooltip>
-            <Typography className="question-container-no">
-              {index + 1}.
-            </Typography>
+              <span className="question-container-no">{index + 1}.</span>
+              <span className="question-container-text">
+                <span className="question-container-title">
+                  {question.questionTitle.trim() || "Bez teksta"}
+                </span>
+                <span className="question-container-kind">
+                  {kindOf(question.type).short}
+                  {question.sourceTextKey && (
+                    <span className="question-container-source-text">
+                      {" · "}Tekst {sourceTextNumbers.get(question.sourceTextKey)}
+                    </span>
+                  )}
+                </span>
+              </span>
+            </ButtonBase>
             {quizQuestions.length > 1 && !locked && (
-              <Box className="question-container-opt">
+              <span className="question-container-opt">
                 <IconButton
+                  size="small"
                   aria-label={`Mogućnosti pitanja ${index + 1}`}
                   aria-haspopup="true"
                   onClick={(event) =>
                     setMenu({ anchor: event.currentTarget, index })
                   }
                 >
-                  <MoreVertIcon />
+                  <MoreVertIcon fontSize="small" />
                 </IconButton>
-              </Box>
+              </span>
             )}
-          </Paper>
+          </Box>
         ))}
         <Menu
           anchorEl={menu?.anchor}
           open={menu !== null}
           onClose={() => setMenu(null)}
         >
-          <MenuItem onClick={() => menu && handleDelete(menu.index)}>
-            Izbriši
+          <MenuItem
+            className="menu-item-danger"
+            onClick={() => menu && handleDelete(menu.index)}
+          >
+            <ListItemIcon>
+              <DeleteOutlineIcon fontSize="small" />
+            </ListItemIcon>
+            Obriši
           </MenuItem>
         </Menu>
         {!locked && (
-          <Paper
+          <Button
+            variant="outlined"
+            startIcon={<AddIcon />}
+            aria-haspopup="true"
             onClick={(event) => setAddMenuAnchor(event.currentTarget)}
             className="question-container-add"
           >
-            <AddIcon />
-          </Paper>
+            Dodaj pitanje
+          </Button>
         )}
         <Menu
           anchorEl={addMenuAnchor}
           open={addMenuAnchor !== null}
           onClose={() => setAddMenuAnchor(null)}
+          className="quiz-editor-add-menu"
         >
-          <MenuItem onClick={() => addQuestion("choice")}>
-            Pitanje s četiri odgovora
-          </MenuItem>
-          <MenuItem onClick={() => addQuestion("matching")}>Povezivanje</MenuItem>
-          <MenuItem onClick={() => addQuestion("ordering")}>Redanje</MenuItem>
+          {kinds.map((kind) => (
+            <MenuItem key={kind.type} onClick={() => addQuestion(kind.type)}>
+              <ListItemIcon>{kind.icon}</ListItemIcon>
+              <ListItemText primary={kind.name} secondary={kind.about} />
+            </MenuItem>
+          ))}
           <MenuItem onClick={() => addSourceText()}>
-            Polazni tekst s pitanjima
+            <ListItemIcon>
+              <ArticleOutlinedIcon fontSize="small" />
+            </ListItemIcon>
+            <ListItemText
+              primary="Polazni tekst s pitanjima"
+              secondary="Pjesma ili ulomak i do deset pitanja o njemu"
+            />
           </MenuItem>
+          {tutorAvailable && <Divider />}
           {tutorAvailable && (
             <MenuItem
               onClick={() => {
@@ -421,7 +469,13 @@ export default function QuizEditor({
                 setSuggesting(true);
               }}
             >
-              Predloži pitanja
+              <ListItemIcon>
+                <AutoAwesomeOutlinedIcon fontSize="small" />
+              </ListItemIcon>
+              <ListItemText
+                primary="Predloži pitanja"
+                secondary="Prometej ih sastavlja iz poglavlja gradiva"
+              />
             </MenuItem>
           )}
         </Menu>
@@ -432,51 +486,99 @@ export default function QuizEditor({
             onClose={() => setSuggesting(false)}
           />
         )}
-        <SpeedDial
-          ariaLabel="Radnje kviza"
-          sx={{
-            position: "fixed",
-            bottom: 16,
-            right: 16,
-          }}
-          className="speed-dial"
-          icon={<SpeedDialIcon />}
-        >
-          <SpeedDialAction
-            key={"Spremi"}
-            icon={<SaveIcon />}
-            tooltipTitle={"Spremi"}
-            onClick={() => handleSave()}
-          />
-          <SpeedDialAction
-            key={"Odustani"}
-            icon={<CancelIcon />}
-            tooltipTitle={"Odustani"}
-            onClick={() => onCancel()}
-          />
-        </SpeedDial>
       </Box>
-      {inputDrawer && (
-        <Paper elevation={24} className="title-input">
-          <Typography sx={{ marginTop: "1rem" }} variant="h5">
-            Unesite naslov kviza
-          </Typography>
+      <Box component="main" className="quiz-editor-main">
+        {incomplete !== null && (
+          <Alert severity="warning" className="quiz-editor-message">
+            {incomplete.sourceText
+              ? `Polazni tekst uz pitanje ${incomplete.no} nije potpun: unesite autora i naslov te tekst.`
+              : `Pitanje ${incomplete.no} nije potpuno: ${missing[incomplete.type]}`}
+          </Alert>
+        )}
+        {locked && (
+          <Alert severity="info" className="quiz-editor-message">
+            Provjera je započeta, pa se pitanja više ne mogu mijenjati. Naslov i
+            vrijeme možete promijeniti.
+          </Alert>
+        )}
+        {/* A disabled fieldset disables every field inside it. */}
+        <fieldset disabled={locked} className="quiz-editor-questions">
+          <QuestionContainer
+            currentQuestion={current}
+            selected={selected}
+            handleQuestionChange={updateQuestion}
+            kindField={
+              current &&
+              (kindIsOpen ? (
+                <ToggleButtonGroup
+                  exclusive
+                  size="small"
+                  color="primary"
+                  aria-label="Vrsta pitanja"
+                  value={current.type}
+                  onChange={(_event, type: QuestionType | null) =>
+                    type && changeKind(type)
+                  }
+                >
+                  {kinds.map((kind) => (
+                    <ToggleButton key={kind.type} value={kind.type}>
+                      {kind.icon}
+                      {kind.short}
+                    </ToggleButton>
+                  ))}
+                </ToggleButtonGroup>
+              ) : (
+                <span className="question-kind-fixed">
+                  {kindOf(current.type).icon}
+                  {kindOf(current.type).name}
+                </span>
+              ))
+            }
+            sourceTextFields={
+              selectedSourceTextKey && (
+                <SourceTextFields
+                  sourceText={sourceTexts[selectedSourceTextKey]}
+                  number={sourceTextNumbers.get(selectedSourceTextKey)}
+                  onChange={(updates) => updateSourceText(selectedSourceTextKey, updates)}
+                  onAddQuestion={
+                    !locked &&
+                    quizQuestions.filter(
+                      (question) => question.sourceTextKey === selectedSourceTextKey
+                    ).length < MAX_SOURCE_TEXT_QUESTIONS
+                      ? () => addToSourceText(selectedSourceTextKey)
+                      : undefined
+                  }
+                />
+              )
+            }
+          />
+        </fieldset>
+      </Box>
+      <Dialog
+        open={inputDrawer}
+        onClose={() => setInputDrawer(false)}
+        maxWidth="xs"
+        fullWidth
+        PaperProps={{ className: "title-input" }}
+      >
+        <DialogTitle>Spremi kviz</DialogTitle>
+        <DialogContent className="quiz-editor-save">
           <TextField
-            sx={{ marginTop: "2rem" }}
-            type="text"
+            sx={{ marginTop: 1 }}
+            label="Naslov kviza"
             placeholder="Naslov kviza"
+            autoFocus
             fullWidth
             required
             inputProps={{ maxLength: 100 }}
+            InputLabelProps={{ shrink: true }}
             value={quizTitle}
             onChange={(e) => setQuizTitle(e.target.value)}
           />
           <TextField
             select
             fullWidth
-            size="small"
             label="Razdoblje"
-            sx={{ marginTop: "1rem" }}
             // The chosen Period is kept while the list loads; the field only cannot show it yet.
             disabled={!periods}
             value={periods && periodId !== null ? String(periodId) : ""}
@@ -485,6 +587,7 @@ export default function QuizEditor({
             }
             SelectProps={{ displayEmpty: true }}
             InputLabelProps={{ shrink: true }}
+            helperText="Kviz se nudi na stranici tog razdoblja."
           >
             <MenuItem value="">Bez razdoblja</MenuItem>
             {periods?.map((period) => (
@@ -493,39 +596,43 @@ export default function QuizEditor({
               </MenuItem>
             ))}
           </TextField>
-          <FormControlLabel
-            sx={{ marginTop: "0.5rem" }}
-            control={
-              <Switch
-                checked={isPrivate}
-                // A started Test stays one: the server refuses a change of mode.
-                disabled={locked}
-                onChange={(e) => {
-                  setIsPrivate(e.target.checked);
-                  // Only a Private Quiz can be a Test.
-                  if (!e.target.checked) setIsTest(false);
-                }}
-              />
-            }
-            label="Privatni kviz"
-          />
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={isTest}
-                disabled={!isPrivate || locked}
-                onChange={(e) => setIsTest(e.target.checked)}
-              />
-            }
-            label="Provjera (jedan pokušaj, bez povratne informacije)"
-          />
+          <Box className="quiz-editor-switches">
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={isPrivate}
+                  // A started Test stays one: the server refuses a change of mode.
+                  disabled={locked}
+                  onChange={(e) => {
+                    setIsPrivate(e.target.checked);
+                    // Only a Private Quiz can be a Test.
+                    if (!e.target.checked) setIsTest(false);
+                  }}
+                />
+              }
+              label="Privatni kviz"
+            />
+            <Typography className="quiz-editor-hint">
+              {isPrivate
+                ? "Otvara ga samo tko upiše ulazni kod koji dobijete nakon spremanja."
+                : "Vide ga svi, na popisu kvizova."}
+            </Typography>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={isTest}
+                  disabled={!isPrivate || locked}
+                  onChange={(e) => setIsTest(e.target.checked)}
+                />
+              }
+              label="Provjera (jedan pokušaj, bez povratne informacije)"
+            />
+          </Box>
           {hasTimeLimit && (
             <TextField
               type="number"
               fullWidth
-              size="small"
               label="Vremensko ograničenje (min)"
-              sx={{ marginTop: "1rem" }}
               inputProps={{ min: MIN_TIME_LIMIT, max: MAX_TIME_LIMIT }}
               InputLabelProps={{ shrink: true }}
               value={timeLimit}
@@ -542,9 +649,7 @@ export default function QuizEditor({
             <TextField
               type="datetime-local"
               fullWidth
-              size="small"
               label="Zatvara se"
-              sx={{ marginTop: "1rem" }}
               InputLabelProps={{ shrink: true }}
               value={closesAt}
               onChange={(e) => setClosesAt(e.target.value)}
@@ -557,33 +662,20 @@ export default function QuizEditor({
               Kviz nije spremljen. Pokušajte ponovno.
             </Typography>
           )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setInputDrawer(false)}>Odustani</Button>
           <Button
             variant="contained"
             disabled={isSaving}
             onClick={() => {
               quizTitle.trim() && timeLimitValid ? saveQuiz() : null;
             }}
-            style={{
-              backgroundColor: "#553b08",
-              marginTop: "1rem",
-              width: "80%",
-            }}
           >
             Spremi
           </Button>
-          <Button
-            variant="contained"
-            style={{
-              backgroundColor: "#553b08",
-              marginTop: "1rem",
-              width: "80%",
-            }}
-            onClick={() => setInputDrawer(false)}
-          >
-            Odustani
-          </Button>
-        </Paper>
-      )}
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

@@ -105,7 +105,7 @@ export default function SuggestQuestions({ initialPeriodId, onAdd, onClose }: Su
     <Dialog open onClose={onClose} fullWidth maxWidth="md" aria-labelledby="suggest-title">
       <DialogTitle id="suggest-title">Predloži pitanja</DialogTitle>
       <DialogContent>
-        <Typography sx={{ marginBottom: 2 }}>
+        <Typography color="text.secondary">
           Prometej iz odabranog poglavlja gradiva sastavlja do pet pitanja s četiri odgovora.
           Prijedloge pregledajte: dodaju se u kviz tek kad ih odaberete, a spremaju kad
           spremite kviz.
@@ -150,7 +150,6 @@ export default function SuggestQuestions({ initialPeriodId, onAdd, onClose }: Su
           </TextField>
           <Button
             variant="contained"
-            style={{ backgroundColor: "#553b08" }}
             disabled={sectionId === "" || pending}
             onClick={suggest}
           >
@@ -170,7 +169,10 @@ export default function SuggestQuestions({ initialPeriodId, onAdd, onClose }: Su
           <Typography>Iz ovog poglavlja nije nastao nijedan prijedlog.</Typography>
         )}
         {drafts.map((draft, index) => (
-          <Box key={index} className="suggest-draft">
+          <Box
+            key={index}
+            className={chosen[index] ? "suggest-draft chosen" : "suggest-draft"}
+          >
             <Checkbox
               checked={chosen[index] ?? false}
               onChange={(event) =>
@@ -208,12 +210,9 @@ export default function SuggestQuestions({ initialPeriodId, onAdd, onClose }: Su
         )}
       </DialogContent>
       <DialogActions>
-        <Button sx={{ color: "#553b08" }} onClick={onClose}>
-          Odustani
-        </Button>
+        <Button onClick={onClose}>Odustani</Button>
         <Button
           variant="contained"
-          style={chosenDrafts.length > 0 ? { backgroundColor: "#553b08" } : undefined}
           disabled={chosenDrafts.length === 0}
           onClick={() => onAdd(chosenDrafts.map(toQuestion))}
         >

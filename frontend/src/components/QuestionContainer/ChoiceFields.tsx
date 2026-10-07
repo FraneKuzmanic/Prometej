@@ -1,4 +1,4 @@
-import { Checkbox, Grid, TextField, Typography } from "@mui/material";
+import { Box, Checkbox, TextField, Tooltip, Typography } from "@mui/material";
 import RadioButtonUncheckedIcon from "@mui/icons-material/RadioButtonUnchecked";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import { EditorQuestion } from "../QuizEditor/questions";
@@ -18,38 +18,43 @@ const options = [
 
 export default function ChoiceFields({ question, onChange }: ChoiceFieldsProps) {
   return (
-    <Grid
-      className="answers-grid"
-      container
-      rowSpacing={4}
-      columnSpacing={{ xs: 1, sm: 2, md: 3 }}
-    >
-      {options.map(({ letter, field, number }) => (
-        <Grid className="answer" item xs={6} key={number}>
-          <Typography className="letter" component="span">
-            {letter}
-          </Typography>
-          <TextField
-            className="input"
-            id={`answer-${number}`}
-            label="Unesite odgovor"
-            inputProps={{ maxLength: 500 }}
-            value={question[field]}
-            onChange={(e) => onChange({ [field]: e.target.value })}
-            multiline
-          />
-          <Checkbox
-            className="question-checkbox"
-            inputProps={{ "aria-label": `Točan odgovor ${letter}` }}
-            icon={<RadioButtonUncheckedIcon />}
-            checkedIcon={<CheckCircleIcon />}
-            checked={question.correctOption === number}
-            onChange={(e) =>
-              onChange({ correctOption: e.target.checked ? number : 0 })
-            }
-          />
-        </Grid>
-      ))}
-    </Grid>
+    <>
+      <Typography className="fields-note">
+        Upišite četiri različita odgovora i označite točan.
+      </Typography>
+      <Box className="answers-grid">
+        {options.map(({ letter, field, number }) => {
+          const correct = question.correctOption === number;
+          return (
+            <Box className={correct ? "answer correct" : "answer"} key={number}>
+              <Typography className="letter" component="span">
+                {letter}
+              </Typography>
+              <TextField
+                className="input"
+                id={`answer-${number}`}
+                placeholder="Unesite odgovor"
+                inputProps={{ maxLength: 500, "aria-label": `Odgovor ${letter}` }}
+                value={question[field]}
+                onChange={(e) => onChange({ [field]: e.target.value })}
+                multiline
+              />
+              <Tooltip title={correct ? "Točan odgovor" : "Označi kao točan"}>
+                <Checkbox
+                  className="question-checkbox"
+                  inputProps={{ "aria-label": `Točan odgovor ${letter}` }}
+                  icon={<RadioButtonUncheckedIcon />}
+                  checkedIcon={<CheckCircleIcon />}
+                  checked={correct}
+                  onChange={(e) =>
+                    onChange({ correctOption: e.target.checked ? number : 0 })
+                  }
+                />
+              </Tooltip>
+            </Box>
+          );
+        })}
+      </Box>
+    </>
   );
 }

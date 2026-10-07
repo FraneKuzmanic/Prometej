@@ -1,95 +1,184 @@
-.question-title{
-    display: flex;
-    justify-content: center;
-    padding: 2rem;
-}
-
 .question-wrapper{
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
     width: 100%;
 }
 
-.input{
-    text-align: center;
-    background-color: white;
-    color: rgba(0, 0, 0, 0.6);
-    width: 70%;
-    height: 70%;
-    border: none;
-    padding: 0;
-    border-top-right-radius: 5px;
-    border-bottom-right-radius: 5px;
-
+/* A Question and its Source Text are two sheets, the text first. */
+.question-card,
+.source-text-fields{
+    padding: 1.5rem 1.75rem 1.75rem;
+    border: 1px solid var(--rule);
+    border-radius: 10px;
+    background-color: var(--paper);
+    box-shadow: var(--shadow-card);
 }
 
-.input .MuiInputBase-root{
+.source-text-fields{
     display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+    background-color: #fbf9f3;
+}
+
+.question-head{
+    display: flex;
+    flex-wrap: wrap;
     align-items: center;
-    justify-content: center;
-    height: 100%;
-    padding: 0 0 0 1rem;
-    color:rgba(0, 0, 0, 0.6);
+    justify-content: space-between;
+    gap: 0.75rem 1.5rem;
 }
 
-.input-title{
-    text-align: center;
-    background-color: white;
-    color: rgba(0, 0, 0, 0.6);
-    width: 70%;
+.question-head h2{
+    font-size: 1.3rem;
 }
 
-.input-title .MuiInputBase-input {
-    text-align: center;
-    font-size: 25px;
-    color:rgba(0, 0, 0, 0.6);
+.question-head .MuiToggleButton-root{
+    gap: 0.4rem;
+    padding: 0.3rem 0.8rem;
+    text-transform: none;
+    font-weight: 600;
+    color: var(--ink-muted);
 }
 
-.input-title .MuiFormLabel-root {
-    left: 42%;
-    top: -10%;
-    font-size: 25px;
+.question-head .MuiToggleButton-root.Mui-selected{
+    background-color: var(--parchment);
+    color: var(--brown);
+}
+
+/* A stored Question's kind: said, not offered. */
+.question-kind-fixed{
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
+    background-color: var(--parchment);
+    color: var(--brown);
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.question-title{
+    margin-top: 1.25rem;
+}
+
+.input-title .MuiInputBase-input{
+    font-family: var(--font-serif);
+    font-size: 1.25rem;
+    line-height: 1.4;
+}
+
+.fields-note.MuiTypography-root{
+    margin: 1.25rem 0 0.6rem;
+    color: var(--ink-muted);
+    font-size: 0.92rem;
+}
+
+.source-text-fields .fields-note.MuiTypography-root{
+    margin: -0.4rem 0 0;
 }
 
 .answers-grid{
-    margin-top: 0 !important;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
 }
 
-.explanations{
+@media (max-width: 900px){
+    .answers-grid{
+        grid-template-columns: 1fr;
+    }
+}
+
+/* One option: its letter, its text and the mark that says it is the right one. */
+.answer{
     display: flex;
-    gap: 24px;
-    padding: 0 10%;
-    margin-top: 2vh;
+    align-items: stretch;
+    overflow: hidden;
+    border: 1px solid #d9cfb6;
+    border-radius: 8px;
+    background-color: var(--paper);
+    transition: border-color 140ms ease-out, background-color 140ms ease-out;
 }
 
-.explanation{
+.answer:focus-within{
+    border-color: var(--brown);
+}
+
+.answer.correct{
+    border-color: var(--right);
+    background-color: var(--right-tint);
+}
+
+.letter{
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    background-color: var(--parchment);
+    color: var(--brown);
+    font-weight: 700;
+}
+
+.answer.correct .letter{
+    background-color: var(--right);
+    color: white;
+}
+
+.input.MuiTextField-root{
     flex: 1;
     min-width: 0;
+    justify-content: center;
+}
+
+.input .MuiOutlinedInput-root{
+    padding: 0.7rem 0.75rem;
+    background-color: transparent;
+}
+
+/* The row is the field: its own outline would be a second one. */
+.input .MuiOutlinedInput-notchedOutline{
+    border: none;
+}
+
+.MuiButtonBase-root.question-checkbox{
+    align-self: center;
+    margin-right: 0.25rem;
+    color: #b9a77c;
+}
+
+.MuiButtonBase-root.question-checkbox .MuiSvgIcon-root{
+    font-size: 1.75rem;
+}
+
+.MuiButtonBase-root.question-checkbox.Mui-checked{
+    color: var(--right);
 }
 
 .item-fields{
     display: flex;
     flex-direction: column;
-    gap: 12px;
-    padding: 0 10%;
+    gap: 0.6rem;
+    margin-top: 1.25rem;
 }
 
 .ordering-note.MuiTypography-root{
-    align-self: flex-start;
-    padding: 2px 10px;
-    font-size: 14px;
-    background-color: #553b08;
-    color: white;
-    border-radius: 5px;
+    color: var(--ink-muted);
+    font-size: 0.92rem;
 }
 
 .item-row{
     display: flex;
     align-items: stretch;
-    gap: 12px;
+    gap: 0.6rem;
 }
 
 .item-row .letter{
-    height: auto;
-    border-radius: 5px;
+    width: 2.25rem;
+    border-radius: 8px;
 }
 
 .item-row .item-no-letter{
@@ -101,123 +190,57 @@
     min-width: 0;
 }
 
-.item-input.MuiTextField-root{
-    background-color: white;
-    border-radius: 5px;
-}
-
-.item-input .MuiInputBase-input{
-    color: rgba(0, 0, 0, 0.6);
-}
-
 .item-remove{
     width: 40px;
     flex-shrink: 0;
 }
 
 .MuiIconButton-root.item-remove{
-    color: white;
-    background-color: #553b08;
-    border-radius: 5px;
+    color: var(--ink-muted);
+    border-radius: 8px;
+}
+
+.MuiIconButton-root.item-remove:hover{
+    color: var(--wrong);
+    background-color: var(--wrong-tint);
 }
 
 .item-buttons{
     display: flex;
-    gap: 12px;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-top: 0.25rem;
 }
 
-.item-buttons .MuiButton-root{
-    background-color: #553b08;
+.explanations{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+    margin-top: 1.75rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--rule);
 }
 
-.item-buttons .MuiButton-root:hover{
-    background-color: #815b0d;
+@media (max-width: 900px){
+    .explanations{
+        grid-template-columns: 1fr;
+    }
 }
 
-.source-text-fields{
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    padding: 2rem 10% 0 10%;
+.explanation{
+    min-width: 0;
 }
 
-.MuiButton-root.source-text-add-question{
-    align-self: flex-start;
-    background-color: #553b08;
+.explanation-caption.MuiTypography-root{
+    display: block;
+    margin-bottom: 0.35rem;
+    font-size: 0.9rem;
+    font-weight: 600;
 }
 
-.MuiButton-root.source-text-add-question:hover{
-    background-color: #815b0d;
+.explanation-input .MuiFormHelperText-root{
+    margin: 0.4rem 0 0;
+    color: var(--ink-muted);
+    font-size: 0.82rem;
+    line-height: 1.45;
 }
-
-.explanation-caption{
-    display: inline-block;
-    padding: 2px 10px;
-    font-size: 14px;
-    background-color: #553b08;
-    color: white;
-    border-top-left-radius: 5px;
-    border-top-right-radius: 5px;
-}
-
-.explanation-input{
-    background-color: white;
-    border-radius: 0 5px 5px 5px;
-}
-
-.explanation-input .MuiInputBase-input{
-    color: rgba(0, 0, 0, 0.6);
-}
-
-.answer{
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 15vh;
-}
-
-.letter{
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 70%;
-    width: 40px;
-    background-color: #553b08;
-    color: white;
-    border-top-left-radius: 5px;
-    border-bottom-left-radius: 5px;
-}
-
-.question-wrapper .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline {
-    border: none;
-  }
-  
-  /* Remove border on hover */
-  .question-wrapper .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
-    border: none;
-  }
-  
-  /* Remove border when focused */
-  .question-wrapper .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
-    border: none;
-  }
-
-.input .MuiInputLabel-root.MuiFormLabel-filled {
-    display: none;
-}
-
-.input-title .MuiInputLabel-root.MuiFormLabel-filled {
-    display: none;
-}
-
-.MuiButtonBase-root.question-checkbox .MuiSvgIcon-root {
-    font-size: 60px;
-    color: white;
-}
-
-.MuiButtonBase-root.question-checkbox.Mui-checked .MuiSvgIcon-root{
-    font-size: 60px;
-    color: #2e7d32;
-}
-  
-  

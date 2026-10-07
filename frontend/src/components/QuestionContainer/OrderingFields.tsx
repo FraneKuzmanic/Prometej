@@ -1,4 +1,5 @@
 import { Box, Button, IconButton, TextField, Typography } from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
 import CloseIcon from "@mui/icons-material/Close";
 import { EditorQuestion, MAX_ITEMS, MIN_ITEMS } from "../QuizEditor/questions";
 
@@ -57,7 +58,9 @@ export default function OrderingFields({
       {items.length < MAX_ITEMS && (
         <Box className="item-buttons">
           <Button
-            variant="contained"
+            variant="outlined"
+            size="small"
+            startIcon={<AddIcon />}
             onClick={() => onChange({ items: [...items, ""] })}
           >
             Dodaj pojam

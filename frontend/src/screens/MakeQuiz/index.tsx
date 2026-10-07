@@ -22,7 +22,8 @@ export default function MakeQuiz() {
       createQuiz({ quiz, ...toRequest(questions, sourceTexts) })
     );
     const saved = createQuiz.fulfilled.match(result);
-    if (saved) navigate("/learning");
+    // Where the new Quiz is listed, with the Entry Code of a private one.
+    if (saved) navigate("/my-quizzes");
     return saved;
   };
 
@@ -37,7 +38,7 @@ export default function MakeQuiz() {
       initialQuestions={[]}
       initialSourceTexts={{}}
       onSave={saveQuiz}
-      onCancel={() => navigate("/learning")}
+      onCancel={() => navigate("/my-quizzes")}
     />
   );
 }

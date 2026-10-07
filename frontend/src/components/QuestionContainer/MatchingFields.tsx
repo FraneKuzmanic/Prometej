@@ -1,4 +1,5 @@
 import { Box, Button, IconButton, TextField, Typography } from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
 import CloseIcon from "@mui/icons-material/Close";
 import {
   EditorQuestion,
@@ -28,6 +29,10 @@ export default function MatchingFields({
 
   return (
     <Box className="item-fields">
+      <Typography className="ordering-note">
+        Upišite parove. Učenik će desnu stranu dobiti izmiješanu, s dodatnim odgovorima
+        koji ne pripadaju ničemu.
+      </Typography>
       {pairs.map((pair, index) => (
         <Box className="item-row" key={index}>
           <Typography className="letter" component="span">
@@ -98,7 +103,9 @@ export default function MatchingFields({
       <Box className="item-buttons">
         {pairs.length < MAX_PAIRS && (
           <Button
-            variant="contained"
+            variant="outlined"
+            size="small"
+            startIcon={<AddIcon />}
             onClick={() =>
               onChange({ pairs: [...pairs, { left: "", right: "" }] })
             }
@@ -108,7 +115,9 @@ export default function MatchingFields({
         )}
         {extras.length < MAX_EXTRAS && (
           <Button
-            variant="contained"
+            variant="outlined"
+            size="small"
+            startIcon={<AddIcon />}
             onClick={() => onChange({ extras: [...extras, ""] })}
           >
             Dodaj dodatni odgovor
