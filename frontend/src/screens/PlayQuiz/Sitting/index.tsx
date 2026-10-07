@@ -7,6 +7,12 @@ import {
   useSearchParams,
 } from "react-router-dom";
 import { Box, Button, Link, Paper, Typography } from "@mui/material";
+import AccessTimeIcon from "@mui/icons-material/AccessTime";
+import EventOutlinedIcon from "@mui/icons-material/EventOutlined";
+import LooksOneOutlinedIcon from "@mui/icons-material/LooksOneOutlined";
+import QuizOutlinedIcon from "@mui/icons-material/QuizOutlined";
+import SaveOutlinedIcon from "@mui/icons-material/SaveOutlined";
+import BackButton from "./BackButton";
 import { RootState, useAppDispatch } from "../../../store/store";
 import {
   discardSitting,
@@ -87,18 +93,29 @@ export default function SittingScreen() {
     setDiscarding(false);
   };
 
-  const home = (
-    <Button onClick={() => navigate("/")} variant="contained">
+  // The one way out of a panel is its main action; beside another it steps back.
+  const homeButton = (variant: "contained" | "text") => (
+    <Button onClick={() => navigate("/")} variant={variant}>
       Vrati na početnu
     </Button>
   );
+  const home = homeButton("contained");
 
-  const panel = (title: string, body: ReactNode, actions: ReactNode = home) => (
-    <Paper elevation={3} className="quiz-play-container">
-      <Box className="quiz-play-header">
-        <Typography className="quiz-play-title" variant="h5">
-          {title}
-        </Typography>
+  const panel = (
+    title: string,
+    body: ReactNode,
+    actions: ReactNode = home,
+    tag?: string
+  ) => (
+    <Paper elevation={3} className="quiz-play-container sitting-panel-container">
+      <Box className="quiz-play-header sitting-panel-header">
+        <Box className="quiz-play-header-row">
+          <BackButton />
+          <Typography className="quiz-play-title" variant="h6" component="h1">
+            {title}
+          </Typography>
+          {tag && <span className="sitting-eyebrow">{tag}</span>}
+        </Box>
       </Box>
       <Box className="sitting-panel">{body}</Box>
       <Box className="quiz-play-footer" sx={{ justifyContent: "flex-end", gap: 1 }}>
@@ -119,9 +136,11 @@ export default function SittingScreen() {
         {endedByServer && (
           <Typography>Vrijeme je isteklo. Vaši odgovori su predani.</Typography>
         )}
-        <Typography component="div" variant="h4" className="sitting-score">
-          Vaš rezultat: {ended.score} / {ended.maxScore}{" "}
-          {pointsLabel(ended.maxScore)}
+        <Typography component="div" className="sitting-score">
+          <span className="quiz-play-score-label">Vaš rezultat: </span>
+          <span className="quiz-play-score-value">
+            {ended.score} / {ended.maxScore} {pointsLabel(ended.maxScore)}
+          </span>
         </Typography>
         {!ended.reviewAvailable && (
           <Typography>Odgovori će biti vidljivi kad provjera završi.</Typography>
@@ -142,26 +161,42 @@ export default function SittingScreen() {
     return panel(
       quiz.title,
       <>
-        <Typography variant="overline" className="sitting-eyebrow">
-          {quiz.isTest ? "Provjera" : "Kao provjera"}
-        </Typography>
-        <Typography>
-          {questionsLabel(quiz.questionCount)} · {quiz.maxScore}{" "}
-          {pointsLabel(quiz.maxScore)}
-        </Typography>
-        <Typography>
-          {quiz.timeLimitMinutes
-            ? `Vrijeme: ${quiz.timeLimitMinutes} min`
-            : "Bez vremenskog ograničenja"}
-        </Typography>
-        {quiz.closesAt && (
-          <Typography>Zatvara se: {formatDateTime(quiz.closesAt)}</Typography>
-        )}
-        {quiz.isTest && <Typography>Imate jedan pokušaj.</Typography>}
-        <Typography>
-          Odgovori se spremaju dok rješavate. Točni odgovori vidljivi su nakon
-          završetka.
-        </Typography>
+        <ul className="sitting-facts">
+          <li>
+            <QuizOutlinedIcon />
+            <Typography>
+              {questionsLabel(quiz.questionCount)} · {quiz.maxScore}{" "}
+              {pointsLabel(quiz.maxScore)}
+            </Typography>
+          </li>
+          <li>
+            <AccessTimeIcon />
+            <Typography>
+              {quiz.timeLimitMinutes
+                ? `Vrijeme: ${quiz.timeLimitMinutes} min`
+                : "Bez vremenskog ograničenja"}
+            </Typography>
+          </li>
+          {quiz.closesAt && (
+            <li>
+              <EventOutlinedIcon />
+              <Typography>Zatvara se: {formatDateTime(quiz.closesAt)}</Typography>
+            </li>
+          )}
+          {quiz.isTest && (
+            <li>
+              <LooksOneOutlinedIcon />
+              <Typography>Imate jedan pokušaj.</Typography>
+            </li>
+          )}
+          <li>
+            <SaveOutlinedIcon />
+            <Typography>
+              Odgovori se spremaju dok rješavate. Točni odgovori vidljivi su nakon
+              završetka.
+            </Typography>
+          </li>
+        </ul>
         {quiz.isOwn && (
           <Typography className="sitting-note">
             Ovo je vaš kviz, pa ga ne možete rješavati kao provjeru.
@@ -177,7 +212,7 @@ export default function SittingScreen() {
         )}
       </>,
       <>
-        {home}
+        {homeButton(mayStart ? "text" : "contained")}
         {quiz.running && !quiz.isTest && (
           <Button variant="outlined" onClick={() => discard()}>
             Odustani
@@ -188,7 +223,8 @@ export default function SittingScreen() {
             {quiz.running ? "Nastavi" : "Započni"}
           </Button>
         )}
-      </>
+      </>,
+      quiz.isTest ? "Provjera" : "Kao provjera"
     );
   };
 

@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { List, ListItemText } from "@mui/material";
+import CheckIcon from "@mui/icons-material/Check";
+import CloseIcon from "@mui/icons-material/Close";
 import {
   AnswerCreateRequest,
   QuestionViewModel,
@@ -13,6 +14,9 @@ interface ChoiceQuestionProps {
     maxPoints: number
   ) => void;
 }
+
+// The four options are lettered, as on the exam.
+const letters = ["A", "B", "C", "D"];
 
 export default function ChoiceQuestion({
   question,
@@ -31,7 +35,7 @@ export default function ChoiceQuestion({
   };
 
   return (
-    <List className="quiz-play-answers">
+    <div className="quiz-play-answers">
       {[
         question.firstAnswer,
         question.secondAnswer,
@@ -49,17 +53,22 @@ export default function ChoiceQuestion({
             ? "-uncorrect"
             : "";
         return (
-          <ListItemText
+          <button
             key={option}
-            onClick={() => {
-              if (chosenOption === undefined) handleAnswer(option);
-            }}
+            type="button"
+            disabled={chosenOption !== undefined}
+            onClick={() => handleAnswer(option)}
             className={`quiz-play-answer${mark}`}
           >
-            {text}
-          </ListItemText>
+            <span className="quiz-play-letter" aria-hidden="true">
+              {letters[index]}
+            </span>
+            <span className="quiz-play-item-text">{text}</span>
+            {mark === "-correct" && <CheckIcon fontSize="small" titleAccess="Točno" />}
+            {mark === "-uncorrect" && <CloseIcon fontSize="small" titleAccess="Netočno" />}
+          </button>
         );
       })}
-    </List>
+    </div>
   );
 }

@@ -12,14 +12,21 @@ import {
   submitQuiz,
 } from "../../store/slices/quizSlice";
 import {
-  Alert,
   Box,
   Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   IconButton,
   LinearProgress,
   Paper,
+  Tooltip,
   Typography,
 } from "@mui/material";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import LightbulbOutlinedIcon from "@mui/icons-material/LightbulbOutlined";
 import ChoiceQuestion from "./ChoiceQuestion";
 import MatchingQuestion from "./MatchingQuestion";
 import OrderingQuestion from "./OrderingQuestion";
@@ -45,6 +52,7 @@ export default function PlayQuiz() {
   // Opening the Hint is the Student's choice; it does not change the Score.
   const [hintShown, setHintShown] = useState(false);
   const [submissionKey, setSubmissionKey] = useState("");
+  const [leaveOpen, setLeaveOpen] = useState(false);
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const { id } = useParams();
@@ -116,6 +124,27 @@ export default function PlayQuiz() {
     setShowScore(true);
   };
 
+  // Back to where the Quiz was opened from; an address opened directly has nowhere to go
+  // back to, and leads to the list.
+  const leave = () => {
+    if (window.history.state?.idx > 0) navigate(-1);
+    else navigate("/quizzes");
+  };
+
+  // A play lives in the browser until its last Question, so leaving before that loses it.
+  const handleBack = () => {
+    if (!showScore && quizAnswers.length > 0) setLeaveOpen(true);
+    else leave();
+  };
+
+  const backButton = (
+    <Tooltip title="Natrag">
+      <IconButton aria-label="Natrag" className="quiz-play-back" onClick={handleBack}>
+        <ArrowBackIcon />
+      </IconButton>
+    </Tooltip>
+  );
+
   const sourceText =
     quiz && currentQuestion
       ? quiz.sourceTexts.find(
@@ -125,6 +154,7 @@ export default function PlayQuiz() {
 
   // The stored Quiz Game is the result once there is one: an Answer row is a point.
   const savedGame = submitStatus === "saved" ? lastGame : undefined;
+  const finalScore = savedGame ? savedGame.score : score;
   const finalMaxScore = savedGame ? savedGame.answers.length : maxScore;
 
   // Signed-out comes first: a session that expired during the play ends up there too.
@@ -159,9 +189,12 @@ export default function PlayQuiz() {
           }`}
         >
           <Box className="quiz-play-header">
-            <Typography className="quiz-play-title" variant="h5">
-              {quiz ? quiz.title : ""}
-            </Typography>
+            <Box className="quiz-play-header-row">
+              {backButton}
+              <Typography className="quiz-play-title" variant="h6" component="h1">
+                {quiz ? quiz.title : ""}
+              </Typography>
+            </Box>
             <LinearProgress
               variant="determinate"
               value={((currentQuestionNo + 1) / totalQuestionNo) * 100}
@@ -172,7 +205,7 @@ export default function PlayQuiz() {
             <SourceTextPanel key={sourceText.id} sourceText={sourceText} />
           )}
           <Box className="quiz-play-content">
-            <Typography variant="h4" className="quiz-play-question">
+            <Typography variant="h5" component="h2" className="quiz-play-question">
               {currentQuestionNo + 1}. {currentQuestion.questionTitle}
             </Typography>
             {/* The key gives every Question its own component, so no answer carries over. */}
@@ -199,17 +232,19 @@ export default function PlayQuiz() {
             )}
             {currentQuestion.hintText && (
               <Box className="quiz-play-hint-row">
-                <IconButton
+                <Button
+                  size="small"
+                  startIcon={<LightbulbOutlinedIcon />}
                   aria-label="Prikaži pomoć"
                   aria-expanded={hintShown}
                   onClick={() => setHintShown(!hintShown)}
                 >
-                  <img width={30} height={30} src="/hint-icon.png" alt="" />
-                </IconButton>
+                  {hintShown ? "Sakrij pomoć" : "Pomoć"}
+                </Button>
                 {hintShown && (
-                  <Alert severity="info" icon={false} className="quiz-play-hint">
+                  <Typography className="quiz-play-hint" role="status">
                     {currentQuestion.hintText}
-                  </Alert>
+                  </Typography>
                 )}
               </Box>
             )}
@@ -221,8 +256,8 @@ export default function PlayQuiz() {
             )}
           </Box>
           <Box className="quiz-play-footer">
-            <Typography>
-              {currentQuestionNo + 1}. od {totalQuestionNo}
+            <Typography className="quiz-play-count">
+              Pitanje {currentQuestionNo + 1} od {totalQuestionNo}
             </Typography>
             {currentQuestionNo + 1 === totalQuestionNo
               ? currentQuestionAnswered && (
@@ -248,12 +283,15 @@ export default function PlayQuiz() {
       {quiz && quiz.questions.length === 0 && !quiz.isTest && (
         <Paper elevation={3} className="quiz-play-container">
           <Box className="quiz-play-header">
-            <Typography className="quiz-play-title" variant="h5">
-              {quiz.title}
-            </Typography>
+            <Box className="quiz-play-header-row">
+              {backButton}
+              <Typography className="quiz-play-title" variant="h6" component="h1">
+                {quiz.title}
+              </Typography>
+            </Box>
           </Box>
           <Box className="quiz-play-score">
-            <Typography component="div" variant="h4">
+            <Typography component="div" variant="h5">
               Ovaj kviz još nema pitanja.
             </Typography>
           </Box>
@@ -267,44 +305,49 @@ export default function PlayQuiz() {
       {showScore && (
         <Paper elevation={3} className="quiz-play-container">
           <Box className="quiz-play-header">
-            <Typography className="quiz-play-title" variant="h5">
-              {quiz ? quiz.title : ""}
-            </Typography>
-            <LinearProgress
-              variant="determinate"
-              value={((currentQuestionNo + 1) / totalQuestionNo) * 100}
-            />
+            <Box className="quiz-play-header-row">
+              {backButton}
+              <Typography className="quiz-play-title" variant="h6" component="h1">
+                {quiz ? quiz.title : ""}
+              </Typography>
+            </Box>
+            <LinearProgress variant="determinate" value={100} />
           </Box>
           <Box className="quiz-play-score">
-            <Typography component="div" variant="h4">
-              Vaš ukupni rezultat :
+            <Typography component="h2" className="quiz-play-score-label">
+              Vaš ukupni rezultat
             </Typography>
-            <Typography component="div" sx={{ marginTop: 5 }} variant="h2">
-              {savedGame ? savedGame.score : score} / {finalMaxScore}{" "}
-              {pointsLabel(finalMaxScore)}
+            <Typography component="div" className="quiz-play-score-value">
+              {finalScore} / {finalMaxScore} {pointsLabel(finalMaxScore)}
             </Typography>
-            <Typography component="div" sx={{ marginTop: 3 }}>
+            {finalMaxScore > 0 && (
+              <Box
+                className="quiz-play-score-bar"
+                role="img"
+                aria-label={`${Math.round((finalScore / finalMaxScore) * 100)} %`}
+              >
+                <span style={{ width: `${(finalScore / finalMaxScore) * 100}%` }} />
+              </Box>
+            )}
+            <Typography component="div" className="quiz-play-score-note">
               {resultNote()}
             </Typography>
             {submitStatus === "failed" && (
-              <Button sx={{ marginTop: 1 }} onClick={() => submit()}>
+              <Button variant="outlined" onClick={() => submit()}>
                 Pokušaj ponovno
               </Button>
             )}
             {submitStatus === "saved" && lastGame && (
               <Button
-                sx={{ marginTop: 1 }}
+                variant="outlined"
                 onClick={() => navigate(`/my-results/${lastGame.id}`)}
               >
                 Pregledaj odgovore
               </Button>
             )}
           </Box>
-          <Box className="quiz-play-footer">
-            <Typography>
-              {currentQuestionNo + 1}. od {totalQuestionNo}
-            </Typography>
-            <Box sx={{ display: "flex", gap: 1 }}>
+          <Box className="quiz-play-footer" sx={{ justifyContent: "flex-end" }}>
+            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
               {quiz?.periodId && (
                 <Button
                   onClick={() => navigate(`/learning/${quiz.periodId}`)}
@@ -320,6 +363,21 @@ export default function PlayQuiz() {
           </Box>
         </Paper>
       )}
+      <Dialog open={leaveOpen} onClose={() => setLeaveOpen(false)}>
+        <DialogTitle>Napustiti kviz?</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Dosadašnji odgovori neće biti spremljeni i kviz ćete idući put rješavati od
+            početka.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setLeaveOpen(false)}>Nastavi kviz</Button>
+          <Button color="error" onClick={leave}>
+            Napusti
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

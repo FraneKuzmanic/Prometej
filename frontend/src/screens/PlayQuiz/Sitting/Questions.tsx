@@ -22,6 +22,7 @@ import ChoiceAnswer from "./ChoiceAnswer";
 import MatchingAnswer from "./MatchingAnswer";
 import OrderingAnswer from "./OrderingAnswer";
 import Countdown from "./Countdown";
+import BackButton from "./BackButton";
 
 interface QuestionsProps {
   sitting: Sitting;
@@ -173,8 +174,9 @@ export default function Questions({
       className={`quiz-play-container${sourceText ? " with-source-text" : ""}`}
     >
       <Box className="quiz-play-header">
-        <Box className="sitting-header">
-          <Typography className="quiz-play-title" variant="h5">
+        <Box className="quiz-play-header-row sitting-header">
+          <BackButton saved />
+          <Typography className="quiz-play-title" variant="h6" component="h1">
             {sitting.quizTitle}
           </Typography>
           {sitting.endsAt && (
@@ -212,7 +214,7 @@ export default function Questions({
         <SourceTextPanel key={sourceText.id} sourceText={sourceText} />
       )}
       <Box className="quiz-play-content">
-        <Typography variant="h4" className="quiz-play-question">
+        <Typography variant="h5" component="h2" className="quiz-play-question">
           {current + 1}. {question.questionTitle}
         </Typography>
         {question.type === "matching" && (
