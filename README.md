@@ -22,7 +22,6 @@ The interface is in Croatian. The app is not deployed yet, so for now it runs lo
 - [How it works](#how-it-works)
 - [How the tutor is measured](#how-the-tutor-is-measured)
 - [Sample content](#sample-content)
-- [Known limitations](#known-limitations)
 
 ## Features
 
@@ -303,15 +302,3 @@ Kranjčević and Antun Gustav Matoš) are in the public domain and are quoted fr
 Wikisource.
 
 This is sample material and **it has not been reviewed by a teacher**.
-
-## Known limitations
-
-- The app is not deployed.
-- There is no password reset.
-- The client has no automated tests.
-- A test stops what the server can stop. It does not stop a student from looking an answer
-  up or from sitting it again from a second account. There are no grades and no classes.
-- A post in a discussion cannot be edited or reported, and nothing updates live.
-- The tutor does not know about tests, so a student sitting one can still ask it.
-- Anyone can ask the tutor, ten times a minute. That slows a script down but does not cap
-  what the questions cost, so a deployment would need a spending limit first.
