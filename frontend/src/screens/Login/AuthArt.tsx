@@ -5,12 +5,12 @@ import { Art, ArtText } from "./index.styled";
 export default function AuthArt() {
   return (
     <Art>
-      <img className="painting" src="/humanizam-i-predrenesansa.webp" alt="" />
+      <img className="painting" src="/prometej.png" alt="" />
       <ArtText>
         <img src={logo} alt="" />
         <div>
           <h2>Prometej</h2>
-          <p>Gradivo hrvatske književnosti i kvizovi za vježbu na jednom mjestu.</p>
+          <p>Plamen znanja hrvatske književnosti</p>
         </div>
       </ArtText>
     </Art>

@@ -26,7 +26,7 @@ export const Art = styled(Box)`
     width: 100%;
     height: 100%;
     object-fit: cover;
-    object-position: center 30%;
+    object-position: 55% center;
   }
 
   /* A scrim under the words, so they read on any part of the painting. */
