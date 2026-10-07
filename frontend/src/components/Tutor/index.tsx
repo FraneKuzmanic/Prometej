@@ -154,7 +154,7 @@ export default function Tutor({ periodId, periodName }: TutorProps) {
                   : "Prometej trenutno nije dostupan. Pokušaj ponovno."}
               </Typography>
               {/* The question is still the last message; it is sent again, not typed again. */}
-              <Button size="small" sx={{ color: "#553b08" }} onClick={askAgain}>
+              <Button size="small" onClick={askAgain}>
                 Pokušaj ponovno
               </Button>
             </Box>

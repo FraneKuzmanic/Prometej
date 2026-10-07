@@ -51,12 +51,9 @@
     color: var(--brown);
 }
 
-/* Beside the open panel, not under it: an Admin's own button on a Period page. Under 600 px
-   the panel covers the page whole. */
-@media (min-width: 600px){
-    .tutor-open .speed-dial.MuiSpeedDial-root{
-        right: 416px;
-    }
+.tutor-panel .MuiDrawer-paper{
+    border-left: 1px solid var(--rule);
+    box-shadow: -6px 0 24px rgba(60, 40, 10, 0.08);
 }
 
 .tutor-layout{
@@ -71,8 +68,8 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 8px 8px 8px 16px;
-    border-bottom: 1px solid #e9e5cd;
+    padding: 10px 8px 10px 16px;
+    border-bottom: 1px solid var(--rule);
 }
 
 .tutor-head img{
@@ -87,14 +84,15 @@
 }
 
 .tutor-name.MuiTypography-root{
+    font-family: var(--font-serif);
+    font-size: 1.1rem;
     font-weight: 600;
-    color: #553b08;
     line-height: 1.2;
 }
 
 .tutor-context.MuiTypography-root{
-    font-size: 0.8rem;
-    color: #6b6b6b;
+    font-size: 0.82rem;
+    color: var(--ink-muted);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -107,6 +105,14 @@
     display: flex;
     flex-direction: column;
     gap: 12px;
+    background-color: var(--page);
+}
+
+.tutor-empty{
+    margin: auto 0;
+    padding: 0.5rem 0.25rem 1.5rem;
+    color: var(--ink);
+    line-height: 1.55;
 }
 
 .tutor-examples{
@@ -117,38 +123,70 @@
     margin-top: 16px;
 }
 
+.tutor-examples .MuiChip-root{
+    height: auto;
+    min-height: 2.1rem;
+    border-color: #d3c7ab;
+    background-color: var(--paper);
+    color: var(--brown);
+    font-size: 0.9rem;
+    transition: background-color 140ms ease-out, border-color 140ms ease-out;
+}
+
+.tutor-examples .MuiChip-root:hover{
+    border-color: var(--brown);
+    background-color: var(--parchment);
+}
+
+.tutor-examples .MuiChip-label{
+    padding: 0.35rem 0.85rem;
+    white-space: normal;
+}
+
 .tutor-message{
     max-width: 92%;
     padding: 10px 14px;
     border-radius: 12px;
+    animation: tutor-message-in 260ms var(--ease-out);
+}
+
+@keyframes tutor-message-in{
+    from{
+        opacity: 0;
+        transform: translateY(6px);
+    }
 }
 
 .tutor-message-user{
     align-self: flex-end;
-    background-color: #553b08;
+    border-bottom-right-radius: 4px;
+    background-color: var(--brown);
     color: #ffffff;
 }
 
 .tutor-message-assistant{
     align-self: flex-start;
-    background-color: #f4f1e2;
+    border: 1px solid var(--rule);
+    border-bottom-left-radius: 4px;
+    background-color: var(--paper);
 }
 
 .tutor-text.MuiTypography-root{
+    line-height: 1.55;
     white-space: pre-wrap;
     overflow-wrap: anywhere;
 }
 
 .tutor-citations{
     margin-top: 12px;
-    padding-top: 8px;
-    border-top: 1px solid #d9d3b4;
+    padding-top: 10px;
+    border-top: 1px solid var(--rule);
 }
 
 .tutor-citations-title.MuiTypography-root{
     font-size: 0.8rem;
-    font-weight: 600;
-    color: #553b08;
+    font-weight: 700;
+    color: var(--ink-muted);
 }
 
 .tutor-citation{
@@ -162,30 +200,81 @@
     font: inherit;
     font-size: 0.875rem;
     font-weight: 600;
-    color: #553b08;
+    color: var(--brown);
     text-align: left;
     text-decoration: underline;
+    text-underline-offset: 0.18em;
     cursor: pointer;
 }
 
+.tutor-citation button:hover{
+    text-decoration-thickness: 2px;
+}
+
+/* The words of the material, set apart from the Tutor's own. */
 .tutor-citation blockquote{
-    margin: 4px 0 0 0;
-    padding-left: 10px;
-    border-left: 3px solid #553b08;
+    margin: 6px 0 0 0;
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    background-color: var(--page);
+    font-family: var(--font-serif);
     font-size: 0.875rem;
-    font-style: italic;
+    line-height: 1.55;
     overflow-wrap: anywhere;
 }
 
 .tutor-status.MuiTypography-root{
-    color: #6b6b6b;
-    font-style: italic;
+    color: var(--ink-muted);
+    animation: tutor-reading 1.6s ease-in-out infinite;
+}
+
+@keyframes tutor-reading{
+    50%{
+        opacity: 0.45;
+    }
+}
+
+.tutor-error{
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    padding: 0.6rem 0.9rem;
+    border-radius: 8px;
+    background-color: var(--wrong-tint);
 }
 
 .tutor-form{
     display: flex;
     align-items: flex-end;
-    gap: 4px;
-    padding: 10px 8px 12px 16px;
-    border-top: 1px solid #e9e5cd;
+    gap: 6px;
+    padding: 10px 10px 12px 16px;
+    border-top: 1px solid var(--rule);
+    background-color: var(--paper);
+}
+
+.tutor-form .MuiIconButton-root{
+    background-color: var(--brown);
+    color: #ffffff;
+    transition: background-color 140ms ease-out, transform 120ms ease-out;
+}
+
+.tutor-form .MuiIconButton-root:hover{
+    background-color: #6b4b0c;
+}
+
+.tutor-form .MuiIconButton-root:active{
+    transform: translateY(1px);
+}
+
+.tutor-form .MuiIconButton-root.Mui-disabled{
+    background-color: var(--rule);
+    color: #ffffff;
+}
+
+@media (prefers-reduced-motion: reduce){
+    .tutor-message,
+    .tutor-status.MuiTypography-root{
+        animation: none;
+    }
 }
